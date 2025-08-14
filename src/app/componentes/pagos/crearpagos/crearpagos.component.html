@@ -1,0 +1,42 @@
+<p-dialog header="Crear pago" [modal]="true" [(visible)]="visible" [style]="{ width: '70rem' }"
+    [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" [maximizable]="true"  (onHide)="onHide()"
+  (onShow)="onShow()">
+    <form [formGroup]="pagosForm" (ngSubmit)="crearPago()">
+        <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+            <div>
+                <p-fieldset legend="Información del usuario">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
+                        <div>
+                            <input pInputText formControlName="txtUsuarioPaga" placeholder="Usuario paga"
+                                class="w-full input-field" styleClass="w-full" />
+                        </div>
+                        <div>
+                            <input pInputText formControlName="txtUsuarioRecibe" placeholder="Usuario Recibe"
+                                class="w-full input-field" styleClass="w-full" />
+
+                        </div>
+                        <div>
+                            <input pInputText formControlName="txtUsuarioCorreo" placeholder="Correo usuario paga"
+                                class=" w-full input-field" styleClass="w-full" />
+
+                        </div>
+                        <div>
+                            <input pInputText formControlName="txtMontoPagar" placeholder="Monto a pagar"
+                                class=" w-full input-field" styleClass="w-full" />
+
+                        </div>
+                        <div>
+                            <p-select [options]="formaspagos" formControlName="formaPago" [checkmark]="true"
+                                optionLabel="name" [showClear]="true" placeholder="Forma de pago" class="w-full"
+                                styleClass="w-full" appendTo="body" />
+
+                        </div>
+                    </div>
+                </p-fieldset>
+                <br>
+                <p-button label="Enviar" severity="success" type="submit" />
+            </div>
+        </div>
+    </form>
+
+</p-dialog>

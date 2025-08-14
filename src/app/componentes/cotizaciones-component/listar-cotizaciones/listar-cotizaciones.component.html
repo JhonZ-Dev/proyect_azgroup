@@ -1,0 +1,138 @@
+<div class="p-inputgroup p-3 bg-white rounded-lg card flex items-center space-x-4" style="margin-bottom:1rem;">
+    <!-- Buscador -->
+    <div class="flex-1">
+        <input #globalFilter pInputText type="text" placeholder="Buscar en todo..." class="w-full"
+            (input)="onGlobalFilter(globalFilter.value)" />
+    </div>
+    <!-- Filtro de estado -->
+    <div class="flex-none">
+        <app-filtros (estadoChange)="onEstadoFilter($event)"></app-filtros>
+    </div>
+</div>
+
+
+<div class="p-3 bg-white rounded-lg card">
+    <!-- TABLA PRINCIPAL -->
+    <p-table #dt [value]="cotizaciones" dataKey="proforma_id" expandableRows="true"
+        [tableStyle]="{ 'min-width': '50rem' }" showGridlines [resizableColumns]="true"
+        [globalFilterFields]="[
+    'txt_necesidad','txt_ruc','txt_cliente','txt_correo','txt_funcionario','txt_telefono','txt_fecha','txt_direccion','estado_name']">
+        <!-- HEADER -->
+        <ng-template pTemplate="header">
+            <tr>
+                <th></th>
+                <th>Infima N°</th>
+                <th class="th_info">Código Proceso</th>
+                <th class="th_info">Cliente</th>
+                <th class="th_info">Objeto Contratación</th>
+                <th class="th_info">Estado</th>
+                <th class="th_info">Fecha creación</th>
+                <th class="th_info">Fecha vencimiento</th>
+                <th class="th_info">Acciones</th>
+            </tr>
+        </ng-template>
+
+        <!-- BODY -->
+        <ng-template pTemplate="body" let-c>
+            <tr>
+                <td>
+                    <button pButton class="p-button-text p-button-rounded p-button-outlined"
+                        [icon]="dt.isRowExpanded(c) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+                        (click)="toggleRow(c)"></button>
+                </td>
+                <td [ngClass]="{ highlight: isMatch(c.txt_infimaNro) }">{{ c.txt_infimaNro }}</td>
+                <td [ngClass]="{ highlight: isMatch(c.txt_necesidad) }">{{ c.txt_necesidad }}</td>
+                <td [ngClass]="{ highlight: isMatch(c.txt_cliente) }">{{
+                    c.txt_cliente?.length > 20
+                    ? (c.txt_cliente | slice:0:20) + '...'
+                    : c.txt_cliente
+                    }}</td>
+                <td [ngClass]="{ highlight: isMatch(c.txt_objetivoCompra) }">{{
+                    c.txt_objetivoCompra?.length > 20
+                    ? (c.txt_objetivoCompra | slice:0:20) + '...'
+                    : c.txt_objetivoCompra
+                    }}</td>
+                <td (click)="openPopover($event, c)" [ngClass]="{ highlight: isMatch(c.estado_name) }">
+                    <p-tag [value]="c.estado_name" [severity]="getSeverity(c.estado_name)" />
+                </td>
+                <td [ngClass]="{ highlight: isMatch(c.txt_fecha) }">{{ c.txt_fecha }}</td>
+                <td [ngClass]="{ highlight: isMatch(c.tHora_maxina) }">{{ c.tHora_maxina }}</td>
+                <td>
+                    <button pButton type="button" icon="pi pi-file-excel" 
+                        (click)="exportToExcel(c.proforma_id)" pInputText pTooltip="Excel" tooltipPosition="top"class="mr-1 excel"></button>
+                    <button pButton type="button" icon="pi pi-file-pdf" 
+                        (click)="exportToPdf(c.proforma_id)" pInputText pTooltip="Pdf" tooltipPosition="top" class="pdf"></button>
+                    <button pButton type="button" icon="pi pi-file-word" (click)="descargarProforma(c.proforma_id)" pInputText pTooltip="Word" tooltipPosition="top" class="ml-1 word"></button>
+
+                </td>
+            </tr>
+
+            <!-- FILA DETALLE -->
+            <tr *ngIf="dt.isRowExpanded(c)">
+                <td colspan="10">
+                    <p-table #itemTable [value]="c.items | slice: first2 : first2 + rows2"
+                        [tableStyle]="{ 'min-width': '40rem' }" [globalFilterFields]="[
+            'txt_cpc',
+            'txt_unidad',
+            'txt_especificaciones',
+            'int_cantidad',
+            'flo_precioUnitario',
+            'flo_precioTotal'
+          ]">
+                        <!-- HEADER DETALLE -->
+                        <ng-template pTemplate="header">
+            <tr>
+                <th class="th_items">N°</th>
+                <th class="th_items">CPC</th>
+                <th class="th_items">Unidad</th>
+                <th class="th_items">Especificaciones</th>
+                <th class="th_items">Cantidad</th>
+                <th class="th_items">Precio Unitario</th>
+                <th class="th_items">Precio Total</th>
+            </tr>
+        </ng-template>
+
+        <!-- BODY DETALLE -->
+        <ng-template pTemplate="body" let-item let-i="rowIndex">
+            <tr>
+                <td>{{ i + 1 }}</td>
+                <td [ngClass]="{ highlight: isMatch(item.txt_cpc) }">{{ item.txt_cpc }}</td>
+                <td [ngClass]="{ highlight: isMatch(item.txt_unidad) }">{{ item.txt_unidad }}</td>
+                <td [innerHTML]="formatText13(item.txt_especificaciones)"
+                    [ngClass]="{ highlight: isMatch(item.txt_especificaciones) }"></td>
+                <td [ngClass]="{ highlight: isMatch(item.int_cantidad) }">{{ item.int_cantidad }}</td>
+                <td [ngClass]="{ highlight: isMatch(item.flo_precioUnitario) }">
+                    {{ item.flo_precioUnitario | number: '1.2-2' }}
+                </td>
+                <td [ngClass]="{ highlight: isMatch(item.flo_precioTotal) }">
+                    {{ item.flo_precioTotal | number: '1.2-2' }}
+                </td>
+            </tr>
+        </ng-template>
+        <p-paginator [first]="first2" [rows]="rows2" [totalRecords]="c.items.length"
+            (onPageChange)="onPageChange2($event)" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first} - {last} of {totalRecords}" [showPageLinks]="false"
+            [showFirstLastIcon]="false"></p-paginator>
+    </p-table>
+    <div class="flex items-center justify-end">
+        <span class="mx-1 text-color">Items: </span>
+        <p-paginator [first]="first2" [rows]="rows2" [totalRecords]="c.items.length"
+            (onPageChange)="onPageChange2($event)" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first} - {last} of {totalRecords}" [showPageLinks]="false"
+            [showFirstLastIcon]="false"></p-paginator>
+    </div>
+    </td>
+    </tr>
+    </ng-template>
+    </p-table>
+</div>
+
+
+
+
+<p-popover #op>
+    <div class="flex flex-col gap-4">
+        <p-select [options]="statusOptions" [(ngModel)]="selectedStatusOptions" optionLabel="name" optionValue="id"
+            placeholder="Select a City" class="w-full md:w-56" (onChange)="onStatusChange(); op.hide()" />
+    </div>
+</p-popover>

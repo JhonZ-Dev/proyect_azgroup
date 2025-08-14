@@ -1,0 +1,40 @@
+.th_info{
+    text-align: center;
+    padding: 0;
+}
+
+.th_items{
+    background-color: #BFF8EC;
+    text-align: center;
+}
+.pdf-hidden {
+  position: absolute;
+  top: 0;
+  left: -10000px;  /* fuera de pantalla */
+  width: 800px;    /* garantiza un tamaño razonable */
+  /* opcional: height, padding, etc. */
+}
+.wrap-text {
+  white-space: pre-line;      /* para mostrar los \n como saltos de línea */
+  word-break: break-word;
+  max-width: 250px;
+}
+.excel{
+  background-color: #00000000;
+  color: #000000;
+  border-color: #000000;
+;
+}
+
+.pdf{
+  background-color: #00000000;
+  color: #000000;
+  border-color: #000000;
+;
+}
+.word{
+  background-color: #00000000;
+  color: #000000;
+  border-color: #000000;
+;
+}

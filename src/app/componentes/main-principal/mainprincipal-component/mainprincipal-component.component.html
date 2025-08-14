@@ -1,0 +1,19 @@
+<!-- main-principal.component.html -->
+<div class="flex h-screen">
+  <!-- El SidebarComponent maneja su propio p-drawer -->
+  <app-sidebar-component></app-sidebar-component>
+
+  <!-- Este bloque se “empuja” solo cuando visible$ es true -->
+  <div
+    class="flex-1 flex flex-col overflow-hidden transition-all duration-300"
+    [class.ml-64]="(sidebarService.visible$ | async)"
+  >
+    <!-- Header -->
+    <app-header-component class="bg-white shadow-md"></app-header-component>
+
+    <!-- Contenido -->
+    <main class="bg-gray-50 flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

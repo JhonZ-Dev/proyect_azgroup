@@ -1,0 +1,79 @@
+body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+        
+        .document {
+            border: 2px solid black;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 8px;
+            border-bottom: 1px solid black;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        td, th {
+            border: 1px solid black;
+            padding: 4px 6px;
+            vertical-align: top;
+        }
+        
+        .label {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            width: 15%;
+        }
+        
+        .value {
+            background-color: white;
+        }
+        
+        .section-header {
+            background-color: #f0f0f0;
+            text-align: center;
+            font-weight: bold;
+            padding: 6px;
+        }
+        
+        .specs-table {
+            margin-top: 0;
+        }
+        
+        .specs-table th {
+            background-color: #f0f0f0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        
+        .specs-table td {
+            text-align: center;
+            font-size: 11px;
+        }
+        
+        .specs-table .description {
+            text-align: left;
+            font-size: 10px;
+        }
+        
+        .total-row {
+            font-weight: bold;
+        }
+        
+        .right-align {
+            text-align: right;
+        }

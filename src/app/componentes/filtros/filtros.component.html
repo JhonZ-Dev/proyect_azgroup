@@ -1,0 +1,13 @@
+<!-- filtros.component.html -->
+<div class="p-3 bg-white rounded-lg card">
+  <p-select
+    [options]="statusOptions"
+    [(ngModel)]="selectedOptionEstados"
+    optionLabel="name"
+    optionValue="id"
+    placeholder="Filtrar por estado"
+    class="w-full md:w-56"
+    (onChange)="onSelectChange($event.value)"
+    [showClear]="true"
+  ></p-select>
+</div>

@@ -1,0 +1,35 @@
+<div class=" p-3 bg-white rounded-lg card flex items-center space-x-4" style="margin-bottom:1rem;">
+    <!-- llamar al boton de crear pagos -->
+    <button pButton type="button" label="Crear Pago" icon="pi pi-plus" (click)="abrirDialog()"></button>
+    <app-crearpagos [(visible)]="modalVisible" (pagoCreado)="onPagoCreado($event)"></app-crearpagos>
+</div>
+<!--HTML PARA CREAR EL PAGO-->
+<div class=" p-3 bg-white rounded-lg card">
+<p-table [value]="pagos" [tableStyle]="{ 'min-width': '50rem' }" showGridlines paginator="true"
+ [rows]="5" [showCurrentPageReport]="true" >
+    <ng-template #header>
+        <tr>
+            <th>Forma de pago</th>
+            <th>Usuario pagó</th>
+            <th>Usuario recibió</th>
+            <th>Fecha del pago</th>
+            <th>Hora del pago</th>
+            <th>Cantidad</th>
+            <th>Cantidad en texto</th>
+            <th>Estado</th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-pago>
+        <tr>
+            <td>{{ pago.txtFormaPago }}</td>
+            <td>{{ pago.txtUsuarioPaga }}</td>
+            <td>{{ pago.txtUsuarioRecibe }}</td>
+            <td>{{ pago.dFechaPago }}</td>
+            <td>{{ pago.tHoraPago }}</td>
+            <td>{{ pago.txtMontoPagar }}</td>
+            <td>{{ pago.txtMongoPagarTexto }}</td>
+            <td><p-tag [value]="pago.estado_name" [severity]="getSeverity(pago.estado_name)" /></td>
+        </tr>
+    </ng-template>
+</p-table>
+</div>

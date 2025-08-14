@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import "primeicons/primeicons.css";
+
+@layer tailwind-base, primeng, tailwind-utilities;
+
+@layer tailwind-base {
+  @tailwind base;
+}
+
+@layer tailwind-utilities {
+  @tailwind components;
+  @tailwind utilities;
+}
+/* Estilos generales */
+.p-inputtext {
+  font-size: 11px;
+}
+p-inputnumber {
+  font-size: 11px; 
+}
+.p-textarea{
+  font-size: 11px;
+}
+th{
+  font-size: 12px;
+  text-align: center;
+}
+td{
+  font-size: 11px;
+  text-align: center;
+}
+span{
+  font-size: 11px;
+  text-align: center;
+}
+
+
+
+
+
+
+
+
