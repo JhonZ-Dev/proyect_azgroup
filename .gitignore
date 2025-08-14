@@ -1,0 +1,15 @@
+#.gitignore 
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Entorno virtual
+venv/
+
+# Otros
+.env
+.DS_Store

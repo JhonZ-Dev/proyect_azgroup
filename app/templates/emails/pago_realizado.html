@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h2>¡Pago registrado!</h2>
+    <p>Se ha registrado un pago por <b>{{ pago.txtMontoPagar }}</b> el día <b>{{ pago.dFechaPago }}</b>.</p>
+    <ul>
+      <li><b>Forma de pago:</b> {{ pago.txtFormaPago }}</li>
+      <li><b>Usuario que paga:</b> {{ pago.txtUsuarioPaga }}</li>
+      <li><b>Usuario que recibe:</b> {{ pago.txtUsuarioRecibe }}</li>
+      <li><b>Correo:</b> {{ pago.txtUsuarioCorreo }}</li>
+      <li><b>Observaciones:</b> {{ pago.txtMongoPagarTexto }}</li>
+    </ul>
+    <p>Saludos,<br>Equipo de Finanzas</p>
+  </body>
+</html>
