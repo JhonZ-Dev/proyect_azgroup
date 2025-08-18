@@ -2,9 +2,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from sqlalchemy.orm import Session
-
+from typing import List, Dict
 from app import crud
-from app.schemasFolder.informacion import EstadoUpdate, InformacionRead, InformacionCreate
+from app.schemasFolder.informacion import EstadoCount, EstadoUpdate, InformacionRead, InformacionCreate
 from app.auth import get_db, require_permission
 from app.crudFolder.informacion import get_informacion_with_items_by_id, get_informaciones_with_items
 from fastapi.responses import FileResponse
@@ -52,6 +52,14 @@ def list_informaciones(db: Session = Depends(get_db)):
     Retorna todas las informaciones con su lista de items anidados.
     """
     return get_informaciones_with_items(db)
+@router.get(
+    "/estadisticas-por-estado",
+    response_model=List[EstadoCount],
+    dependencies=[Depends(require_permission("list"))],
+    summary="Resumen de totales por estado de las proformas"
+)
+def estadisticas_por_estado(db: Session = Depends(get_db)):
+    return crud.get_totales_por_estado(db)
 @router.get(
     "/{proforma_id}",
     response_model=InformacionRead,
@@ -294,3 +302,5 @@ def descargar_excel(
     archivo = generar_excel_proforma(data)
     nombre = f"proforma_{proforma_id}.xlsx"
     return FileResponse(archivo, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename=nombre)
+
+

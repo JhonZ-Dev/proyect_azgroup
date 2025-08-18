@@ -9,6 +9,7 @@ from app.crudFolder.informacion import (
     update_informacion,
     delete_informacion,
     update_estado_informacion,
+    get_totales_por_estado
 )
 from app.crudFolder.items import (
     get_item,

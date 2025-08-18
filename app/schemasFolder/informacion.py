@@ -42,3 +42,7 @@ class InformacionRead(InformacionBase):
         orm_mode = True
 class EstadoUpdate(BaseModel):
     estado_id: int
+
+class EstadoCount(BaseModel):
+    estado: str
+    total: int

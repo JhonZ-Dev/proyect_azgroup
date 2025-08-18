@@ -4,6 +4,7 @@ from reportlab.lib.units import cm
 from reportlab.platypus import (
     SimpleDocTemplate, Table, TableStyle, Paragraph
 )
+from reportlab.platypus import Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import os
 import re
@@ -132,7 +133,7 @@ def generar_pdf_proforma(
     ])
     # Fila: Respuesta objeto de compra
     tabla_data.append([
-        Paragraph(str(data.get("txt_objetivoCompra", "")), styleN), '', '', '', '', '', ''
+        Paragraph(str(data.get("txt_objetivoCompra", "")), style_bold_centrado  ), '', '', '', '', '', ''
     ])
 
     # Fila: CABECERA DE ITEMS
@@ -170,7 +171,7 @@ def generar_pdf_proforma(
 
     # Fila: NO GRAVAMOS IVA
     tabla_data.append([
-        Paragraph('NO GRAVAMOS IVA', style_rojo_centrados), '', '', '', '', '', ''
+        Paragraph('NO GRAVAMOS IVA - SOMOS REGIMEN RIMPE - NEGOCIO POPULAR', style_rojo_centrados), '', '', '', '', '', ''
     ])
     index_no_gravamos_iva = len(tabla_data) - 1
 
@@ -189,6 +190,7 @@ def generar_pdf_proforma(
             Paragraph(f'<b>{etiqueta}</b>', styleN),
             Paragraph(str(valor), styleN), '', '', '', '', ''
         ])
+    
 
     # Spans
     span_cmds = [
@@ -224,6 +226,8 @@ def generar_pdf_proforma(
         ('BACKGROUND', (0, index_primero_nuevo), (0, index_primero_nuevo + len(nuevos_campos) - 1), colors.HexColor('#DAE9F7')),
         ('BACKGROUND', (0, index_total), (6, index_total), colors.HexColor('#DAE9F7')),
         ('BACKGROUND', (0,10), (6,10), colors.HexColor('#DAE9F7')),    # OBJETO DE COMPRA
+        ('BACKGROUND', (0,11), (6,11), colors.HexColor('#E0E0E0')),  # fondo gris claro para la respuesta
+
         *span_cmds
     ]))
 
@@ -256,6 +260,48 @@ def generar_pdf_proforma(
         fondo_path=membrete_path
     )
     elements = [tabla]
+    #doc.build(elements)
+    # Espacio en blanco para firma
+    elements.append(Spacer(1, 2.5 * cm))  # Puedes ajustar la altura si quieres más espacio
+# Firma: Nombre centrado, azul oscuro y negrita
+    elements.append(
+        Paragraph(
+            '<font color="#003366"><b>DAYANA LISBETH ZAMBRANO MACIAS</b></font>',
+            ParagraphStyle(
+                'firma_nombre',
+                parent=styles['Normal'],
+                alignment=1,  # centrado
+                fontSize=11,
+                fontName='Helvetica-Bold'
+            )
+        )
+    )
+
+    # Firma: Cargo
+    elements.append(
+        Paragraph(
+            '<font color="#003366">REPRESENTE LEGAL</font>',
+            ParagraphStyle(
+                'firma_cargo',
+                parent=styles['Normal'],
+                alignment=1,
+                fontSize=10
+            )
+        )
+    )
+
+    # Firma: RUC
+    elements.append(
+        Paragraph(
+            '<font color="#003366">RUC: 2350621211001</font>',
+            ParagraphStyle(
+                'firma_ruc',
+                parent=styles['Normal'],
+                alignment=1,
+                fontSize=10
+            )
+        )
+    )
     doc.build(elements)
 
     # Retorna la ruta final del archivo generado

@@ -2,7 +2,7 @@
 from datetime import datetime
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from app.models import Informacion, Item
+from app.models import Estado, Informacion, Item
 from app.schemasFolder.informacion import InformacionCreate
 from sqlalchemy.orm import Session, selectinload
 # —— CRUD para tb_informacion ——————————————————————————————
@@ -119,3 +119,13 @@ def update_estado_informacion(
     db.commit()
     db.refresh(info)
     return info
+
+def get_totales_por_estado(db: Session):
+    res = (
+        db.query(Estado.name.label("estado"), func.count(Informacion.proforma_id).label("total"))
+        .outerjoin(Informacion, Informacion.estado_id == Estado.id)
+        .group_by(Estado.name)
+        .order_by(Estado.name)
+        .all()
+    )
+    return [{"estado": r.estado, "total": r.total} for r in res]
