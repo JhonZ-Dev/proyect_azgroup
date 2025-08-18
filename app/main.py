@@ -20,7 +20,7 @@ app = FastAPI(
 # ——— Habilitar CORS justo después de crear 'app' —————
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://172.16.10.38:4200"],  # o tu URL de Angular
+    allow_origins=["http://172.16.10.44:4200"],  # o tu URL de Angular
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -82,7 +82,7 @@ app.include_router(informacion.router)
 app.include_router(items.router)
 app.include_router(pagos.router)
 #uvicorn app.main:app --reload
-#uvicorn app.main:app --host 172.16.10.38 --port 5050 --reload
+#uvicorn app.main:app --host 172.16.10.44 --port 5050 --reload
 #uvicorn app.main:app --host 192.168.18.12 --port 5050 --reload
 
 #172.16.10.37
