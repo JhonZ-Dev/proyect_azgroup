@@ -1,0 +1,7 @@
+<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-6">
+  <div *ngFor="let c of countCotizaciones" class="rounded-2xl shadow-md p-5 bg-white flex flex-col items-center group transition-all hover:shadow-lg">
+    <div class="text-3xl font-bold text-indigo-600 mb-1" [ngClass]="getEstadoColor(c.estado)">{{ c.total }}</div>
+    <div class="text-base font-semibold text-gray-700">{{ c.estado }}</div>
+    <!-- Puedes poner un icono dependiendo del estado si quieres -->
+  </div>
+</div>

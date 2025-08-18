@@ -7,6 +7,8 @@ import { PagosComponent } from './componentes/pagos/pagos/pagos.component';
 import { CrearpagosComponent } from './componentes/pagos/crearpagos/crearpagos.component';
 import { loggedInGuard } from './guards/logged-in.guard';
 import { authChildGuard, authGuard } from './guards/auth.guard';
+import { MenuCardsComponent } from './componentes/main-principal/menu-cards/menu-cards.component';
+import { CountcotizacionesComponent } from './componentes/dashboard/countcotizaciones/countcotizaciones.component';
 
 
 
@@ -17,10 +19,12 @@ export const routes: Routes = [
       canActivate: [authGuard],
       canActivateChild: [authChildGuard],
       children:[
+        {path: '', component: MenuCardsComponent },
         {path:'cotizaciones', component:CotizacionesComponentComponent},
         {path:'listar-cotizaciones', component:ListarCotizacionesComponent},
         {path:'listar-pagos', component:PagosComponent},
-        {path:'pagos', component:CrearpagosComponent}
+        {path:'listar-pagos', component:CrearpagosComponent},
+        {path:'count', component:CountcotizacionesComponent}
       ]
     },
      // 404 opcional

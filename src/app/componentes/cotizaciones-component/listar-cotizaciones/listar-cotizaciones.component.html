@@ -8,6 +8,7 @@
     <div class="flex-none">
         <app-filtros (estadoChange)="onEstadoFilter($event)"></app-filtros>
     </div>
+    
 </div>
 
 
@@ -16,7 +17,7 @@
     <p-table #dt [value]="cotizaciones" dataKey="proforma_id" expandableRows="true"
         [tableStyle]="{ 'min-width': '50rem' }" showGridlines [resizableColumns]="true"
         [globalFilterFields]="[
-    'txt_necesidad','txt_ruc','txt_cliente','txt_correo','txt_funcionario','txt_telefono','txt_fecha','txt_direccion','estado_name']">
+    'txt_necesidad','txt_ruc','txt_cliente','txt_correo','txt_funcionario','txt_telefono','txt_fecha','txt_direccion','estado_name','txt_infimaNro']">
         <!-- HEADER -->
         <ng-template pTemplate="header">
             <tr>
@@ -58,11 +59,11 @@
                 <td [ngClass]="{ highlight: isMatch(c.txt_fecha) }">{{ c.txt_fecha }}</td>
                 <td [ngClass]="{ highlight: isMatch(c.tHora_maxina) }">{{ c.tHora_maxina }}</td>
                 <td>
-                    <button pButton type="button" icon="pi pi-file-excel" 
-                        (click)="exportToExcel(c.proforma_id)" pInputText pTooltip="Excel" tooltipPosition="top"class="mr-1 excel"></button>
-                    <button pButton type="button" icon="pi pi-file-pdf" 
-                        (click)="exportToPdf(c.proforma_id)" pInputText pTooltip="Pdf" tooltipPosition="top" class="pdf"></button>
-                    <button pButton type="button" icon="pi pi-file-word" (click)="descargarProforma(c.proforma_id)" pInputText pTooltip="Word" tooltipPosition="top" class="ml-1 word"></button>
+                    <button pButton type="button"  
+                        (click)="exportToExcel(c.proforma_id)" pInputText pTooltip="Excel" tooltipPosition="top"class="mr-1 excel vscode-icons--file-type-excel"></button>
+                    <button pButton type="button" 
+                        (click)="exportToPdf(c.proforma_id)" pInputText pTooltip="Pdf" tooltipPosition="top" class="pdf material-icon-theme--pdf"></button>
+                    <button pButton type="button"  (click)="descargarProforma(c.proforma_id)" pInputText pTooltip="Word" tooltipPosition="top" class="ml-1 word vscode-icons--file-type-word"></button>
 
                 </td>
             </tr>

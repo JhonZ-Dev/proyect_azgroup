@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ItemsServiceService } from '../servicios/items/items-service.service';
 import { InformacionServiceService } from '../servicios/informacion/informacion-service.service';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -12,15 +12,17 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { MessageService } from 'primeng/api';
 import { Toast } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
 @Component({
   selector: 'app-cotizaciones-component',
-  imports: [FormsModule, CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, InputNumberModule, TextareaModule, InputGroupModule, InputGroupAddonModule, Toast],
+  imports: [FormsModule, CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, InputNumberModule, TextareaModule, InputGroupModule, InputGroupAddonModule, Toast, DialogModule],
   templateUrl: './cotizaciones-component.component.html',
   styleUrl: './cotizaciones-component.component.css',
   standalone: true,
   providers: [MessageService]
 })
 export class CotizacionesComponentComponent {
+  
   cotizacionForm!: FormGroup;
   private lastGroupValid = false;
   lastQtyPuSet: any;
@@ -32,7 +34,7 @@ export class CotizacionesComponentComponent {
       txt_cliente: ['', Validators.required],
       txt_ruc: ['', Validators.required],
       txt_direccion: ['', Validators.required],
-      txt_fecha: [new Date(), Validators.required],
+      txt_fecha: ['', Validators.required],
       txt_telefono: ['', Validators.required],
       txt_necesidad: ['', Validators.required],
       txt_funcionario: ['', Validators.required],
@@ -130,38 +132,7 @@ export class CotizacionesComponentComponent {
       flo_total: total          // <— y también este
     }, { emitEvent: false });
   }
-  // Al hacer submit: crea primero la informacion, luego todos los items
-  // submit() {
-  //   if (this.cotizacionForm.invalid) return;
-
-  //   // 1) Extraemos la parte de información (sin los items)
-  //   const { items, ...infoPayload } = this.cotizacionForm.value;
-
-  //   // 2) Creamos la información
-  //   this.infoSvc.createInformacion(infoPayload).pipe(
-  //     // 3) Con el proforma_id, disparamos todos los POST /items
-  //     switchMap(resInfo => {
-  //       const proforma_id = resInfo.proforma_id;
-  //       const calls = items.map((it: any) => {
-  //         return this.itemSvc.createItem({ ...it, proforma_id });
-  //       });
-  //       // forkJoin espera un array de Observables
-  //       return forkJoin(calls);
-  //     })
-  //   ).subscribe({
-  //     next: _ => {
-  //       alert('¡Cotización y sus ítems creados correctamente!');
-  //       this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Message Content', life: 3000 });
-
-  //       this.cotizacionForm.reset();
-  //       // opcional: volver a un estado inicial
-  //     },
-  //     error: err => {
-  //       console.error('Error al guardar:', err);
-  //       alert('Ocurrió un error guardando la cotización.');
-  //     }
-  //   });
-  // }
+  
   submit() {
     // 1) Validar el formulario
     if (this.cotizacionForm.invalid) {
@@ -202,36 +173,6 @@ export class CotizacionesComponentComponent {
   }
 
 
-  //para pruebas de envios
-  submittest() {
-    // 1) Extraemos la parte de información (sin los items)
-    const raw = this.cotizacionForm.getRawValue();
-    const { items: itemsRaw, ...infoPayload } = raw;
-    console.log('Payload Información a enviar:', infoPayload);
-    console.log('Items a enviar (RAW):', itemsRaw);
-
-    // // 2) Código real (comentado)
-    // this.infoSvc.createInformacion(infoPayload).pipe(
-    //   switchMap(resInfo => {
-    //     const proforma_id = resInfo.proforma_id;
-    //     const calls = items.map((it: any) => {
-    //       return this.itemSvc.createItem({ ...it, proforma_id });
-    //     });
-    //     return forkJoin(calls);
-    //   })
-    // ).subscribe({
-    //   next: _ => {
-    //     alert('¡Cotización y sus ítems creados correctamente!');
-    //     this.cotizacionForm.reset();
-    //   },
-    //   error: err => {
-    //     console.error('Error al guardar:', err);
-    //     alert('Ocurrió un error guardando la cotización.');
-    //   }
-    // });
-  }
-
-
   /** Suma todos los flo_total de cada fila */
   get totalGeneral(): number {
     return (this.cotizacionForm.get('items') as FormArray)
@@ -247,5 +188,7 @@ export class CotizacionesComponentComponent {
     if (!necesidad || necesidad.length < 17) return '';
     return necesidad.substr(4, 13);
   }
+
+
 
 }

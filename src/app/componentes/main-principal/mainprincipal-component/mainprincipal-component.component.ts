@@ -4,6 +4,7 @@ import { SidebarComponentComponent } from "../sidebar-component/sidebar-componen
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { SidebarServiceService } from '../../servicios/sidebar/sidebar-service.service';
+import { MenuCardsComponent } from "../menu-cards/menu-cards.component";
 
 @Component({
   selector: 'app-mainprincipal-component',

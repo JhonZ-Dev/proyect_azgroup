@@ -22,11 +22,12 @@ import { FiltrosComponent, OpcionEstados } from '../../filtros/filtros.component
 import { WordService } from '../../servicios/word-service/word.service';
 import { HttpResponse } from '@angular/common/http';
 import { TooltipModule } from 'primeng/tooltip';
+import { CotizacionesComponentComponent } from "../cotizaciones-component.component";
+import { CountCotizacionesService } from '../../servicios/dashboard/CountCotizaciones/count-cotizaciones.service';
 @Component({
   selector: 'app-listar-cotizaciones',
   imports: [TableModule, ToastModule, CommonModule, ButtonModule, InputTextModule, PaginatorModule, TagModule,
-    PopoverModule, SelectModule, FormsModule, FiltrosComponent, TooltipModule
-  ],
+    PopoverModule, SelectModule, FormsModule, FiltrosComponent, TooltipModule],
   templateUrl: './listar-cotizaciones.component.html',
   styleUrl: './listar-cotizaciones.component.css',
   providers: [MessageService],
@@ -39,7 +40,8 @@ export class ListarCotizacionesComponent {
   @ViewChild('op') op!: Popover;
 
   constructor(private itemSvc: ItemsServiceService, private infoSvc: InformacionServiceService,
-    private excelSvc: ExcelExportService, private pdfSvc: PdfService, private wordSvc: WordService
+    private excelSvc: ExcelExportService, private pdfSvc: PdfService, private wordSvc: WordService,
+    private countCotizacionesService: CountCotizacionesService
 
   ) { }
   //
@@ -211,7 +213,10 @@ export class ListarCotizacionesComponent {
       .subscribe({
         next: () => {
           // actualiza solo el nombre en la UI
+          this.selectedRow.estado_id = this.selectedStatusOptions;
           this.selectedRow.estado_name = opt.name;
+            // 👇 Notifica a todos los que escuchan que deben refrescar el conteo
+          this.countCotizacionesService.notifyRefresh();
         },
         error: err => console.error('No se pudo actualizar estado', err)
       });
@@ -303,6 +308,8 @@ export class ListarCotizacionesComponent {
     });
   }
 
-
+   onPagoCreado(resp: any) {
+    this.loadCotizaciones();
+  }
 
 }
