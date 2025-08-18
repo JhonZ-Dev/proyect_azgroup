@@ -23,7 +23,7 @@ export const routes: Routes = [
         {path:'cotizaciones', component:CotizacionesComponentComponent},
         {path:'listar-cotizaciones', component:ListarCotizacionesComponent},
         {path:'listar-pagos', component:PagosComponent},
-        {path:'listar-pagos', component:CrearpagosComponent},
+        {path:'listar-pagos-cot', component:CrearpagosComponent},
         {path:'count', component:CountcotizacionesComponent}
       ]
     },
