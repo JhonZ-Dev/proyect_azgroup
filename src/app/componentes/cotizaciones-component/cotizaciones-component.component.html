@@ -8,23 +8,23 @@
   <!-- Sección de Datos de la Información -->
   <div>
     <div class="grid grid-cols-1 sm:grid-cols-10 gap-4">
-      <input pInputText formControlName="txt_cliente" placeholder="Cliente" class="col-span-2 input-field" />
+      <input pInputText formControlName="txt_cliente" placeholder="Cliente" class="col-span-2 input-field" appUppercase />
       <input pInputText formControlName="txt_necesidad" placeholder="Código Necesidad de Contratación" class="col-span-2"
-        styleClass="w-full" />
+        styleClass="w-full" appUppercase />
       <input pInputText formControlName="txt_ruc" placeholder="RUC" class="bg-gray-200 cursor-not-allowed col-span-2"
-        readonly />
-      <input pInputText formControlName="txt_direccion" placeholder="Dirección" class="col-span-2 input-field" />
-      <input pInputText  formControlName="txt_fecha" placeholder="Fecha de Publicación de la Necesidad" class="col-span-2 input-field" />
+        readonly/>
+      <input pInputText formControlName="txt_direccion" placeholder="Dirección" class="col-span-2 input-field" appUppercase />
+      <input pInputText  formControlName="txt_fecha" placeholder="Fecha de Publicación de la Necesidad" class="col-span-2 input-field"  />
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-10 gap-4 mt-2">
-      <input pInputText formControlName="txt_telefono" placeholder="Teléfono" class="col-span-2 input-field" />
-      <input pInputText formControlName="txt_funcionario" placeholder="Funcionario" class="col-span-2 input-field" />
-      <input pInputText formControlName="txt_correo" placeholder="Correo" class="col-span-2 input-field" />
+      <input pInputText formControlName="txt_telefono" placeholder="Teléfono" class="col-span-2 input-field"  />
+      <input pInputText formControlName="txt_funcionario" placeholder="Funcionario" class="col-span-2 input-field" appUppercase/>
+      <input pInputText formControlName="txt_correo" placeholder="Correo" class="col-span-2 input-field" appUppercase/>
       <input pInputText formControlName="tHora_maxina" placeholder="Fecha Límite para la entrega de Proformas" class="col-span-2 input-field" />
     </div>
     <div class="text-center mt-5">
       <textarea rows="1" cols="150" pTextarea formControlName="txt_objetivoCompra" placeholder="Objeto de Compra"
-        [autoResize]="true"></textarea>
+        [autoResize]="true" appUppercase></textarea>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-9 justify-start items-center gap-4">
       <div>
@@ -110,9 +110,9 @@
       <div *ngFor="let itemCtrl of itemsArray.controls; let i = index" [formGroupName]="i"
         class="grid grid-cols-7 gap-4 items-center p-4 border border-gray-300 rounded-lg bg-white">
         <input pInputText formControlName="txt_cpc" placeholder="CPC" class="w-full" styleClass="w-full" />
-        <input pInputText formControlName="txt_unidad" placeholder="Unidad" class="w-full" styleClass="w-full" />
+        <input pInputText formControlName="txt_unidad" placeholder="Unidad" class="w-full" styleClass="w-full" appUppercase />
         <input pInputText formControlName="txt_especificaciones" placeholder="Especificaciones" class="w-full"
-          styleClass="w-full" />
+          styleClass="w-full" appUppercase />
         <input pInputText type="number" formControlName="int_cantidad" (input)="updateTotals(i)" placeholder="Cantidad"
           class="w-full" styleClass="w-full" />
         <input pInputText type="number" formControlName="flo_precioUnitario" step="0.01" (input)="updateTotals(i)"

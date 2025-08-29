@@ -2,7 +2,7 @@ import { NgFor } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { CountcotizacionesComponent } from "../../dashboard/countcotizaciones/countcotizaciones.component";
-
+import { CountdetalleprocesoComponent } from "../../dashboard/countdetalleproceso/countdetalleproceso.component";
 interface MenuOption {
   id: number;
   name: string;
@@ -13,7 +13,7 @@ interface MenuOption {
 }
 @Component({
   selector: 'app-menu-cards',
-  imports: [NgFor, CountcotizacionesComponent],
+  imports: [NgFor, CountcotizacionesComponent, CountdetalleprocesoComponent],
   templateUrl: './menu-cards.component.html',
   styleUrl: './menu-cards.component.css',
   standalone: true

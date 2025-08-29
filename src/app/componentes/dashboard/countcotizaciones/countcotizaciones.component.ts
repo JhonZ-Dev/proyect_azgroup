@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CountCotizacionesResponse, CountCotizacionesService } from '../../servicios/dashboard/CountCotizaciones/count-cotizaciones.service';
 import { CommonModule, NgFor } from '@angular/common';
+import { FieldsetModule } from 'primeng/fieldset';
 
 @Component({
   selector: 'app-countcotizaciones',
-  imports: [NgFor, CommonModule],
+  imports: [NgFor, CommonModule, FieldsetModule],
   templateUrl: './countcotizaciones.component.html',
   styleUrl: './countcotizaciones.component.css',
   standalone: true

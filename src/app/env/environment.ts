@@ -1,4 +1,4 @@
-const ip = '172.16.10.44';
+const ip = '172.16.10.109';
 
 //172.16.10.37
 //192.168.18.12
@@ -38,4 +38,10 @@ export const api_pagos={
   ip,
   port,
   apiUrlPagos: `http://${ip}:${port}/pagos/`
+}
+export const api_detalleprocesos={
+  production: false,
+  ip,
+  port,
+  apiUrlDetalleProcesos: `http://${ip}:${port}/detalle-procesos/`
 }

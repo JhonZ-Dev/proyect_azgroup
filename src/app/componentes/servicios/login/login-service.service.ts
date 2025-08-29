@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 import { api_login } from '../../../env/environment';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { catchError, tap, throwError } from 'rxjs';
+import { catchError, Observable, tap, throwError } from 'rxjs';
 import { JwtHelperService } from '@auth0/angular-jwt';
 export interface DecodedToken {
   sub: string;
   roles: string[];
   exp: number;
+}
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  menus: any[];
 }
 @Injectable({
   providedIn: 'root'
@@ -19,26 +24,20 @@ export class LoginServiceService {
 
   //iniciar sesion
   // 1) Login: guardamos token en localStorage
-public login(username: string, password: string) {
-    // Construimos el body form-url-encoded
+  public login(username: string, password: string): Observable<LoginResponse> {
     const body = new HttpParams()
-      .set('grant_type', 'password')
       .set('username', username)
       .set('password', password);
 
-    // Y especificamos el content-type
     const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/x-www-form-urlencoded',
     });
 
-    return this.http
-      .post<any>(this.urlLogin+"token", body.toString(), {
-        headers,
-        withCredentials: true  // si usas cookies HttpOnly
-      })
-      .pipe(
-        catchError((error) => throwError(error))
-      );
+    // ❗️ Normalmente NO uses withCredentials si el backend envía JWT en el body
+    return this.http.post<LoginResponse>(`${this.urlLogin}token`, body.toString(), {
+      headers,
+      // withCredentials: true, // solo si usas cookies HttpOnly
+    });
   }
 
   // 2) Obtener token
