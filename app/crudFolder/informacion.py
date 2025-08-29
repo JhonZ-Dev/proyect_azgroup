@@ -1,5 +1,5 @@
 #crudFolder/informacion.py
-from datetime import datetime
+from datetime import date, datetime
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.models import Estado, Informacion, Item
@@ -129,3 +129,64 @@ def get_totales_por_estado(db: Session):
         .all()
     )
     return [{"estado": r.estado, "total": r.total} for r in res]
+
+
+def get_resumen_proformas(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    fecha_ini: date | None = None,
+    fecha_fin: date | None = None
+):
+    # Subquery: total por proforma_id
+    sub = (
+        db.query(
+            Item.proforma_id.label("proforma_id"),
+            func.sum(Item.flo_total).label("valor_contrato")
+        )
+        .group_by(Item.proforma_id)
+        .subquery()
+    )
+
+    q = (
+        db.query(
+            Informacion.txtUsuarioRegistra,
+            Informacion.txt_infimaNro,
+            Informacion.txt_fecha,
+            Informacion.txt_necesidad,
+            Informacion.txt_cliente,
+            Informacion.txt_objetivoCompra,
+            sub.c.valor_contrato,
+            Informacion.txt_plazoEntrega,
+        )
+        .join(sub, sub.c.proforma_id == Informacion.proforma_id)   # INNER JOIN
+    )
+
+    # Filtros de fecha (opcionales) sobre Informacion.txt_fecha
+    if fecha_ini is not None:
+        q = q.filter(Informacion.txt_fecha >= fecha_ini)
+    if fecha_fin is not None:
+        q = q.filter(Informacion.txt_fecha < fecha_fin)
+
+    rows = (
+        q.order_by(Informacion.txt_infimaNro)
+         .offset(skip)
+         .limit(limit)
+         .execution_options(stream_results=True)
+         .all()
+    )
+
+    # Devuelve dicts cómodos
+    return [
+        {
+            "txtUsuarioRegistra": r[0],
+            "txt_infimaNro": r[1],
+            "txt_fecha": r[2],
+            "txt_necesidad": r[3],
+            "txt_cliente": r[4],
+            "txt_objetivoCompra": r[5],
+            "valor_contrato": float(r[6] or 0),
+            "txt_plazoEntrega": r[7],
+        }
+        for r in rows
+    ]

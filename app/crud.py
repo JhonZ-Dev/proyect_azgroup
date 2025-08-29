@@ -9,7 +9,8 @@ from app.crudFolder.informacion import (
     update_informacion,
     delete_informacion,
     update_estado_informacion,
-    get_totales_por_estado
+    get_totales_por_estado,
+    get_resumen_proformas,
 )
 from app.crudFolder.items import (
     get_item,
@@ -25,6 +26,19 @@ from app.crudFolder.pagos import (
     create_pago,
     update_pago,
     delete_pago,
+)
+from app.crudFolder.detalle_proceso import(
+    get_detalle,
+    get_detalles,
+    create_detalle,
+    update_detalle,
+    delete_detalle,
+    get_detalles_with_estado,
+    get_detalle_with_estado_by_id,
+    update_estado_detalle,
+    get_totales_por_estado_by_detalleproceso,
+                              
+
 )
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

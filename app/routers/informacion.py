@@ -1,6 +1,7 @@
 # app/routers/informaciones.py
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from datetime import date
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from typing import Any, List
 from sqlalchemy.orm import Session
 from typing import List, Dict
 from app import crud
@@ -60,6 +61,35 @@ def list_informaciones(db: Session = Depends(get_db)):
 )
 def estadisticas_por_estado(db: Session = Depends(get_db)):
     return crud.get_totales_por_estado(db)
+
+@router.get(
+    "/resumen",
+    response_model=List[Dict[str, Any]],
+    dependencies=[Depends(require_permission("list"))],
+    summary="Resumen de proformas (agregado por proforma)"
+)
+def resumen_proformas(
+    skip: int = Query(0, ge=0, description="Desplazamiento para paginación"),
+    limit: int = Query(100, gt=0, le=1000, description="Tamaño de página"),
+    fecha_ini: date | None = Query(None, description="Filtrar desde esta fecha (txt_fecha)"),
+    fecha_fin: date | None = Query(None, description="Filtrar hasta esta fecha (txt_fecha, exclusivo)"),
+    db: Session = Depends(get_db),
+):
+    """
+    Devuelve:
+      - txtUsuarioRegistra
+      - txt_infimaNro
+      - txt_fecha
+      - txt_necesidad
+      - txt_cliente
+      - txt_objetivoCompra
+      - valor_contrato (SUM de flo_total)
+      - txt_plazoEntrega
+    """
+    # Si agregaste soporte de filtros por fecha en el CRUD, pásalos.
+    # Si no, quita fecha_ini/fecha_fin del llamado.
+    rows = crud.get_resumen_proformas(db=db, skip=skip, limit=limit, fecha_ini=fecha_ini, fecha_fin=fecha_fin)
+    return rows
 @router.get(
     "/{proforma_id}",
     response_model=InformacionRead,
@@ -302,5 +332,4 @@ def descargar_excel(
     archivo = generar_excel_proforma(data)
     nombre = f"proforma_{proforma_id}.xlsx"
     return FileResponse(archivo, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename=nombre)
-
 

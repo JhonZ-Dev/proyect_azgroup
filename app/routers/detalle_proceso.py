@@ -1,0 +1,155 @@
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from app.auth import get_db, require_permission  # si no usas permisos, quita require_permission
+from app.crudFolder import detalle_proceso as crud
+from app.schemasFolder.detalle_proceso import (
+    DetalleProcesoRead,
+    DetalleProcesoCreate,
+    DetalleProcesoUpdate,
+)
+from app.crudFolder.detalle_proceso import get_details
+from app.models import EstadoDetalle
+
+router = APIRouter(
+    prefix="/detalle-procesos",
+    tags=["detalle_procesos"]
+)
+
+# ---- Schema simple para el endpoint de totales ----
+class TotalesPorEstado(BaseModel):
+    estado: str
+    total: int
+
+
+# ====================== LISTAR ======================
+@router.get(
+    "/",
+    response_model=List[DetalleProcesoRead],
+    dependencies=[Depends(require_permission("list"))]
+)
+def list_detalles(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    return crud.get_detalles(db, skip=skip, limit=limit)
+
+@router.get(
+    "/listar-detallesprocesos",
+    response_model=List[DetalleProcesoRead],
+    dependencies=[Depends(require_permission("list"))]
+)
+def list_details(db: Session = Depends(get_db)):
+    """
+    Retorna todas las informaciones con su lista de items anidados.
+    """
+    return get_details(db)
+# ====================== OBTENER POR ID ======================
+@router.get(
+    "/{detalle_id}",
+    response_model=DetalleProcesoRead,
+    dependencies=[Depends(require_permission("read"))]
+)
+def get_detalle(
+    detalle_id: int,
+    db: Session = Depends(get_db)
+):
+    row = crud.get_detalle(db, detalle_id)
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Detalle no encontrado")
+    return row
+
+
+# ====================== CREAR ======================
+@router.post(
+    "/",
+    response_model=DetalleProcesoRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("create"))]
+)
+def create_detalle(
+    payload: DetalleProcesoCreate,
+    db: Session = Depends(get_db)
+):
+    # valida estado_id existente
+    estado = db.query(EstadoDetalle).filter(EstadoDetalle.estado_id == payload.estado_id).first()
+    if not estado:
+        raise HTTPException(status_code=400, detail="estado_id inválido")
+
+    row = crud.create_detalle(db, payload)
+    return row
+
+
+# ====================== ACTUALIZAR ======================
+@router.put(
+    "/{detalle_id}",
+    response_model=DetalleProcesoRead,
+    dependencies=[Depends(require_permission("update"))]
+)
+def update_detalle(
+    detalle_id: int,
+    payload: DetalleProcesoUpdate,
+    db: Session = Depends(get_db)
+):
+    # si viene estado_id, valida que exista
+    if payload.estado_id is not None:
+        exists = db.query(EstadoDetalle).filter(EstadoDetalle.estado_id == payload.estado_id).first()
+        if not exists:
+            raise HTTPException(status_code=400, detail="estado_id inválido")
+
+    row = crud.update_detalle(db, detalle_id, payload)
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Detalle no encontrado")
+    return row
+
+
+# ====================== ELIMINAR ======================
+@router.delete(
+    "/{detalle_id}",
+    response_model=DetalleProcesoRead,
+    dependencies=[Depends(require_permission("delete"))]
+)
+def delete_detalle(
+    detalle_id: int,
+    db: Session = Depends(get_db)
+):
+    row = crud.delete_detalle(db, detalle_id)
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Detalle no encontrado")
+    return row
+
+
+# ====================== ACTUALIZAR SOLO ESTADO ======================
+@router.patch(
+    "/{detalle_id}/estado/{estado_id}",
+    response_model=DetalleProcesoRead,
+    dependencies=[Depends(require_permission("update"))]
+)
+def set_estado_detalle(
+    detalle_id: int,
+    estado_id: int,
+    db: Session = Depends(get_db)
+):
+    exists = db.query(EstadoDetalle).filter(EstadoDetalle.estado_id == estado_id).first()
+    if not exists:
+        raise HTTPException(status_code=400, detail="estado_id inválido")
+
+    row = crud.update_estado_detalle(db, detalle_id, estado_id)
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Detalle no encontrado")
+    return row
+
+
+# ====================== TOTALES POR ESTADO ======================
+@router.get(
+    "/totales/por-estado",
+    response_model=List[TotalesPorEstado],
+    dependencies=[Depends(require_permission("list"))]
+)
+def totales_por_estado(
+    db: Session = Depends(get_db)
+):
+    return crud.get_totales_por_estado_by_detalleproceso(db)

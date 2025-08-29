@@ -28,6 +28,7 @@ class InformacionBase(BaseModel):
     estado_id:      Optional[int]   = None
     dFechaRegistro:  Optional[date] = None
     tTimeHora:       Optional[time] = None
+    txtUsuarioRegistra : Optional[str] = None
 class InformacionCreate(InformacionBase):
     pass
 

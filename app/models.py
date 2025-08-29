@@ -148,11 +148,11 @@ class Estado(Base):
 
     id   = Column(Integer, primary_key=True)
     name = Column(String(20), nullable=False, unique=True)
-
     # Relación inversa (opcional)
     informaciones = relationship("Informacion", back_populates="estado")
      # Nueva relación inversa hacia tb_pagos
     pagos         = relationship("Pago", back_populates="estado")
+
 
 class Informacion(Base):
     __tablename__ = 'tb_informacion'
@@ -175,6 +175,7 @@ class Informacion(Base):
     txt_metodologiaTrabajo = Column(String(255), nullable=True)
     txt_enlace             = Column(String(255), nullable=True)
     txt_infimaNro          = Column(String(255), nullable=True)
+    txtUsuarioRegistra     = Column(String(255), nullable=True)
     dFechaRegistro = Column(
         Date,
         nullable=False,
@@ -235,6 +236,58 @@ class Pago(Base):
     def estado_name(self) -> str:
         # devuelve el name de la relación Estado
         return self.estado.name if self.estado else ""
+    
+
+class EstadoDetalle(Base):
+    __tablename__ = "estado_detalle"
+
+    estado_id = Column(Integer, primary_key=True)
+    estado = Column(String(100), nullable=False, unique=True)
+
+    # Relación "uno a muchos" hacia DetalleProceso
+    detalle_procesos = relationship(
+        "DetalleProceso",
+        back_populates="estado",
+        # opcional:
+        # cascade="all, delete-orphan",
+        # lazy="selectin",
+    )
+class DetalleProceso(Base):
+    __tablename__ = 'tb_detalleprocesos'
+    detalle_id        = Column(Integer, primary_key=True, index=True)
+    txt_oferente      = Column(String(200), nullable=True)
+    txt_proforma = Column(String(500), nullable=True)
+    txt_fecha_proforma = Column(String(500), nullable=True)
+    txt_codigo_proceso = Column(String(500), nullable=True)
+    txt_entidad_contratante = Column(String(500), nullable=True)
+    txt_objeto_compra = Column(String(500), nullable=True)
+    int_valor_contrato = Column(Integer, nullable=True)
+    txt_plazocontractual = Column(String(100), nullable=True)
+    txt_firmacontrato = Column(String(100), nullable=True)
+    txt_fechafin = Column(String(100), nullable=True)
+    txt_fechaentrega = Column(String(100), nullable=True)
+    int_diasmora = Column(Integer, nullable=True)
+    txtUsuarioRegistra =  Column(String(100), nullable=True)
+    dFechaRegistro = Column(Date,nullable=False,server_default=func.getdate())
+    tTimeHora      = Column(Time,nullable=False,server_default=func.getdate())
+    estado_id = Column(
+        Integer,
+        ForeignKey("estado_detalle.estado_id"),  # <--- tabla.columna
+        nullable=False,
+    )
+    
+    # Lado "muchos a uno" hacia EstadoDetalle
+    estado = relationship(
+        "EstadoDetalle",
+        back_populates="detalle_procesos",
+    )
+    @property
+    def estado_name(self) -> str:
+        # devuelve el name de la relación Estado
+        return self.estado.estado if self.estado else ""
+
+
+
 
 
  
