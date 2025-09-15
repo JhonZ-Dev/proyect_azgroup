@@ -19,7 +19,7 @@ app = FastAPI(docs_url="/docs", redoc_url="/redoc", openapi_url="/openapi.json")
 # ——— Habilitar CORS justo después de crear 'app' —————
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://172.16.10.109:4200"],  # o tu URL de Angular
+    allow_origins=["http://172.16.10.48:4200"],  # o tu URL de Angular
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

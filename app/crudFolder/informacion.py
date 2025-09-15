@@ -190,3 +190,34 @@ def get_resumen_proformas(
         }
         for r in rows
     ]
+
+
+def get_reporte_proformas(db: Session):
+    from app.models import Informacion, Item  # Ajusta el import a tu estructura
+    
+    res = (
+        db.query(
+            Informacion.txtUsuarioRegistra.label('oferente'),
+            Informacion.txt_infimaNro.label('proforma'),
+            Informacion.txt_fecha.label('fecha_proforma'),
+            Informacion.txt_necesidad.label('codigo_proceso'),
+            Informacion.txt_cliente.label('entidad_contratante'),
+            Informacion.txt_objetivoCompra.label('objeto_compra'),
+            func.sum(Item.flo_total).label('valor_contrato'),
+            Informacion.txt_plazoEntrega.label('plazo_contractual')
+        )
+        .join(Item, Informacion.proforma_id == Item.proforma_id)
+        .group_by(
+            Informacion.txtUsuarioRegistra,
+            Informacion.txt_infimaNro,
+            Informacion.txt_fecha,
+            Informacion.txt_necesidad,
+            Informacion.txt_cliente,
+            Informacion.txt_objetivoCompra,
+            Informacion.txt_plazoEntrega
+        )
+        .order_by(Informacion.txt_infimaNro)
+        .all()
+    )
+    # Opcional: convertir a lista de dicts
+    return [dict(r._mapping) for r in res]

@@ -149,3 +149,4 @@ def get_totales_por_estado_by_detalleproceso(db: Session) -> List[Dict[str, Any]
         .all()
     )
     return [{"estado": r.estado, "total": r.total} for r in res]
+

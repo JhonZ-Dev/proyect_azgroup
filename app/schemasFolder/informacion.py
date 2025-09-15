@@ -11,7 +11,7 @@ class InformacionBase(BaseModel):
     txt_cliente:        Optional[str] = None
     txt_ruc:            Optional[str] = None
     txt_direccion:      Optional[str] = None
-    txt_fecha:          Optional[date]  = None
+    txt_fecha:          Optional[str]  = None
     txt_telefono:       Optional[str] = None
     txt_necesidad:      Optional[str] = None
     txt_funcionario:    Optional[str] = None
@@ -47,3 +47,13 @@ class EstadoUpdate(BaseModel):
 class EstadoCount(BaseModel):
     estado: str
     total: int
+
+class ProformaReporteOut(BaseModel):
+    oferente: Optional[str] = None
+    proforma: Optional[str] = None
+    fecha_proforma: Optional[str] = None
+    codigo_proceso: Optional[str] = None
+    entidad_contratante: Optional[str] = None
+    objeto_compra: Optional[str] = None
+    valor_contrato: Optional[float] = None
+    plazo_contractual: Optional[str] = None

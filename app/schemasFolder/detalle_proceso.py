@@ -50,7 +50,6 @@ class DetalleProcesoUpdate(BaseModel):
 # --- Read: lo que devuelves al cliente ---
 class DetalleProcesoRead(BaseModel):
     detalle_id: int
-
     txt_oferente: Optional[str] = None
     txt_proforma: Optional[str] = None
     txt_fecha_proforma: Optional[str] = None
@@ -64,13 +63,10 @@ class DetalleProcesoRead(BaseModel):
     txt_fechaentrega: Optional[str] = None
     int_diasmora: Optional[int] = None
     txtUsuarioRegistra: Optional[str] = None
-
     dFechaRegistro: date
     tTimeHora: time
-
     estado_id: int
     estado_name: str                 # viene de la @property del modelo
     estado: Optional[EstadoRead] = None  # anidado si quieres enviar el objeto
-
     class Config:
         orm_mode = True

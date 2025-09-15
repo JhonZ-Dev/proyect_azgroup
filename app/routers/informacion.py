@@ -5,9 +5,9 @@ from typing import Any, List
 from sqlalchemy.orm import Session
 from typing import List, Dict
 from app import crud
-from app.schemasFolder.informacion import EstadoCount, EstadoUpdate, InformacionRead, InformacionCreate
+from app.schemasFolder.informacion import EstadoCount, EstadoUpdate, InformacionRead, InformacionCreate, ProformaReporteOut
 from app.auth import get_db, require_permission
-from app.crudFolder.informacion import get_informacion_with_items_by_id, get_informaciones_with_items
+from app.crudFolder.informacion import get_informacion_with_items_by_id, get_informaciones_with_items, get_reporte_proformas
 from fastapi.responses import FileResponse
 from app.utils.docx_utils import generar_doc_proforma
 from app.utils.excel_utils import generar_excel_proforma
@@ -90,6 +90,16 @@ def resumen_proformas(
     # Si no, quita fecha_ini/fecha_fin del llamado.
     rows = crud.get_resumen_proformas(db=db, skip=skip, limit=limit, fecha_ini=fecha_ini, fecha_fin=fecha_fin)
     return rows
+
+@router.get(
+    "/reporte/proformas",
+    response_model=List[ProformaReporteOut],
+    dependencies=[Depends(require_permission("list"))]
+)
+def reporte_proformas(
+    db: Session = Depends(get_db)
+):
+    return get_reporte_proformas(db)
 @router.get(
     "/{proforma_id}",
     response_model=InformacionRead,

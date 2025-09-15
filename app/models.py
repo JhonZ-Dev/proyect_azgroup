@@ -160,7 +160,7 @@ class Informacion(Base):
     txt_cliente     = Column(String(255), nullable=True)
     txt_ruc = Column(String(13), nullable=True)
     txt_direccion = Column(String(255), nullable=True)
-    txt_fecha = Column(Date, nullable=True)
+    txt_fecha = Column(String(10), nullable=True)
     txt_telefono = Column(String(11), nullable=True)
     txt_necesidad = Column(String(255), nullable=True)
     txt_funcionario = Column(String(255), nullable=True)
