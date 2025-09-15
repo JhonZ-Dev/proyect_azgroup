@@ -1,4 +1,4 @@
-const ip = '172.16.10.109';
+const ip = '172.16.10.48';
 
 //172.16.10.37
 //192.168.18.12
@@ -45,3 +45,4 @@ export const api_detalleprocesos={
   port,
   apiUrlDetalleProcesos: `http://${ip}:${port}/detalle-procesos/`
 }
+

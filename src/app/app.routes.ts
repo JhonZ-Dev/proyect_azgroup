@@ -9,6 +9,8 @@ import { loggedInGuard } from './guards/logged-in.guard';
 import { authChildGuard, authGuard } from './guards/auth.guard';
 import { MenuCardsComponent } from './componentes/main-principal/menu-cards/menu-cards.component';
 import { CountcotizacionesComponent } from './componentes/dashboard/countcotizaciones/countcotizaciones.component';
+import { ListProcesos } from './componentes/modelos/procesos/procesos';
+import { ListProcesosComponent } from './componentes/procesos/list-procesos/list-procesos.component';
 
 
 
@@ -24,7 +26,10 @@ export const routes: Routes = [
         {path:'listar-cotizaciones', component:ListarCotizacionesComponent},
         {path:'listar-pagos', component:PagosComponent},
         {path:'listar-pagos-cot', component:CrearpagosComponent},
-        {path:'count', component:CountcotizacionesComponent}
+        {path:'count', component:CountcotizacionesComponent},
+        {path:'list-procesos', component:ListProcesosComponent},
+
+
       ]
     },
      // 404 opcional

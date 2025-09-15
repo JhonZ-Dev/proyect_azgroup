@@ -116,18 +116,6 @@ export class CotizacionesComponentComponent {
   removeItem(i: number) {
     this.itemsArray.removeAt(i);
   }
-
-  // Recalcula y actualiza sólo el control flo_total SIN emitir eventos
-  // updateTotals(i: number) {
-  //   const grp = this.itemsArray.at(i) as FormGroup;
-  //   const qty = Number(grp.get('int_cantidad')!.value)        || 0;
-  //   const pu  = Number(grp.get('flo_precioUnitario')!.value)  || 0;
-  //   grp.patchValue(
-  //     { flo_total: qty * pu },
-  //     { emitEvent: false },
-
-  //   );
-  // }
   updateTotals(i: number) {
     const grp = this.itemsArray.at(i) as FormGroup;
     const qty = Number(grp.get('int_cantidad')!.value) || 0;
@@ -153,30 +141,30 @@ export class CotizacionesComponentComponent {
     console.log('Items a enviar (RAW):', itemsRaw);
 
     // // 3) Crear la información primero
-    // this.infoSvc.createInformacion(infoPayload).pipe(
-    //   // 4) Con el proforma_id crear todos los ítems
-    //   switchMap(resInfo => {
-    //     const proforma_id = resInfo.proforma_id;
-    //     const calls = itemsRaw.map((it: any) =>
-    //       this.itemSvc.createItem({ ...it, proforma_id })
-    //     );
-    //     return forkJoin(calls);
-    //   })
-    // ).subscribe({
-    //   next: _ => {
-    //     this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Cotización creada', life: 3000 });
+    this.infoSvc.createInformacion(infoPayload).pipe(
+      // 4) Con el proforma_id crear todos los ítems
+      switchMap(resInfo => {
+        const proforma_id = resInfo.proforma_id;
+        const calls = itemsRaw.map((it: any) =>
+          this.itemSvc.createItem({ ...it, proforma_id })
+        );
+        return forkJoin(calls);
+      })
+    ).subscribe({
+      next: _ => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Cotización creada', life: 3000 });
 
-    //     // 5) Resetear el formulario a su estado inicial
-    //     this.cotizacionForm.reset();
-    //     // Limpiar el arreglo de items y volver a crear la primera fila
-    //     this.itemsArray.clear();
-    //     this.addItem();
-    //   },
-    //   error: err => {
-    //     console.error('Error al guardar:', err);
-    //     this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la cotización', life: 3000 });
-    //   }
-    // });
+        // 5) Resetear el formulario a su estado inicial
+        this.cotizacionForm.reset();
+        // Limpiar el arreglo de items y volver a crear la primera fila
+        this.itemsArray.clear();
+        this.addItem();
+      },
+      error: err => {
+        console.error('Error al guardar:', err);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la cotización', life: 3000 });
+      }
+    });
   }
 
 
