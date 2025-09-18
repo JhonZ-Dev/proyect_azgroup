@@ -340,6 +340,6 @@ def descargar_excel(
         ]
     }
     archivo = generar_excel_proforma(data)
-    nombre = f"proforma_{proforma_id}.xlsx"
+    nombre = f"Proforma_{info.txt_necesidad}.xlsx"
     return FileResponse(archivo, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename=nombre)
 
