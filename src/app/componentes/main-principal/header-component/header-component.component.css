@@ -1,0 +1,12 @@
+:host ::ng-deep  .p-button-text.p-button-plain:not(:disabled):hover{
+    background-color: rgba(255, 255, 255, 0);
+}
+
+:host ::ng-deep  .p-button-text:hover {
+    background-color: rgba(255, 255, 255, 0);
+}
+
+
+.headerclass{
+    background: linear-gradient(90deg,rgba(16, 50, 69, 1) 0%, rgba(87, 156, 199, 1) 54%, rgba(0, 0, 0, 1) 100%);
+}

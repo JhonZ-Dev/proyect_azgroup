@@ -1,0 +1,15 @@
+.loginfondo{
+    background: linear-gradient(90deg,rgba(16, 50, 69, 1) 0%, rgba(87, 156, 199, 1) 54%, rgba(0, 0, 0, 1) 100%);
+}
+
+/* .loginfondo {
+    background-image: url(../../../assets/logo.jpeg);
+    background-repeat: no-repeat;
+    background-position: center 20%;  
+    background-size: 200px auto;      
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6;      
+} */

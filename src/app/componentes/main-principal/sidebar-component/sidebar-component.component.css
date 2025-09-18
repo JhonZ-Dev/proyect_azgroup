@@ -1,0 +1,13 @@
+.sidebarclass{
+   background: linear-gradient(-225deg, #FFFEFF 0%, #D7FFFE 100%);
+}
+
+:host ::ng-deep .p-drawer {
+    background: linear-gradient(90deg,rgba(16, 50, 69, 1) 0%, rgba(87, 156, 199, 1) 54%, rgba(0, 0, 0, 1) 100%);
+}
+:root {
+  --sidebarclass: linear-gradient(90deg,rgba(16, 50, 69, 1) 0%, rgba(87, 156, 199, 1) 54%, rgba(0, 0, 0, 1) 100%);
+}
+.headerclasssid {
+  background: var(--headerclasssid);
+}

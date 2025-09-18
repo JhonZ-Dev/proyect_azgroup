@@ -1,141 +1,206 @@
-
-
 <p-toast />
-  <div class="p-3 mt-2 bg-white rounded-lg card flex items-center space-x-4" style="margin-bottom:1rem;">
-        <h3 class="font-bold text-gray-800 font-[Montserrat]">Información de contacto</h3>
-   </div>
+<div class="p-3 mt-2 bg-[#0898d1] rounded-lg card flex items-center justify-center space-x-4"
+  style="margin-bottom:1rem;">
+  <h3 class="font-bold text-white font-[Montserrat] text-center">INFORMACIÓN DE CONTACTO</h3>
+</div>
 <form [formGroup]="cotizacionForm" (ngSubmit)="submit()">
   <!-- Sección de Datos de la Información -->
   <div>
     <div class="grid grid-cols-1 sm:grid-cols-10 gap-4">
-      <input pInputText formControlName="txt_cliente" placeholder="Cliente" class="col-span-2 input-field" appUppercase />
-      <input pInputText formControlName="txt_necesidad" placeholder="Código Necesidad de Contratación" class="col-span-2"
-        styleClass="w-full" appUppercase />
-      <input pInputText formControlName="txt_ruc" placeholder="RUC" class="bg-gray-200 cursor-not-allowed col-span-2"
-        readonly/>
-      <input pInputText formControlName="txt_direccion" placeholder="Dirección" class="col-span-2 input-field" appUppercase />
-      <input pInputText  formControlName="txt_fecha" placeholder="Fecha de Publicación de la Necesidad" class="col-span-2 input-field"  />
+
+      <input pInputText formControlName="txt_cliente" placeholder="Cliente" class="col-span-2 input-field"
+        appUppercase />
+      <input pInputText formControlName="txt_necesidad" placeholder="Código Necesidad de Contratación"
+        class="col-span-2" styleClass="w-full" appUppercase />
+      <input pInputText formControlName="txt_ruc" placeholder="RUC" class="bg-gray-200 cursor-not-allowed" readonly />
+      <input pInputText formControlName="txt_direccion" placeholder="Dirección" class="col-span-2 input-field"
+        appUppercase />
+
+      <input pInputText formControlName="txt_fecha" placeholder="Fecha de Publicación de la Necesidad"
+        class="input-field" />
+      <input pInputText formControlName="tHora_maxina" placeholder="Fecha Límite para la entrega de Proformas" class="input-field" />
+
+      <input pInputText formControlName="txt_telefono" placeholder="Teléfono" class="input-field " />
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-10 gap-4 mt-2">
-      <input pInputText formControlName="txt_telefono" placeholder="Teléfono" class="col-span-2 input-field"  />
-      <input pInputText formControlName="txt_funcionario" placeholder="Funcionario" class="col-span-2 input-field" appUppercase/>
-      <input pInputText formControlName="txt_correo" placeholder="Correo" class="col-span-2 input-field" appUppercase/>
-      <input pInputText formControlName="tHora_maxina" placeholder="Fecha Límite para la entrega de Proformas" class="col-span-2 input-field" />
+    <div class="grid grid-cols-1 sm:grid-cols-11 gap-4 mt-2">
+      <input pInputText formControlName="txt_funcionario" placeholder="Funcionario" class="col-span-2 input-field"
+        appUppercase />
+      <input pInputText formControlName="txt_correo" placeholder="Correo" class="col-span-2 input-field" appUppercase />
+
     </div>
-    <div class="text-center mt-5">
+    <div class="text-center mt-5 mb-2">
       <textarea rows="1" cols="150" pTextarea formControlName="txt_objetivoCompra" placeholder="Objeto de Compra"
         [autoResize]="true" appUppercase></textarea>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-9 justify-start items-center gap-4">
       <div>
-        <p-inputgroup>
-          <p-inputgroup-addon>
-            <span>Días</span>
-          </p-inputgroup-addon>
-          <input pInputText  placeholder="Plazo entrega"
-            class="w-full" formControlName="txt_plazoEntrega" />
-        </p-inputgroup>
+        <p-floatlabel variant="on">
+          <p-inputgroup>
+            <p-inputgroup-addon>
+              <span>Días</span>
+            </p-inputgroup-addon>
+            <input pInputText placeholder="Plazo entrega" class="w-full" formControlName="txt_plazoEntrega" />
+            <label for="txt_plazoEntrega">Plazo Entrega</label>
+          </p-inputgroup>
+        </p-floatlabel>
       </div>
 
       <div>
-        <p-inputgroup>
-          <p-inputgroup-addon>
-            <span>Días</span>
-          </p-inputgroup-addon>
-          <input pInputText  placeholder="Vigencia Oferta"
-            class="w-full" formControlName="txt_vigenciaOferta" />
-        </p-inputgroup>
+        <p-floatlabel variant="on">
+          <p-inputgroup>
+            <p-inputgroup-addon>
+              <span>Días</span>
+            </p-inputgroup-addon>
+            <input pInputText placeholder="Vigencia Oferta" class="w-full" formControlName="txt_vigenciaOferta" />
+            <label for="txt_vigenciaOferta">Vigencia Oferta</label>
+          </p-inputgroup>
+        </p-floatlabel>
       </div>
       <div>
-        <p-inputgroup>
-          <p-inputgroup-addon>
-            <span>Meses</span>
-          </p-inputgroup-addon>
-          <input pInputText  placeholder="Garantia"
-            class="w-full"  formControlName="txt_garantia"/>
-        </p-inputgroup>
+        <p-floatlabel variant="on">
+          <p-inputgroup>
+            <p-inputgroup-addon>
+              <span>Meses</span>
+            </p-inputgroup-addon>
+            <input pInputText placeholder="Garantia" class="w-full" formControlName="txt_garantia" />
+            <label for="txt_garantia">Garantia</label>
+          </p-inputgroup>
+        </p-floatlabel>
       </div>
       <div class="col-span-2">
-        <p-inputgroup>
-          <p-inputgroup-addon>
-            <span><i class="pi pi-credit-card"></i></span>
-          </p-inputgroup-addon>
-          <input pInputText  placeholder="Forma de pago"
-            class="w-full" formControlName="txt_formaPago" />
-        </p-inputgroup>
+        <p-floatlabel variant="on">
+          <p-inputgroup>
+            <p-inputgroup-addon>
+              <span><i class="pi pi-credit-card"></i></span>
+            </p-inputgroup-addon>
+            <input pInputText placeholder="Forma de pago" class="w-full" formControlName="txt_formaPago" />
+            <label for="txt_formaPago">Forma de pago</label>
+          </p-inputgroup>
+        </p-floatlabel>
+
       </div>
       <div class="col-span-2">
-        <p-inputgroup>
-          <p-inputgroup-addon>
-            <span><i class="pi pi-book"></i></span>
-          </p-inputgroup-addon>
-          <input pInputText  placeholder="Metodología del trabajo"
-            class="w-full" formControlName="txt_metodologiaTrabajo" />
-        </p-inputgroup>
+        <p-floatlabel variant="on">
+          <p-inputgroup>
+            <p-inputgroup-addon>
+              <span><i class="pi pi-book"></i></span>
+            </p-inputgroup-addon>
+            <input pInputText placeholder="Metodología del trabajo" class="w-full"
+              formControlName="txt_metodologiaTrabajo" />
+            <label for="txt_metodologiaTrabajo">Metodlogía de trabajo</label>
+
+          </p-inputgroup>
+        </p-floatlabel>
       </div>
       <div class="col-span-2">
         <p-inputgroup>
           <p-inputgroup-addon>
             <span><i class="pi pi-link"></i></span>
           </p-inputgroup-addon>
-          <input pInputText  placeholder="Enlace"
-            class="w-full"  formControlName="txt_enlace"/>
+          <input pInputText placeholder="Enlace" class="w-full" formControlName="txt_enlace" />
         </p-inputgroup>
       </div>
-
     </div>
   </div>
 
   <!-- Sección de Ítems -->
-   <div class="p-3 mt-2 bg-white rounded-lg card flex items-center space-x-4" style="margin-bottom:1rem;">
-        <h3 class="font-bold text-gray-800 font-[Montserrat]">Ítems</h3>
-   </div>
-  <div>
-    <button type="button" (click)="addItem()"
-      class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 mb-4">
-      + Agregar Ítem
-    </button>
-    <!-- Diseño tipo tabla -->
-    <div class="grid grid-cols-7 gap-4 items-center bg-gray-100 p-4 rounded-t-lg border border-gray-300">
-      <span class="font-bold text-gray-700 text-center">CPC</span>
-      <span class="font-bold text-gray-700 text-center">Unidad</span>
-      <span class="font-bold text-gray-700 text-center">Especificaciones</span>
-      <span class="font-bold text-gray-700 text-center">Cantidad</span>
-      <span class="font-bold text-gray-700 text-center">Precio Unitario</span>
-      <span class="font-bold text-gray-700 text-center">Total</span>
-      <span class="font-bold text-gray-700 text-center">Acciones</span>
+
+  <div class="flex flex-row gap-4">
+    <div class="flex-grow basis-2/3">
+      <div class="p-3 mt-2 bg-[#0898d1] rounded-lg card flex items-center space-x-4 justify-center"
+        style="margin-bottom:1rem; ">
+        <h3 class="font-bold text-white font-[Montserrat]">ÍTEMS</h3>
+      </div>
+      <button type="button" (click)="addItem()"
+        class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 mb-4">
+        + Agregar Ítem
+      </button>
+      <!-- Diseño tipo tabla -->
+      <div class="grid grid-cols-8 gap-2 items-center bg-gray-100 p-2 rounded-t-lg border border-gray-300">
+        <span class="font-bold text-gray-700 text-center">ID</span>
+        <span class="font-bold text-gray-700 text-center">CPC</span>
+        <span class="font-bold text-gray-700 text-center">Unidad</span>
+        <span class="font-bold text-gray-700 text-center">Especificaciones</span>
+        <span class="font-bold text-gray-700 text-center">Cantidad</span>
+        <span class="font-bold text-gray-700 text-center">Precio Unitario</span>
+        <span class="font-bold text-gray-700 text-center">Total</span>
+        <span class="font-bold text-gray-700 text-center">Acciones</span>
+      </div>
+      <div formArrayName="items"
+        class="space-y-2 max-h-80 overflow-y-auto border-x border-b border-gray-300 rounded-b-lg bg-white">
+        <div *ngFor="let itemCtrl of itemsArray.controls; let i = index" [formGroupName]="i"
+          class="grid grid-cols-8 gap-4 items-center p-2 border border-gray-300 rounded-lg bg-white">
+          <span class="text-center">{{ itemCtrl.get('id')?.value }}</span>
+          <input pInputText formControlName="txt_cpc" placeholder="CPC" class="w-full" styleClass="w-full" />
+          <input pInputText formControlName="txt_unidad" placeholder="Unidad" class="w-full" styleClass="w-full"
+            appUppercase />
+          <input pInputText formControlName="txt_especificaciones" placeholder="Especificaciones" class="w-full"
+            styleClass="w-full" appUppercase />
+          <input pInputText type="number" formControlName="int_cantidad" (input)="updateTotals(i)"
+            placeholder="Cantidad" class="w-full" styleClass="w-full" />
+          <input pInputText type="number" formControlName="flo_precioUnitario" step="0.01" (input)="updateTotals(i)"
+            placeholder="Precio Unitario" class="w-full" styleClass="w-full" />
+          <input pInputText formControlName="flo_precioTotal" readonly placeholder="Precio Total"
+            class="w-full bg-gray-200" styleClass="w-full" />
+          <button type="button" (click)="removeItem(i)" class="pi pi-trash">
+          </button>
+        </div>
+      </div>
+      <div class="grid grid-cols-7 gap-4 p-4 border-t border-gray-300 bg-gray-50 font-semibold">
+        <!-- Ocupamos 5 columnas para la etiqueta -->
+        <div class="col-span-5 text-right">Total General:</div>
+        <!-- Sexta columna: el valor -->
+        <div>{{ totalGeneral | number:'1.2-2' }}</div>
+        <!-- Séptima columna: vacía o un espacio -->
+        <div></div>
+      </div>
     </div>
-    <div formArrayName="items"
-      class="space-y-2 max-h-80 overflow-y-auto border-x border-b border-gray-300 rounded-b-lg bg-white">
-      <div *ngFor="let itemCtrl of itemsArray.controls; let i = index" [formGroupName]="i"
-        class="grid grid-cols-7 gap-4 items-center p-4 border border-gray-300 rounded-lg bg-white">
-        <input pInputText formControlName="txt_cpc" placeholder="CPC" class="w-full" styleClass="w-full" />
-        <input pInputText formControlName="txt_unidad" placeholder="Unidad" class="w-full" styleClass="w-full" appUppercase />
-        <input pInputText formControlName="txt_especificaciones" placeholder="Especificaciones" class="w-full"
-          styleClass="w-full" appUppercase />
-        <input pInputText type="number" formControlName="int_cantidad" (input)="updateTotals(i)" placeholder="Cantidad"
-          class="w-full" styleClass="w-full" />
-        <input pInputText type="number" formControlName="flo_precioUnitario" step="0.01" (input)="updateTotals(i)"
-          placeholder="Precio Unitario" class="w-full" styleClass="w-full" />
-        <input pInputText formControlName="flo_precioTotal" readonly placeholder="Precio Total"
-          class="w-full bg-gray-200" styleClass="w-full" />
-        <button type="button" (click)="removeItem(i)" class="pi pi-trash">
-        </button>
+    <div class="basis-1/3">
+      <div class="p-3 mt-2 bg-[#0898d1] rounded-lg card flex items-center space-x-4 justify-center"
+        style="margin-bottom:1rem;">
+        <h3 class="font-bold text-white font-[Montserrat]">COTIZAR</h3>
+      </div>
+      <br>
+      <br>
+      <!-- Cabecera -->
+      <div class="grid grid-cols-5 gap-2 items-center bg-gray-100 p-2 rounded-t-lg border border-gray-300">
+        <span class="font-bold text-gray-700 text-center">P.U (Cotizar)</span>
+        <span class="font-bold text-gray-700 text-center">P.T</span>
+        <span class="font-bold text-gray-700 text-center">DIFERENCIA</span>
+        <span class="font-bold text-gray-700 text-center">P.U (Base)</span>
+        <span class="font-bold text-gray-700 text-center">P.V</span>
+      </div>
+      <!-- Filas dinámicas -->
+      <div *ngFor="let itemCtrl of itemsArray.controls; let i = index"
+        class="grid grid-cols-5 gap-2 items-center p-2 border-x border-b border-gray-300 bg-white">
+        <!-- P.U Cotizar (input libre) -->
+        <input type="number" class="w-full border rounded p-1 text-xs" name="puCotizar_{{ i }}"
+          [(ngModel)]="cotizarValores[i].puCotizar" [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="calcularCotizar(i)" />
+
+        <!-- P.T = cantidad * P.U Cotizar -->
+        <span class="text-center">{{ cotizarValores[i].pt | number:'1.2-2' }}</span>
+
+        <!-- DIFERENCIA (de la tabla principal) -->
+        <span class="text-center">{{ cotizarValores[i].diferencia | number:'1.2-2' }}</span>
+        <!-- P.U Base (ya ingresado en la tabla principal) -->
+        <span class="text-center">{{ itemCtrl.get('flo_precioUnitario')?.value }}</span>
+        <!-- P.V = cantidad * P.U Base -->
+        <span class="text-center">{{ cotizarValores[i].pv | number:'1.2-2' }}</span>
+      </div>
+      <!-- Totales generales Cotizar -->
+      <div class="grid grid-cols-5 gap-2 p-2 border-t border-gray-300 bg-gray-50 font-semibold">
+        <div class="text-xs text-right col-span-1">P.T:</div>
+        <div class="text-xs text-center">{{ totalPT | number:'1.2-2' }}</div>
+        <div class="text-xs text-right col-span-2">P.V:</div>
+        <div class="text-xs text-center">{{ totalPV | number:'1.2-2' }}</div>
       </div>
     </div>
   </div>
-  <div class="grid grid-cols-7 gap-4 p-4 border-t border-gray-300 bg-gray-50 font-semibold">
-    <!-- Ocupamos 5 columnas para la etiqueta -->
-    <div class="col-span-5 text-right">Total General:</div>
-    <!-- Sexta columna: el valor -->
-    <div>{{ totalGeneral | number:'1.2-2' }}</div>
-    <!-- Séptima columna: vacía o un espacio -->
-    <div></div>
-  </div>
+
   <!-- Botón de Guardar -->
   <div class="text-right">
-    <button type="submit"
-      class="bg-green-500 text-white py-3 px-6 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+    <button type="submit" class="btn-grad  py-3 px-6 rounded-lg">
       Guardar Todo
     </button>
   </div>
