@@ -18,7 +18,8 @@
 
       <input pInputText formControlName="txt_fecha" placeholder="Fecha de Publicación de la Necesidad"
         class="input-field" />
-      <input pInputText formControlName="tHora_maxina" placeholder="Fecha Límite para la entrega de Proformas" class="input-field" />
+      <input pInputText formControlName="tHora_maxina" placeholder="Fecha Límite para la entrega de Proformas"
+        class="input-field" />
 
       <input pInputText formControlName="txt_telefono" placeholder="Teléfono" class="input-field " />
     </div>
@@ -135,7 +136,7 @@
           <input pInputText formControlName="txt_unidad" placeholder="Unidad" class="w-full" styleClass="w-full"
             appUppercase />
           <input pInputText formControlName="txt_especificaciones" placeholder="Especificaciones" class="w-full"
-            styleClass="w-full" appUppercase />
+            styleClass="w-full" appUppercase (dblclick)="abrirDialogEspecificacion(i)" />
           <input pInputText type="number" formControlName="int_cantidad" (input)="updateTotals(i)"
             placeholder="Cantidad" class="w-full" styleClass="w-full" />
           <input pInputText type="number" formControlName="flo_precioUnitario" step="0.01" (input)="updateTotals(i)"
@@ -171,30 +172,38 @@
         <span class="font-bold text-gray-700 text-center">P.V</span>
       </div>
       <!-- Filas dinámicas -->
-      <div *ngFor="let itemCtrl of itemsArray.controls; let i = index"
-        class="grid grid-cols-5 gap-2 items-center p-2 border-x border-b border-gray-300 bg-white">
-        <!-- P.U Cotizar (input libre) -->
-        <input type="number" class="w-full border rounded p-1 text-xs" name="puCotizar_{{ i }}"
-          [(ngModel)]="cotizarValores[i].puCotizar" [ngModelOptions]="{ standalone: true }"
-          (ngModelChange)="calcularCotizar(i)" />
+      <div class="max-h-80 overflow-y-auto border-x border-gray-300 bg-white">
+        <div *ngFor="let itemCtrl of itemsArray.controls; let i = index"
+          class="grid grid-cols-5 gap-2 items-center p-2 border-x border-b border-gray-300 bg-white">
+          <!-- P.U Cotizar (input libre) -->
+          <input type="number" class="w-full border rounded p-1 text-xs" name="puCotizar_{{ i }}"
+            [(ngModel)]="cotizarValores[i].puCotizar" [ngModelOptions]="{ standalone: true }"
+            (ngModelChange)="calcularCotizar(i)" />
 
-        <!-- P.T = cantidad * P.U Cotizar -->
-        <span class="text-center">{{ cotizarValores[i].pt | number:'1.2-2' }}</span>
+          <!-- P.T = cantidad * P.U Cotizar -->
+          <span class="text-center">{{ cotizarValores[i].pt | number:'1.2-2' }}</span>
 
-        <!-- DIFERENCIA (de la tabla principal) -->
-        <span class="text-center">{{ cotizarValores[i].diferencia | number:'1.2-2' }}</span>
-        <!-- P.U Base (ya ingresado en la tabla principal) -->
-        <span class="text-center">{{ itemCtrl.get('flo_precioUnitario')?.value }}</span>
-        <!-- P.V = cantidad * P.U Base -->
-        <span class="text-center">{{ cotizarValores[i].pv | number:'1.2-2' }}</span>
+          <!-- DIFERENCIA (de la tabla principal) -->
+          <span class="text-center">{{ cotizarValores[i].diferencia | number:'1.2-2' }}</span>
+          <!-- P.U Base (ya ingresado en la tabla principal) -->
+          <span class="text-center">{{ itemCtrl.get('flo_precioUnitario')?.value }}</span>
+          <!-- P.V = cantidad * P.U Base -->
+          <span class="text-center">{{ cotizarValores[i].pv | number:'1.2-2' }}</span>
+        </div>
       </div>
+
       <!-- Totales generales Cotizar -->
       <div class="grid grid-cols-5 gap-2 p-2 border-t border-gray-300 bg-gray-50 font-semibold">
-        <div class="text-xs text-right col-span-1">P.T:</div>
+        <div class="text-xs text-right">P.T:</div>
         <div class="text-xs text-center">{{ totalPT | number:'1.2-2' }}</div>
-        <div class="text-xs text-right col-span-2">P.V:</div>
+
+
+        <div class="text-xs text-center">{{ totalDiferencia | number:'1.2-2' }}</div>
+
+        <div class="text-xs text-right">P.V:</div>
         <div class="text-xs text-center">{{ totalPV | number:'1.2-2' }}</div>
       </div>
+
     </div>
   </div>
 
@@ -205,3 +214,20 @@
     </button>
   </div>
 </form>
+
+
+<p-dialog header="Editar Especificaciones" [(visible)]="especificacionDialogVisible" [modal]="true"
+  [style]="{width: '25rem',height: '20rem'}">
+
+  <div *ngIf="itemEnEdicionIndex !== null" [formGroup]="getItemFormGroup(itemEnEdicionIndex)">
+
+    <textarea pTextarea rows="5" cols="30" formControlName="txt_especificaciones" class="w-full" styleClass="w-full"
+      appUppercase>
+    </textarea>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cerrar" icon="pi pi-times" (click)="especificacionDialogVisible = false">
+    </button>
+  </ng-template>
+</p-dialog>

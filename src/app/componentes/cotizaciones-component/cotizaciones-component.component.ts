@@ -1,7 +1,7 @@
 import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { ItemsServiceService } from '../servicios/items/items-service.service';
 import { InformacionServiceService } from '../servicios/informacion/informacion-service.service';
-import { FormArray, FormBuilder, FormGroup, FormsModule, NgControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, NgControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { combineLatest, forkJoin, startWith, switchMap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
@@ -35,7 +35,11 @@ export class CotizacionesComponentComponent {
   cotizarValores: { puCotizar: number, pt: number, pv: number, diferencia: number }[] = [];
 
   private itemCounter = 0;
+// Estado del modal
+especificacionDialogVisible = false;
 
+// Para saber qué item está editando
+itemEnEdicionIndex: number | null = null;
 
   constructor(private itemSvc: ItemsServiceService, private infoSvc: InformacionServiceService, private fb: FormBuilder, private messageService: MessageService, private loginSvc: LoginServiceService) { }
 
@@ -51,14 +55,14 @@ export class CotizacionesComponentComponent {
       txt_ruc: ['', Validators.required],
       txt_direccion: ['', Validators.required],
       txt_fecha: [todayStr, Validators.required],
-      txt_telefono: ['', Validators.required],
+      txt_telefono: ['SN', Validators.required],
       txt_necesidad: ['', Validators.required],
       txt_funcionario: ['', Validators.required],
       txt_correo: ['', Validators.required],
       tHora_maxina: ['', Validators.required],
       txt_objetivoCompra: ['', Validators.required],
       txt_plazoEntrega: ['10', Validators.required],
-      txt_vigenciaOferta: ['90', Validators.required],
+      txt_vigenciaOferta: ['60', Validators.required],
       txt_garantia: ['12', Validators.required],
       txt_formaPago: ['CONTRA ENTREGA TOTAL DE LOS BIENES', Validators.required],
       txt_metodologiaTrabajo: ['NOS ADHERIMOS A LA METODOLOGIA ESTABLECIDA POR LA ENTIDAD', Validators.required],
@@ -113,7 +117,7 @@ export class CotizacionesComponentComponent {
     return this.fb.group({
       id: [id],
       txt_cpc: ['', Validators.required],
-      txt_unidad: ['', Validators.required],
+      txt_unidad: ['UNIDAD', Validators.required],
       txt_especificaciones: ['', Validators.required],
       int_cantidad: [null, Validators.required],
       flo_precioUnitario: [null, Validators.required],
@@ -186,34 +190,34 @@ export class CotizacionesComponentComponent {
       return;
     }
 
-    console.log('Payload Información a enviar:', infoPayload);
-    console.log('Items a enviar (filtrados):', itemsRaw);
+    //console.log('Payload Información a enviar:', infoPayload);
+    //console.log('Items a enviar (filtrados):', itemsRaw);
 
     // // 3) Crear la información primero
-    // this.infoSvc.createInformacion(infoPayload).pipe(
-    //   // 4) Con el proforma_id crear todos los ítems
-    //   switchMap(resInfo => {
-    //     const proforma_id = resInfo.proforma_id;
-    //     const calls = itemsRaw.map((it: any) =>
-    //       this.itemSvc.createItem({ ...it, proforma_id })
-    //     );
-    //     return forkJoin(calls);
-    //   })
-    // ).subscribe({
-    //   next: _ => {
-    //     this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Cotización creada', life: 3000 });
+    this.infoSvc.createInformacion(infoPayload).pipe(
+      // 4) Con el proforma_id crear todos los ítems
+      switchMap(resInfo => {
+        const proforma_id = resInfo.proforma_id;
+        const calls = itemsRaw.map((it: any) =>
+          this.itemSvc.createItem({ ...it, proforma_id })
+        );
+        return forkJoin(calls);
+      })
+    ).subscribe({
+      next: _ => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Cotización creada', life: 3000 });
 
-    //     // 5) Resetear el formulario a su estado inicial
-    //     this.cotizacionForm.reset();
-    //     // Limpiar el arreglo de items y volver a crear la primera fila
-    //     this.itemsArray.clear();
-    //     this.addItem();
-    //   },
-    //   error: err => {
-    //     console.error('Error al guardar:', err);
-    //     this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la cotización', life: 3000 });
-    //   }
-    // });
+        // 5) Resetear el formulario a su estado inicial
+        this.cotizacionForm.reset();
+        // Limpiar el arreglo de items y volver a crear la primera fila
+        this.itemsArray.clear();
+        this.addItem();
+      },
+      error: err => {
+        console.error('Error al guardar:', err);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la cotización', life: 3000 });
+      }
+    });
   }
 
   calcularCotizar(i: number) {
@@ -253,6 +257,19 @@ export class CotizacionesComponentComponent {
   get totalPV(): number {
     return this.cotizarValores.reduce((acc, val) => acc + (val.pv || 0), 0);
   }
+  /** Suma todas las DIFERENCIAS */
+get totalDiferencia(): number {
+  return this.cotizarValores.reduce((acc, val) => acc + (val.diferencia || 0), 0);
+}
+
+abrirDialogEspecificacion(index: number) {
+  this.itemEnEdicionIndex = index;
+  this.especificacionDialogVisible = true;
+}
+
+getItemFormGroup(index: number): FormGroup {
+  return this.itemsArray.at(index) as FormGroup;
+}
 
 
 }

@@ -18,7 +18,7 @@ export class CountcotizacionesComponent implements OnInit {
 
   ngOnInit() {
     this._srvCountCotizaciones.refresh$.subscribe(() => {
-       console.log('REFRESH de dashboard activado');
+       //console.log('REFRESH de dashboard activado');
       this.getCountCotizaciones();
     });
     // Llama una vez al inicio
@@ -28,7 +28,7 @@ export class CountcotizacionesComponent implements OnInit {
     this._srvCountCotizaciones.getCountCotizaciones().subscribe({
       next: (data: any) => {
         this.countCotizaciones = data;
-        console.log('Count Cotizaciones fetched successfully:', this.countCotizaciones);
+        //console.log('Count Cotizaciones fetched successfully:', this.countCotizaciones);
       },
       error: (error) => {
         console.error('Error fetching count cotizaciones:', error);

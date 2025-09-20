@@ -15,7 +15,7 @@ constructor(private _srvCountCotizaciones: CountCotizacionesService) { }
 
   ngOnInit() {
     this._srvCountCotizaciones.refresh$.subscribe(() => {
-       console.log('REFRESH de dashboard activado');
+       //console.log('REFRESH de dashboard activado');
       this.getCountCotizaciones();
     });
     // Llama una vez al inicio
