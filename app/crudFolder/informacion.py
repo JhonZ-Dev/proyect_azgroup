@@ -41,6 +41,15 @@ def create_informacion(db: Session, info_in: InformacionCreate) -> Informacion:
     seq = total + 1
     # Formato DD-MM-XXXXXXXXXX
     data["txt_infimaNro"] = f"{now.day:02d}-{now.month:02d}-{seq:010d}"
+    ultimo = db.query(func.max(Informacion.txt_numeroProforma)).scalar()
+    if ultimo:
+        try:
+            seq = int(ultimo) + 1
+        except:
+            seq = 700
+    else:
+        seq = 700
+    data["txt_numeroProforma"] = f"{seq:06d}"
      # 3) Fijar estado_id a 1 (CREADO) de manera explícita
     data["estado_id"] = 1
 

@@ -29,6 +29,8 @@ class InformacionBase(BaseModel):
     dFechaRegistro:  Optional[date] = None
     tTimeHora:       Optional[time] = None
     txtUsuarioRegistra : Optional[str] = None
+    txt_numeroProforma: Optional[str] = None
+
 class InformacionCreate(InformacionBase):
     pass
 

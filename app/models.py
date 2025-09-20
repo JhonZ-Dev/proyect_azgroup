@@ -168,6 +168,7 @@ class Informacion(Base):
     tHora_maxina = Column(String(255), nullable=True)
     txt_objetivoCompra = Column(String(255), nullable=True)
      # --- NUEVOS CAMPOS que acabas de agregar en la DB:
+    txt_numeroProforma     = Column(String(10), nullable=True)
     txt_plazoEntrega       = Column(String(255), nullable=True)
     txt_vigenciaOferta     = Column(String(255), nullable=True)
     txt_garantia           = Column(String(255), nullable=True)
