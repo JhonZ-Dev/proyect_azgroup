@@ -1,6 +1,6 @@
 # app/routers/informaciones.py
 from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from typing import Any, List
 from sqlalchemy.orm import Session
 from typing import List, Dict
@@ -13,6 +13,7 @@ from app.utils.docx_utils import generar_doc_proforma
 from app.utils.excel_utils import generar_excel_proforma
 from app.utils.pdf_utils import generar_pdf_proforma
 import os
+from fastapi import BackgroundTasks
 
 router = APIRouter(
     prefix="/informaciones",
@@ -139,54 +140,66 @@ def patch_estado(
 
 @router.get(
     "/descargar-proforma/{proforma_id}",
-    response_class=FileResponse,
     summary="Descarga el archivo Word con la proforma y sus ítems"
 )
 def descargar_proforma(
     proforma_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
     info = get_informacion_with_items_by_id(db, proforma_id)
     if not info:
         raise HTTPException(404, "Información no encontrada")
 
-    # Convierte info a dict (usa .dict() si es pydantic, o crea manual si es ORM)
-    if hasattr(info, 'dict'):
-        data = info.dict()
-    else:
-        # Si info es modelo ORM, conviértelo tú mismo
-        data = {
-            "txt_cliente": info.txt_cliente,
-            "txt_ruc": info.txt_ruc,
-            "txt_direccion": info.txt_direccion,
-            "txt_fecha": str(info.txt_fecha),
-            "txt_telefono": info.txt_telefono,
-            "txt_necesidad": info.txt_necesidad,
-            "txt_funcionario": info.txt_funcionario,
-            "txt_correo": info.txt_correo,
-            "tHora_maxina": info.tHora_maxina,
-            "txt_objetivoCompra": info.txt_objetivoCompra,
-            "txt_plazoEntrega": info.txt_plazoEntrega,
-            "txt_vigenciaOferta": info.txt_vigenciaOferta,
-            "txt_garantia": info.txt_garantia,
-            "txt_formaPago": info.txt_formaPago,
-            "txt_metodologiaTrabajo": info.txt_metodologiaTrabajo,
-            "txt_enlace": info.txt_enlace,
-            "txt_infimaNro": info.txt_infimaNro,
-            "items": [
-                {
-                    "txt_cpc": item.txt_cpc,
-                    "txt_unidad": item.txt_unidad,
-                    "txt_especificaciones": item.txt_especificaciones,
-                    "int_cantidad": item.int_cantidad,
-                    "flo_precioUnitario": item.flo_precioUnitario,
-                    "flo_precioTotal": item.flo_precioTotal,
-                }
-                for item in info.items
-            ]
-        }
-    archivo = generar_doc_proforma(data)
-    return FileResponse(archivo, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", filename=archivo)
+    nombre_limpio = info.txt_necesidad.replace('-', '_')
+    nombre_archivo = f"Proforma_{nombre_limpio}.docx"
+    archivo_path = generar_doc_proforma(data={
+        "txt_cliente": info.txt_cliente,
+        "txt_ruc": info.txt_ruc,
+        "txt_direccion": info.txt_direccion,
+        "txt_fecha": str(info.txt_fecha),
+        "txt_telefono": info.txt_telefono,
+        "txt_necesidad": info.txt_necesidad,
+        "txt_funcionario": info.txt_funcionario,
+        "txt_correo": info.txt_correo,
+        "tHora_maxina": info.tHora_maxina,
+        "txt_objetivoCompra": info.txt_objetivoCompra,
+        "txt_plazoEntrega": info.txt_plazoEntrega,
+        "txt_vigenciaOferta": info.txt_vigenciaOferta,
+        "txt_garantia": info.txt_garantia,
+        "txt_formaPago": info.txt_formaPago,
+        "txt_metodologiaTrabajo": info.txt_metodologiaTrabajo,
+        "txt_enlace": info.txt_enlace,
+        "txt_infimaNro": info.txt_infimaNro,
+        "items": [
+            {
+                "txt_cpc": item.txt_cpc,
+                "txt_unidad": item.txt_unidad,
+                "txt_especificaciones": item.txt_especificaciones,
+                "int_cantidad": item.int_cantidad,
+                "flo_precioUnitario": item.flo_precioUnitario,
+                "flo_precioTotal": item.flo_precioTotal,
+            }
+            for item in info.items
+        ]
+    }, archivo_salida=nombre_archivo)
+
+    background_tasks.add_task(os.remove, archivo_path)
+
+    # 🔥 Generamos el header manual
+    headers = {
+        "Content-Disposition": f'attachment; filename="{nombre_archivo}"'
+    }
+
+    with open(archivo_path, "rb") as f:
+        content = f.read()
+
+    return Response(
+        content=content,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers=headers,
+        background=background_tasks
+    )
 
 #####si se quiere hacer que solo usuarios autenticados con permisos exportToWord
 
@@ -247,6 +260,7 @@ def descargar_proforma(
 )
 def descargar_pdf(
     proforma_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)  # O como tengas configurado el acceso a la BD
 ):
     info = get_informacion_with_items_by_id(db, proforma_id)
@@ -284,15 +298,16 @@ def descargar_pdf(
             for item in info.items
         ]
     }
-    output_filename = f"proforma_{proforma_id}.pdf"
+    output_filename = f"Proforma{info.txt_necesidad}.pdf"
     # ¡Coloca la ruta correcta de tu membrete!
     membrete_path = "app/utils/fondomembretada.jpg"
-
     archivo = generar_pdf_proforma(data, membrete_path=membrete_path)
+    background_tasks.add_task(os.remove, archivo)
     return FileResponse(
         archivo,
         media_type="application/pdf",
-        filename=os.path.basename(archivo)
+        filename=os.path.basename(archivo),
+        background=background_tasks
     )
 
 @router.get(
@@ -302,6 +317,7 @@ def descargar_pdf(
 )
 def descargar_excel(
     proforma_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
     info = get_informacion_with_items_by_id(db, proforma_id)
@@ -342,5 +358,7 @@ def descargar_excel(
     }
     archivo = generar_excel_proforma(data)
     nombre = f"Proforma_{info.txt_necesidad}.xlsx"
-    return FileResponse(archivo, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename=nombre)
+    # Eliminar archivo después de enviar
+    background_tasks.add_task(os.remove, archivo)
+    return FileResponse(archivo, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename=nombre,background=background_tasks)
 
