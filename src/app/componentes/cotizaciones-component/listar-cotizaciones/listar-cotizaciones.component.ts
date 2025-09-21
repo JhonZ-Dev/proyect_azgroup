@@ -215,7 +215,7 @@ export class ListarCotizacionesComponent {
           // actualiza solo el nombre en la UI
           this.selectedRow.estado_id = this.selectedStatusOptions;
           this.selectedRow.estado_name = opt.name;
-            // 👇 Notifica a todos los que escuchan que deben refrescar el conteo
+          // 👇 Notifica a todos los que escuchan que deben refrescar el conteo
           this.countCotizacionesService.notifyRefresh();
         },
         error: err => console.error('No se pudo actualizar estado', err)
@@ -235,18 +235,46 @@ export class ListarCotizacionesComponent {
     }
     this.first2 = 0; // reset paginación si usas paginador manual
   }
-  descargarProforma(proformaId: number) {
-    this.wordSvc.descargarProforma(proformaId)
-      .subscribe(blob => {
-        // Creamos un link temporal y simulamos el click
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `proforma_${proformaId}.docx`;
-        a.click();
-        setTimeout(() => window.URL.revokeObjectURL(url), 1000);
-      });
-  }
+  descargarProforma(proformaId: number): void {
+  this.wordSvc.descargarProforma(proformaId).subscribe({
+    next: (response) => {
+      const blob = response.body as Blob;
+
+      if (!blob) {
+        console.error('No se recibió ningún archivo Word');
+        return;
+      }
+
+      // 🧠 Extraer el nombre desde el header Content-Disposition
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = `proforma_${proformaId}.docx`; // Fallback por si no viene
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) {
+          filename = match[1];
+        }
+      }
+
+      // 🧠 Crear la descarga
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+
+      // 🧹 Limpieza
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 1000);
+    },
+    error: (err) => {
+      console.error('❌ Error al descargar el archivo Word:', err);
+      alert('No se pudo descargar el archivo Word. Intenta nuevamente.');
+    }
+  });
+}
+
 
   // exportToPdf(proformaId:number){
   //   this.pdfSvc.exportToPdf(proformaId).subscribe(blob => {
@@ -308,7 +336,7 @@ export class ListarCotizacionesComponent {
     });
   }
 
-   onPagoCreado(resp: any) {
+  onPagoCreado(resp: any) {
     this.loadCotizaciones();
   }
 

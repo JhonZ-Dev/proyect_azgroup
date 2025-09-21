@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { api_exportToWord } from '../../../env/environment';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
@@ -17,11 +18,10 @@ export class WordService {
   }
 
 
-  descargarProforma(proformaId: number) {
-    // Indicamos que la respuesta es un blob (archivo)
-    return this.http.get(
-      `${this.apiWord}descargar-proforma/${proformaId}`,
-      { responseType: 'blob' }
-    );
+descargarProforma(proformaId: number): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.apiWord}descargar-proforma/${proformaId}`, {
+      responseType: 'blob',
+      observe: 'response'
+    });
   }
 }
