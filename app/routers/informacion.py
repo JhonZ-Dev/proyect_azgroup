@@ -171,6 +171,7 @@ def descargar_proforma(
         "txt_metodologiaTrabajo": info.txt_metodologiaTrabajo,
         "txt_enlace": info.txt_enlace,
         "txt_infimaNro": info.txt_infimaNro,
+        "txt_numeroProforma":info.txt_numeroProforma,
         "items": [
             {
                 "txt_cpc": item.txt_cpc,
@@ -286,6 +287,7 @@ def descargar_pdf(
         "txt_metodologiaTrabajo": info.txt_metodologiaTrabajo,
         "txt_enlace": info.txt_enlace,
         "txt_infimaNro": info.txt_infimaNro,
+        "txt_numeroProforma":info.txt_numeroProforma,
         "items": [
             {
                 "txt_cpc": item.txt_cpc,

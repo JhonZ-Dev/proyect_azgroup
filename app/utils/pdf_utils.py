@@ -77,7 +77,7 @@ def generar_pdf_proforma(
 
     # Fila: Proforma
  # Fila: Proforma
-    txt_infimaNro = data.get("txt_infimaNro", "")
+    txt_infimaNro = data.get("txt_numeroProforma", "")
     solo_numero = txt_infimaNro.split('-')[-1] if txt_infimaNro else ""
     tabla_data.append([
         Paragraph(

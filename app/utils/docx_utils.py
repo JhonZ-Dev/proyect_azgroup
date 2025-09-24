@@ -89,7 +89,7 @@ def generar_doc_proforma(data, plantilla_path=plantilla_path, archivo_salida="pr
     p.clear()
 
     # Extraer solo el número (por ejemplo, de '04-08-000000001' obtener '000000001')
-    infima_nro = data.get('txt_infimaNro', '')
+    infima_nro = data.get('txt_numeroProforma', '')
     solo_numero = infima_nro.split('-')[-1] if infima_nro else ''
 
     # Primer run: PROFORMA (negro)
