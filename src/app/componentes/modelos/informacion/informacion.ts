@@ -45,6 +45,8 @@ export interface InformacionRead extends InformacionCreate {
   estado_id:   number;      // <-- añade esto
   estado_name: string;      // <-- y esto
   items:       ItemRead[];
+  txt_enlace?:string;
+
 }
 
 /**

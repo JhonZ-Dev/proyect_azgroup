@@ -85,7 +85,7 @@ export class ListarCotizacionesComponent {
       next: sorted => {
         this.allCotizaciones = sorted;
         this.cotizaciones = [...sorted];;
-        //console.log('Cotizaciones ordenadas (desc):', this.cotizaciones);
+        console.log('Cotizaciones ordenadas (desc):', this.cotizaciones);
       },
       error: err => {
         console.error('Error cargando cotizaciones', err);
@@ -96,7 +96,7 @@ export class ListarCotizacionesComponent {
   public getCotizacionById(proformaId: number): void {
     this.infoSvc.getInformacionById(proformaId).subscribe({
       next: (data: InformacionRead) => {
-        //console.log('Recibí esta cotización:', data);
+        console.log('Recibí esta cotización:', data);
         this.cotizacion = data;
       },
       error: err => {
@@ -105,6 +105,22 @@ export class ListarCotizacionesComponent {
       }
     });
   }
+abrirEnlace(url: string | undefined | null): void {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    alert('⚠️ El enlace no está disponible.');
+    return;
+  }
+
+  // Si no empieza con http(s), prepéndelo
+  if (!/^https?:\/\//.test(url)) {
+    url = 'https://' + url;
+  }
+
+  window.open(url, '_blank');
+}
+
+
+
 
 
   toggleRow(c: InformacionRead) {
