@@ -57,6 +57,11 @@ def generar_pdf_proforma(
         'NegritaCentrado', parent=styles['Normal'],
         alignment=1, fontSize=10, textColor=colors.black, fontName='Helvetica-Bold'
     )
+    style_bold_izquierda = ParagraphStyle(
+    'NegritaIzquierda', parent=styles['Normal'],
+    alignment=0, fontSize=10, textColor=colors.black, fontName='Helvetica-Bold'
+)
+
     style_longtext = ParagraphStyle(
     'LongText',
     parent=styleN,
@@ -91,39 +96,39 @@ def generar_pdf_proforma(
 
     # Datos generales (ajusta nombres según tu modelo de datos)
     tabla_data.append([
-        Paragraph('<b>CLIENTE</b>', style_bold_centrado),
+        Paragraph('<b>CLIENTE</b>', style_bold_izquierda),
         Paragraph(str(data.get("txt_cliente", "")), style_bold), '', '', '', '', ''
     ])
     tabla_data.append([
-        Paragraph('<b>RUC</b>', style_bold_centrado),
+        Paragraph('<b>RUC</b>', style_bold_izquierda),
         Paragraph(str(data.get("txt_ruc", "")), style_bold), '', '', '', '', ''
     ])
     tabla_data.append([
-        Paragraph('<b>DIRECCIÓN</b>', style_bold_centrado),
+        Paragraph('<b>DIRECCIÓN</b>', style_bold_izquierda),
         Paragraph(str(data.get("txt_direccion", "")), style_bold), '', '', '', '', ''
     ])
     tabla_data.append([
-        Paragraph('<b>FECHA</b>', style_bold_centrado),
+        Paragraph('<b>FECHA</b>', style_bold_izquierda),
         Paragraph(str(data.get("txt_fecha", "")), style_bold), '', '', '', '', ''
     ])
     tabla_data.append([
-        Paragraph('<b>TELÉFONO</b>', style_bold_centrado),
+        Paragraph('<b>TELÉFONO</b>', style_bold_izquierda),
         Paragraph(str(data.get("txt_telefono", "")), style_bold), '', '', '', '', ''
     ])
     tabla_data.append([
-        Paragraph('<b>NECESIDAD</b>', style_bold_centrado),
+        Paragraph('<b>NECESIDAD</b>', style_bold_izquierda),
         Paragraph(str(data.get("txt_necesidad", "")), style_rojo_centrado), '', '', '', '', ''
     ])
     tabla_data.append([
-        Paragraph('<b>FUNCIONARIO ENCARGADO</b>', style_bold_centrado),
+        Paragraph('<b>FUNCIONARIO ENCARGADO</b>', style_bold_izquierda),
         Paragraph(str(data.get("txt_funcionario", "")), style_bold), '', '', '', '', ''
     ])
     tabla_data.append([
-        Paragraph('<b>CORREO</b>', style_bold_centrado),
+        Paragraph('<b>CORREO</b>', style_bold_izquierda),
         Paragraph(str(data.get("txt_correo", "")), style_bold), '', '', '', '', ''
     ])
     tabla_data.append([
-        Paragraph('<b>HORA MÁXIMA</b>', style_bold_centrado),
+        Paragraph('<b>HORA MÁXIMA</b>', style_bold_izquierda),
         Paragraph(str(data.get("tHora_maxina", "")), style_bold), '', '', '', '', ''
     ])
 
@@ -150,14 +155,17 @@ def generar_pdf_proforma(
     # Ítems de la tabla
     items = data.get("items", [])
     for idx, item in enumerate(items, 1):
+        precio_unit = item.get("flo_precioUnitario", "")
+        precio_total = item.get("flo_precioTotal", "")
         fila = [
             limpiar_texto(idx),
             limpiar_texto(item.get("txt_cpc", "")),
             limpiar_texto(item.get("txt_unidad", "")),
             Paragraph(limpiar_texto(item.get("txt_especificaciones", "")), style_longtext),
             limpiar_texto(item.get("int_cantidad", "")),
-            limpiar_texto(item.get("flo_precioUnitario", "")),
-            limpiar_texto(item.get("flo_precioTotal", "")),
+            f"${limpiar_texto(precio_unit)}" if precio_unit not in ("", None) else "",
+            f"${limpiar_texto(precio_total)}" if precio_total not in ("", None) else "",
+           
         ]
         tabla_data.append(fila)
 
@@ -165,7 +173,7 @@ def generar_pdf_proforma(
     total = sum(float(item.get("flo_precioTotal", 0) or 0) for item in items)
     tabla_data.append([
         Paragraph('<b>TOTAL</b>', style_bold_centrado), '', '', '', '', '',
-        Paragraph(f'<b>{total:.2f}</b>', styleN)
+        Paragraph(f'<b>${total:.2f}</b>', styleN)
     ])
     index_total = len(tabla_data) - 1
 
@@ -220,6 +228,9 @@ def generar_pdf_proforma(
     tabla.setStyle(TableStyle([
         ('GRID', (0,0), (-1,-1), 0.4, colors.black),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        # Centrar columna "No." desde la fila 12
+        ('FONTSIZE', (0,12), (0,-1), 8),      # Reducir fuente de columna "No."
+
         ('BACKGROUND', (0,0), (6,0), colors.HexColor('#DAE9F7')),
         ('BACKGROUND', (0,12), (6,12), colors.HexColor('#DAE9F7')),  # Cabecera de ítems
         ('BACKGROUND', (0,1), (0,9), colors.HexColor('#DAE9F7')),
