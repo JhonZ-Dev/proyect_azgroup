@@ -2,9 +2,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.platypus import (
-    SimpleDocTemplate, Table, TableStyle, Paragraph
+    SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 )
-from reportlab.platypus import Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import os
 import re
@@ -13,136 +12,168 @@ def limpiar_texto(texto):
     """Elimina caracteres no imprimibles y reemplaza saltos de línea por espacio."""
     if not isinstance(texto, str):
         texto = str(texto)
-    # Elimina todo menos los caracteres imprimibles
     texto = re.sub(r'[^\x20-\x7E\n]', '', texto)
-    # Opcional: reemplaza saltos de línea por espacio
     texto = texto.replace('\n', ' ').replace('\r', '')
     return texto
+
 def generar_pdf_proforma(
     data: dict,
     archivo_salida: str = None,
     membrete_path: str = None
 ) -> str:
     """
-    Genera un PDF de proforma usando datos dinámicos y devuelve la ruta del archivo.
+    Genera un PDF de proforma por secciones (cada una con sus proporciones de columnas),
+    sin espacios entre secciones y con líneas negras consistentes.
     """
+    # === LAYOUT GLOBAL ===
     ancho_hoja, alto_hoja = A4
     margen_izq = 1.5 * cm
     margen_der = 1.5 * cm
     margen_sup = 3 * cm
     margen_inf = 3 * cm
-
     ancho_util = ancho_hoja - margen_izq - margen_der
-    #proporciones = [0.18, 0.18, 0.10, 0.28, 0.09, 0.085, 0.085]
-    proporciones = [0.12, 0.15, 0.10, 0.36, 0.09, 0.09, 0.09]
-    colWidths = [ancho_util * p for p in proporciones]
 
+    # === PROPORCIONES POR SECCIÓN (ajústalas libremente) ===
+    props_header = [1.0]                    # Cabecera PROFORMA
+    props_generales = [0.22, 0.78]          # Datos generales (Etiqueta, Valor)
+    props_objeto_title = [1.0]              # Título OBJETO DE COMPRA
+    props_objeto_body  = [1.0]              # Respuesta OBJETO DE COMPRA
+    #props_items = [0.10, 0.14, 0.10, 0.36, 0.10, 0.10, 0.10]  # Ítems
+    # Ítems (No., CPC, UNIDAD, ESPECIFICACIONES, CANTIDAD, P. UNIT, P. TOTAL)
+    props_items = [0.06, 0.14, 0.10, 0.36, 0.12, 0.11, 0.11]
+
+    props_leyenda = [1.0]                   # Leyenda RIMPE
+    props_campos_finales = [0.28, 0.72]     # Campos finales (Etiqueta, Valor)
+
+    # === ESTILOS ===
     styles = getSampleStyleSheet()
     styleN = styles['Normal']
-    styleBH = styles['Heading4']
 
     style_rojo_centrado = ParagraphStyle(
         'RojoCentrado', parent=styles['Normal'],
-        alignment=0, fontSize=10, textColor=colors.red, fontName='Helvetica-Bold'
-    )
-    style_rojo_centrados = ParagraphStyle(
-        'RojoCentrado', parent=styles['Normal'],
         alignment=1, fontSize=10, textColor=colors.red, fontName='Helvetica-Bold'
+    )
+    style_rojo_necesidad = ParagraphStyle(
+        'RojoCentrado', parent=styles['Normal'],
+        alignment=0, fontSize=10, textColor=colors.red, fontName='Helvetica-Bold'
     )
     style_bold = ParagraphStyle(
         'Negrita', parent=styles['Normal'],
+        alignment=0, fontSize=10, textColor=colors.black, fontName='Helvetica-Bold'
+    )
+    style_bold_izquierda = ParagraphStyle(
+        'NegritaIzquierda', parent=styles['Normal'],
         alignment=0, fontSize=10, textColor=colors.black, fontName='Helvetica-Bold'
     )
     style_bold_centrado = ParagraphStyle(
         'NegritaCentrado', parent=styles['Normal'],
         alignment=1, fontSize=10, textColor=colors.black, fontName='Helvetica-Bold'
     )
-    style_bold_izquierda = ParagraphStyle(
-    'NegritaIzquierda', parent=styles['Normal'],
-    alignment=0, fontSize=10, textColor=colors.black, fontName='Helvetica-Bold'
-)
-
     style_longtext = ParagraphStyle(
-    'LongText',
-    parent=styleN,
-    wordWrap='CJK',     # Permite wraps por sílabas/palabras
-    fontSize=9
+        'LongText', parent=styleN, wordWrap='CJK', fontSize=9
+    )
+    style_heading_cell = ParagraphStyle(
+        'HeadingCell', parent=styles['Heading4'],
+        alignment=1, fontName='Helvetica-Bold', fontSize=10
     )
 
-    # Nombre del archivo según txt_necesidad (o lo que prefieras)
-    necesidad = data.get("txt_necesidad", "proforma").replace(" ", "_")
+    # === NOMBRE DE ARCHIVO ===
+    necesidad = (data.get("txt_necesidad", "proforma") or "proforma").replace(" ", "_")
     archivo_salida = archivo_salida or f"proforma_{necesidad}.pdf"
 
-    tabla_data = []
+    # === Helper: construir Table sin espacios externos y paddings internos mínimos ===
+    def _table(data_rows, props, style_cmds=None, font_size=None, grid=True, hpad=4, vpad=1):
+        col_widths = [ancho_util * p for p in props]
+        t = Table(data_rows, colWidths=col_widths)
+        # Sin separación externa entre tablas
+        t.spaceBefore = 0
+        t.spaceAfter  = 0
 
-    # Fila: Proforma
- # Fila: Proforma
+        cmds = []
+        if grid:
+            # GRID en negro
+            cmds.append(('GRID', (0,0), (-1,-1), 0.4, colors.black))
+        cmds.append(('VALIGN', (0,0), (-1,-1), 'MIDDLE'))
+        # Paddings internos compactos
+        cmds += [
+            ('LEFTPADDING',  (0,0), (-1,-1), hpad),
+            ('RIGHTPADDING', (0,0), (-1,-1), hpad),
+            ('TOPPADDING',   (0,0), (-1,-1), vpad),
+            ('BOTTOMPADDING',(0,0), (-1,-1), vpad),
+        ]
+        if font_size:
+            cmds.append(('FONTSIZE', (0,0), (-1,-1), font_size))
+        if style_cmds:
+            # Asegúrate de que LINEABOVE/LINEBELOW vayan DESPUÉS del GRID si quieres sobrescribir bordes
+            cmds.extend(style_cmds)
+        t.setStyle(TableStyle(cmds))
+        return t
+
+    # ===== SECCIÓN 1: CABECERA PROFORMA =====
     txt_infimaNro = data.get("txt_numeroProforma", "")
     solo_numero = txt_infimaNro.split('-')[-1] if txt_infimaNro else ""
-    tabla_data.append([
-        Paragraph(
-            f'<b>PROFORMA <font color="red">{solo_numero}</font></b>',
-            ParagraphStyle(
-                'CentradoGrande',
-                parent=styles['Heading4'],
-                alignment=1,  # Centrado
-                fontName='Helvetica-Bold',
-                fontSize=10
-            )
-        ),
-        '', '', '', '', '', ''
-    ])
+    header_rows = [[
+        Paragraph(f'<b>PROFORMA <font color="red">{solo_numero}</font></b>', style_heading_cell)
+    ]]
+    header_style = [
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#DAE9F7')),
+        ('LEFTPADDING',  (0,0), (-1,-1), 14),
+        ('RIGHTPADDING', (0,0), (-1,-1), 14),
+        ('TOPPADDING',   (0,0), (-1,-1), 6),
+        ('BOTTOMPADDING',(0,0), (-1,-1), 6),
+        # Esta tabla pone la línea inferior NEGRA para el borde con la siguiente sección
+        ('LINEBELOW', (0,-1), (-1,-1), 0.4, colors.black),
+    ]
+    tbl_header = _table(header_rows, props_header, header_style, font_size=10)
 
+    # ===== SECCIÓN 2: DATOS GENERALES =====
+    generales_pairs = [
+        ('CLIENTE',   Paragraph(limpiar_texto(data.get("txt_cliente", "")), style_bold)),
+        ('RUC',       Paragraph(limpiar_texto(data.get("txt_ruc", "")), style_bold)),
+        ('DIRECCIÓN', Paragraph(limpiar_texto(data.get("txt_direccion", "")), style_bold)),
+        ('FECHA',     Paragraph(limpiar_texto(data.get("txt_fecha", "")), style_bold)),
+        ('TELÉFONO',  Paragraph(limpiar_texto(data.get("txt_telefono", "")), style_bold)),
+        ('NECESIDAD', Paragraph(limpiar_texto(data.get("txt_necesidad", "")), style_rojo_necesidad)),
+        ('FUNCIONARIO ENCARGADO', Paragraph(limpiar_texto(data.get("txt_funcionario", "")), style_bold)),
+        ('CORREO',    Paragraph(limpiar_texto(data.get("txt_correo", "")), style_bold)),
+        ('HORA MÁXIMA', Paragraph(limpiar_texto(data.get("tHora_maxina", "")), style_bold)),
+    ]
+    generales_rows = []
+    for etq, val in generales_pairs:
+        generales_rows.append([
+            Paragraph(f'<b>{etq}</b>', style_bold_izquierda),
+            val
+        ])
+    generales_style = [
+        ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#DAE9F7')),
+        # Como la línea inferior de la tabla anterior ya es negra,
+        # quitamos la superior aquí para evitar doble trazo.
+        ('LINEABOVE', (0,0), (-1,0), 0, colors.black),
+        # Esta tabla dibuja su línea inferior NEGRA para la siguiente sección
+        ('LINEBELOW', (0,-1), (-1,-1), 0.4, colors.black),
+    ]
+    tbl_generales = _table(generales_rows, props_generales, generales_style, font_size=10)
 
-    # Datos generales (ajusta nombres según tu modelo de datos)
-    tabla_data.append([
-        Paragraph('<b>CLIENTE</b>', style_bold_izquierda),
-        Paragraph(str(data.get("txt_cliente", "")), style_bold), '', '', '', '', ''
-    ])
-    tabla_data.append([
-        Paragraph('<b>RUC</b>', style_bold_izquierda),
-        Paragraph(str(data.get("txt_ruc", "")), style_bold), '', '', '', '', ''
-    ])
-    tabla_data.append([
-        Paragraph('<b>DIRECCIÓN</b>', style_bold_izquierda),
-        Paragraph(str(data.get("txt_direccion", "")), style_bold), '', '', '', '', ''
-    ])
-    tabla_data.append([
-        Paragraph('<b>FECHA</b>', style_bold_izquierda),
-        Paragraph(str(data.get("txt_fecha", "")), style_bold), '', '', '', '', ''
-    ])
-    tabla_data.append([
-        Paragraph('<b>TELÉFONO</b>', style_bold_izquierda),
-        Paragraph(str(data.get("txt_telefono", "")), style_bold), '', '', '', '', ''
-    ])
-    tabla_data.append([
-        Paragraph('<b>NECESIDAD</b>', style_bold_izquierda),
-        Paragraph(str(data.get("txt_necesidad", "")), style_rojo_centrado), '', '', '', '', ''
-    ])
-    tabla_data.append([
-        Paragraph('<b>FUNCIONARIO ENCARGADO</b>', style_bold_izquierda),
-        Paragraph(str(data.get("txt_funcionario", "")), style_bold), '', '', '', '', ''
-    ])
-    tabla_data.append([
-        Paragraph('<b>CORREO</b>', style_bold_izquierda),
-        Paragraph(str(data.get("txt_correo", "")), style_bold), '', '', '', '', ''
-    ])
-    tabla_data.append([
-        Paragraph('<b>HORA MÁXIMA</b>', style_bold_izquierda),
-        Paragraph(str(data.get("tHora_maxina", "")), style_bold), '', '', '', '', ''
-    ])
+    # ===== SECCIÓN 3: OBJETO DE COMPRA =====
+    objeto_title_rows = [[Paragraph('<b>OBJETO DE COMPRA</b>', style_bold_centrado)]]
+    objeto_title_style = [
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#DAE9F7')),
+        ('LINEABOVE', (0,0), (-1,0), 0, colors.black),           # sin línea superior (ya la puso la anterior)
+        ('LINEBELOW', (0,-1), (-1,-1), 0.4, colors.black),       # inferior negra
+    ]
+    tbl_objeto_title = _table(objeto_title_rows, props_objeto_title, objeto_title_style, font_size=10)
 
-    # Fila: OBJETO DE COMPRA
-    tabla_data.append([
-        Paragraph('<b>OBJETO DE COMPRA</b>', style_bold_centrado), '', '', '', '', '', ''
-    ])
-    # Fila: Respuesta objeto de compra
-    tabla_data.append([
-        Paragraph(str(data.get("txt_objetivoCompra", "")), style_bold_centrado  ), '', '', '', '', '', ''
-    ])
+    objeto_body_rows = [[Paragraph(limpiar_texto(data.get("txt_objetivoCompra", "")), style_bold_centrado)]]
+    objeto_body_style = [
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#E0E0E0')),
+        ('LINEABOVE', (0,0), (-1,0), 0, colors.black),
+        ('LINEBELOW', (0,-1), (-1,-1), 0.4, colors.black),
+    ]
+    tbl_objeto_body = _table(objeto_body_rows, props_objeto_body, objeto_body_style, font_size=10)
 
-    # Fila: CABECERA DE ITEMS
-    tabla_data.append([
+    # ===== SECCIÓN 4: TABLA DE ÍTEMS =====
+    # Header de ítems
+    items_header = [[
         Paragraph('<b>No.</b>', styleN),
         Paragraph('<b>CPC</b>', styleN),
         Paragraph('<b>UNIDAD</b>', styleN),
@@ -150,14 +181,22 @@ def generar_pdf_proforma(
         Paragraph('<b>CANTIDAD</b>', styleN),
         Paragraph('<b>P. UNIT</b>', styleN),
         Paragraph('<b>P. TOTAL</b>', styleN),
-    ])
+    ]]
+    items_header_style = [
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#DAE9F7')),
+        ('FONTSIZE', (0,0), (0,0), 8),  # "No." pequeñito
+        ('LINEABOVE', (0,0), (-1,0), 0, colors.black),
+        ('LINEBELOW', (0,-1), (-1,-1), 0.4, colors.black),
+    ]
+    tbl_items_header = _table(items_header, props_items, items_header_style, font_size=10)
 
-    # Ítems de la tabla
-    items = data.get("items", [])
+    # Cuerpo de ítems
+    items = data.get("items", []) or []
+    item_rows = []
     for idx, item in enumerate(items, 1):
         precio_unit = item.get("flo_precioUnitario", "")
         precio_total = item.get("flo_precioTotal", "")
-        fila = [
+        item_rows.append([
             limpiar_texto(idx),
             limpiar_texto(item.get("txt_cpc", "")),
             limpiar_texto(item.get("txt_unidad", "")),
@@ -165,84 +204,61 @@ def generar_pdf_proforma(
             limpiar_texto(item.get("int_cantidad", "")),
             f"${limpiar_texto(precio_unit)}" if precio_unit not in ("", None) else "",
             f"${limpiar_texto(precio_total)}" if precio_total not in ("", None) else "",
-           
-        ]
-        tabla_data.append(fila)
+        ])
+    body_style = [
+        ('LINEABOVE', (0,0), (-1,0), 0, colors.black),
+        ('LINEBELOW', (0,-1), (-1,-1), 0.4, colors.black),
+    ]
+    tbl_items_body = _table(item_rows, props_items, body_style, font_size=9) if item_rows else _table([], props_items, body_style, font_size=9)
 
-    # Fila: TOTAL (calculado)
+    # Total
     total = sum(float(item.get("flo_precioTotal", 0) or 0) for item in items)
-    tabla_data.append([
+    total_row = [[
         Paragraph('<b>TOTAL</b>', style_bold_centrado), '', '', '', '', '',
         Paragraph(f'<b>${total:.2f}</b>', styleN)
-    ])
-    index_total = len(tabla_data) - 1
+    ]]
+    total_style = [
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#DAE9F7')),
+        ('SPAN', (0,0), (5,0)),  # "TOTAL" ocupa columnas 0-5
+        ('LINEABOVE', (0,0), (-1,0), 0, colors.black),
+        ('LINEBELOW', (0,-1), (-1,-1), 0.4, colors.black),
+    ]
+    tbl_items_total = _table(total_row, props_items, total_style, font_size=10)
 
-    # Fila: NO GRAVAMOS IVA
-    tabla_data.append([
-        Paragraph('NO GRAVAMOS IVA - SOMOS REGIMEN RIMPE - NEGOCIO POPULAR', style_rojo_centrados), '', '', '', '', '', ''
-    ])
-    index_no_gravamos_iva = len(tabla_data) - 1
+    # ===== SECCIÓN 5: LEYENDA RIMPE =====
+    leyenda_rows = [[
+        Paragraph('NO GRAVAMOS IVA - SOMOS REGIMEN RIMPE - NEGOCIO POPULAR', style_rojo_centrado)
+    ]]
+    leyenda_style = [
+        ('BACKGROUND', (0,0), (-1,0), colors.white),
+        ('LINEABOVE', (0,0), (-1,0), 0, colors.black),
+        ('LINEBELOW', (0,-1), (-1,-1), 0.4, colors.black),
+    ]
+    tbl_leyenda = _table(leyenda_rows, props_leyenda, leyenda_style, font_size=10)
 
-    # Nuevos campos después de NO GRAVAMOS IVA
+    # ===== SECCIÓN 6: CAMPOS FINALES (2 columnas) =====
     nuevos_campos = [
-        ('PLAZO DE ENTREGA', data.get('txt_plazoEntrega', '')),
-        ('VIGENCIA DE LA OFERTA', data.get('txt_vigenciaOferta', '')),
-        ('FORMA DE PAGO', data.get('txt_formaPago', '')),
-        ('METODOLOGIA DE TRABAJO', data.get('txt_metodologiaTrabajo', '')),
-        ('GARANTIA', data.get('txt_garantia', '')),
-        ('ENLACE', data.get('txt_enlace', '')),
+        ('PLAZO DE ENTREGA',          data.get('txt_plazoEntrega', '')),
+        ('VIGENCIA DE LA OFERTA',     data.get('txt_vigenciaOferta', '')),
+        ('FORMA DE PAGO',             data.get('txt_formaPago', '')),
+        ('METODOLOGIA DE TRABAJO',    data.get('txt_metodologiaTrabajo', '')),
+        ('GARANTIA',                  data.get('txt_garantia', '')),
+        ('ENLACE',                    data.get('txt_enlace', '')),
     ]
-    index_primero_nuevo = len(tabla_data)
+    campos_rows = []
     for etiqueta, valor in nuevos_campos:
-        tabla_data.append([
-            Paragraph(f'<b>{etiqueta}</b>', styleN),
-            Paragraph(str(valor), styleN), '', '', '', '', ''
+        campos_rows.append([
+            Paragraph(f'<b>{limpiar_texto(etiqueta)}</b>', styleN),
+            Paragraph(limpiar_texto(valor), styleN)
         ])
-    
-
-    # Spans
-    span_cmds = [
-        ('SPAN', (0,0), (6,0)),    # PROFORMA
-        ('SPAN', (1,1), (6,1)),    # CLIENTE
-        ('SPAN', (1,2), (6,2)),    # RUC
-        ('SPAN', (1,3), (6,3)),    # DIRECCIÓN
-        ('SPAN', (1,4), (6,4)),    # FECHA
-        ('SPAN', (1,5), (6,5)),    # TELÉFONO
-        ('SPAN', (1,6), (6,6)),    # NECESIDAD
-        ('SPAN', (1,7), (6,7)),    # FUNCIONARIO ENCARGADO
-        ('SPAN', (1,8), (6,8)),    # CORREO
-        ('SPAN', (1,9), (6,9)),    # HORA MÁXIMA
-        ('SPAN', (0,10), (6,10)),  # OBJETO DE COMPRA
-        ('SPAN', (0,11), (6,11)),  # Respuesta OBJETO DE COMPRA
-        ('SPAN', (0,index_total), (5,index_total)),  # TOTAL ocupa columnas 0-5
-        ('SPAN', (0,index_no_gravamos_iva), (6,index_no_gravamos_iva)),  # NO GRAVAMOS IVA toda la fila
+    campos_style = [
+        ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#DAE9F7')),  # columna de etiquetas
+        ('LINEABOVE', (0,0), (-1,0), 0, colors.black),              # sin línea superior (ya la pone la leyenda)
+        # esta es la última sección: no hace falta LINEBELOW especial (GRID ya dibuja negro)
     ]
-    for i in range(index_primero_nuevo, index_primero_nuevo + len(nuevos_campos)):
-        span_cmds.append(('SPAN', (1, i), (6, i)))  # Respuesta ocupa columnas 1-6
+    tbl_campos = _table(campos_rows, props_campos_finales, campos_style, font_size=10)
 
-    # Table y estilos
-    tabla = Table(
-        tabla_data,
-        colWidths=colWidths
-    )
-    tabla.setStyle(TableStyle([
-        ('GRID', (0,0), (-1,-1), 0.4, colors.black),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        # Centrar columna "No." desde la fila 12
-        ('FONTSIZE', (0,12), (0,-1), 8),      # Reducir fuente de columna "No."
-
-        ('BACKGROUND', (0,0), (6,0), colors.HexColor('#DAE9F7')),
-        ('BACKGROUND', (0,12), (6,12), colors.HexColor('#DAE9F7')),  # Cabecera de ítems
-        ('BACKGROUND', (0,1), (0,9), colors.HexColor('#DAE9F7')),
-        ('BACKGROUND', (0, index_primero_nuevo), (0, index_primero_nuevo + len(nuevos_campos) - 1), colors.HexColor('#DAE9F7')),
-        ('BACKGROUND', (0, index_total), (6, index_total), colors.HexColor('#DAE9F7')),
-        ('BACKGROUND', (0,10), (6,10), colors.HexColor('#DAE9F7')),    # OBJETO DE COMPRA
-        ('BACKGROUND', (0,11), (6,11), colors.HexColor('#E0E0E0')),  # fondo gris claro para la respuesta
-
-        *span_cmds
-    ]))
-
-    # Clase para fondo membretada
+    # === DocTemplate con fondo membretado ===
     class BackgroundDocTemplate(SimpleDocTemplate):
         def __init__(self, *args, fondo_path=None, **kwargs):
             super().__init__(*args, **kwargs)
@@ -260,7 +276,6 @@ def generar_pdf_proforma(
                 )
             self.canv.restoreState()
 
-    # Generar el PDF
     doc = BackgroundDocTemplate(
         archivo_salida,
         pagesize=A4,
@@ -270,50 +285,41 @@ def generar_pdf_proforma(
         bottomMargin=margen_inf,
         fondo_path=membrete_path
     )
-    elements = [tabla]
-    #doc.build(elements)
-    # Espacio en blanco para firma
-    elements.append(Spacer(1, 2.5 * cm))  # Puedes ajustar la altura si quieres más espacio
-# Firma: Nombre centrado, azul oscuro y negrita
+
+    # === Construcción (sin Spacers entre secciones) ===
+    elements = [
+        tbl_header,
+        tbl_generales,
+        tbl_objeto_title,
+        tbl_objeto_body,
+        tbl_items_header,
+        tbl_items_body,
+        tbl_items_total,
+        tbl_leyenda,
+        tbl_campos,
+    ]
+
+    # === Firma (dejamos un espacio solo aquí) ===
+    elements.append(Spacer(1, 2.2 * cm))
     elements.append(
         Paragraph(
             '<font color="#003366"><b>DAYANA LISBETH ZAMBRANO MACIAS</b></font>',
-            ParagraphStyle(
-                'firma_nombre',
-                parent=styles['Normal'],
-                alignment=1,  # centrado
-                fontSize=11,
-                fontName='Helvetica-Bold'
-            )
+            ParagraphStyle('firma_nombre', parent=styles['Normal'], alignment=1, fontSize=11, fontName='Helvetica-Bold')
         )
     )
-
-    # Firma: Cargo
     elements.append(
         Paragraph(
             '<font color="#003366">REPRESENTE LEGAL</font>',
-            ParagraphStyle(
-                'firma_cargo',
-                parent=styles['Normal'],
-                alignment=1,
-                fontSize=10
-            )
+            ParagraphStyle('firma_cargo', parent=styles['Normal'], alignment=1, fontSize=10)
         )
     )
-
-    # Firma: RUC
     elements.append(
         Paragraph(
             '<font color="#003366">RUC: 2350621211001</font>',
-            ParagraphStyle(
-                'firma_ruc',
-                parent=styles['Normal'],
-                alignment=1,
-                fontSize=10
-            )
+            ParagraphStyle('firma_ruc', parent=styles['Normal'], alignment=1, fontSize=10)
         )
     )
-    doc.build(elements)
 
-    # Retorna la ruta final del archivo generado
+    # Construir PDF
+    doc.build(elements)
     return os.path.abspath(archivo_salida)
