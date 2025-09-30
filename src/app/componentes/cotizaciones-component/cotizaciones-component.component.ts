@@ -16,10 +16,11 @@ import { DialogModule } from 'primeng/dialog';
 import { LoginServiceService } from '../servicios/login/login-service.service';
 import { UppercaseDirective } from '../../shared/directives/uppercase.directive';
 import { FloatLabel } from 'primeng/floatlabel';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-cotizaciones-component',
-  imports: [FormsModule, CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, InputNumberModule, TextareaModule, InputGroupModule, InputGroupAddonModule, Toast, DialogModule, UppercaseDirective, FloatLabel],
+  imports: [FormsModule, CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, InputNumberModule, TextareaModule, InputGroupModule, InputGroupAddonModule, Toast, DialogModule, UppercaseDirective, FloatLabel, ProgressSpinnerModule],
   templateUrl: './cotizaciones-component.component.html',
   styleUrl: './cotizaciones-component.component.css',
   standalone: true,
@@ -33,13 +34,14 @@ export class CotizacionesComponentComponent {
   lastQtyPuSet: any;
   // Arreglo auxiliar para valores de cotizar
   cotizarValores: { puCotizar: number, pt: number, pv: number, diferencia: number }[] = [];
+  cargandoEnlace = false;
 
   private itemCounter = 0;
-// Estado del modal
-especificacionDialogVisible = false;
+  // Estado del modal
+  especificacionDialogVisible = false;
 
-// Para saber qué item está editando
-itemEnEdicionIndex: number | null = null;
+  // Para saber qué item está editando
+  itemEnEdicionIndex: number | null = null;
 
   constructor(private itemSvc: ItemsServiceService, private infoSvc: InformacionServiceService, private fb: FormBuilder, private messageService: MessageService, private loginSvc: LoginServiceService) { }
 
@@ -258,18 +260,99 @@ itemEnEdicionIndex: number | null = null;
     return this.cotizarValores.reduce((acc, val) => acc + (val.pv || 0), 0);
   }
   /** Suma todas las DIFERENCIAS */
-get totalDiferencia(): number {
-  return this.cotizarValores.reduce((acc, val) => acc + (val.diferencia || 0), 0);
+  get totalDiferencia(): number {
+    return this.cotizarValores.reduce((acc, val) => acc + (val.diferencia || 0), 0);
+  }
+
+  abrirDialogEspecificacion(index: number) {
+    this.itemEnEdicionIndex = index;
+    this.especificacionDialogVisible = true;
+  }
+
+  getItemFormGroup(index: number): FormGroup {
+    return this.itemsArray.at(index) as FormGroup;
+  }
+  cargarDesdeEnlace() {
+  const enlace = this.cotizacionForm.get('txt_enlace')?.value?.trim();
+
+  if (!enlace) {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Falta el enlace',
+      detail: 'Debe ingresar el enlace de la necesidad',
+      life: 3000
+    });
+    return;
+  }
+
+  this.cargandoEnlace = true;
+
+  this.infoSvc.extraerDesdeEnlace(enlace).subscribe({
+    next: (datosExtraidos) => {
+      this.cotizacionForm.patchValue({
+        txt_cliente: datosExtraidos.nombre_entidad || '',
+        txt_necesidad: datosExtraidos.codigo_necesidad || '',
+        txt_objetivoCompra: datosExtraidos.objeto_compra || '',
+        txt_fecha: datosExtraidos.fecha_publicacion || '',
+        tHora_maxina: datosExtraidos.fecha_limite || '',
+        txt_funcionario: datosExtraidos.funcionario_nombre || '',
+        txt_correo: datosExtraidos.funcionario_correo || '',
+        txt_direccion: `${datosExtraidos.lugar_direccion || ''}, ${datosExtraidos.lugar_parroquia || ''}, ${datosExtraidos.lugar_canton || ''}`
+      });
+
+      const necesidad = datosExtraidos.codigo_necesidad;
+      if (necesidad?.length >= 17) {
+        const ruc = necesidad.substr(4, 13);
+        this.cotizacionForm.get('txt_ruc')?.setValue(ruc);
+      }
+
+      // 🧩 Cargar ítems si existen
+      if (datosExtraidos.items?.length > 0) {
+        this.itemsArray.clear();
+        this.itemCounter = 0;
+        this.cotizarValores = [];
+
+        datosExtraidos.items.forEach((item: any) => {
+          this.itemCounter++;
+          const grupo = this.fb.group({
+            id: [this.itemCounter],
+            txt_cpc: [item.cpc || '', Validators.required],
+            txt_unidad: [item.unidad || 'UNIDAD', Validators.required],
+            txt_especificaciones: [item.descripcion_larga || '', Validators.required],
+            int_cantidad: [parseFloat(item.cantidad) || 0, Validators.required],
+            flo_precioUnitario: [null, Validators.required],
+            flo_precioTotal: [{ value: 0, disabled: true }],
+            flo_total: [{ value: 0, disabled: true }]
+          });
+
+          this.itemsArray.push(grupo);
+          this.cotizarValores.push({ puCotizar: 0, pt: 0, pv: 0, diferencia: 0 });
+        });
+      }
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Éxito',
+        detail: 'Datos extraídos correctamente desde el enlace',
+        life: 3000
+      });
+
+      this.cargandoEnlace = false;
+    },
+    error: (err) => {
+      console.error('Error al extraer datos:', err);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No se pudo extraer la información del enlace',
+        life: 3000
+      });
+      this.cargandoEnlace = false;
+    }
+  });
 }
 
-abrirDialogEspecificacion(index: number) {
-  this.itemEnEdicionIndex = index;
-  this.especificacionDialogVisible = true;
-}
 
-getItemFormGroup(index: number): FormGroup {
-  return this.itemsArray.at(index) as FormGroup;
-}
 
 
 }

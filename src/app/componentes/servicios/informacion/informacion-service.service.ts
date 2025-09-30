@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { api_informacion } from '../../../env/environment';
+import { api_informacion, api_login } from '../../../env/environment';
 import { Observable } from 'rxjs';
 import { InformacionListResponse, InformacionRead } from '../../modelos/informacion/informacion';
 
@@ -9,6 +9,7 @@ import { InformacionListResponse, InformacionRead } from '../../modelos/informac
 })
 export class InformacionServiceService {
   private urlInformacion: string = api_informacion.apiUrl;
+  private urlExtract : string = api_login.apiUrl;
   constructor(private http: HttpClient) { }
   private buildHeaders(): HttpHeaders {
     const token = localStorage.getItem('access_token');
@@ -87,6 +88,14 @@ export class InformacionServiceService {
     );
   }
 
+public extraerDesdeEnlace(url: string): Observable<any> {
+  const headers = this.buildHeaders();
+  return this.http.post<any>(
+    `${this.urlExtract}extract`,   // ⬅️ ajusta el endpoint si es diferente
+    { url },
+    { headers }
+  );
+}
 
 
 

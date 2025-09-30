@@ -99,6 +99,8 @@
             <span><i class="pi pi-link"></i></span>
           </p-inputgroup-addon>
           <input pInputText placeholder="Enlace" class="w-full" formControlName="txt_enlace" />
+           <button pButton type="button" label="Cargar desde enlace" icon="pi pi-external-link"
+      class="p-button-sm" (click)="cargarDesdeEnlace()"></button>
         </p-inputgroup>
       </div>
     </div>
@@ -230,4 +232,13 @@
     <button pButton label="Cerrar" icon="pi pi-times" (click)="especificacionDialogVisible = false">
     </button>
   </ng-template>
+</p-dialog>
+
+
+<p-dialog [(visible)]="cargandoEnlace" [modal]="true" [closable]="false" [draggable]="false" [dismissableMask]="false"
+  showHeader="false" styleClass="!w-[300px]">
+  <div class="flex flex-col items-center justify-center p-4">
+    <p-progressSpinner styleClass="w-12 h-12 mb-4" strokeWidth="5"></p-progressSpinner>
+    <span class="text-lg">Cargando datos del enlace...</span>
+  </div>
 </p-dialog>
