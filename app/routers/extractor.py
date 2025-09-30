@@ -4,14 +4,14 @@ from app.services.nco_parser import parse_nc_html
 from app.schemasFolder.extractor import ExtractRequest, ExtractedNCData
 import requests
 
-router = APIRouter(prefix="/extract", tags=["extract"])
+router = APIRouter(prefix="/informaciones", tags=["extract"])
 
 DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; NC-Extractor/1.0; +https://example.local)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
 
-@router.post("", response_model=ExtractedNCData)
+@router.post("/extract", response_model=ExtractedNCData)
 def extract_from_url(body: ExtractRequest):
     try:
         resp = requests.get(body.url, headers=DEFAULT_HEADERS, timeout=20)
