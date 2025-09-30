@@ -91,7 +91,7 @@ export class InformacionServiceService {
 public extraerDesdeEnlace(url: string): Observable<any> {
   const headers = this.buildHeaders();
   return this.http.post<any>(
-    `${this.urlExtract}extract`,   // ⬅️ ajusta el endpoint si es diferente
+    `${this.urlInformacion}extract`,   // ⬅️ ajusta el endpoint si es diferente
     { url },
     { headers }
   );
