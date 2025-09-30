@@ -15,6 +15,25 @@ def limpiar_texto(texto):
     texto = re.sub(r'[^\x20-\x7E\n]', '', texto)
     texto = texto.replace('\n', ' ').replace('\r', '')
     return texto
+def format_decimal(num, decimales=3):
+    """
+    Devuelve el número en formato ecuatoriano: separador miles punto, decimales coma, siempre con 'decimales' decimales.
+    - Si num es float: lo usa directo.
+    - Si num es string: reemplaza ',' por '.' si es necesario.
+    Ej: 2288 => '2.288,000', 8.5 => '8,500', '0,75' => '0,750'
+    """
+    if num is None or num == "":
+        return ""
+    try:
+        if isinstance(num, str):
+            num = num.replace(",", ".")  # Por si viene como texto "0,75"
+        num = float(num)
+        # Separador miles punto, decimales coma
+        formatted = f"{num:,.{decimales}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        return formatted
+    except Exception:
+        return str(num)
+
 
 def generar_pdf_proforma(
     data: dict,
@@ -76,6 +95,10 @@ def generar_pdf_proforma(
         'HeadingCell', parent=styles['Heading4'],
         alignment=1, fontName='Helvetica-Bold', fontSize=10
     )
+    style_centrado = ParagraphStyle(
+    'Centrado', parent=styles['Normal'],
+    alignment=1, fontSize=10, fontName='Helvetica'
+)
 
     # === NOMBRE DE ARCHIVO ===
     necesidad = (data.get("txt_necesidad", "proforma") or "proforma").replace(" ", "_")
@@ -201,9 +224,10 @@ def generar_pdf_proforma(
             limpiar_texto(item.get("txt_cpc", "")),
             limpiar_texto(item.get("txt_unidad", "")),
             Paragraph(limpiar_texto(item.get("txt_especificaciones", "")), style_longtext),
-            limpiar_texto(item.get("int_cantidad", "")),
-            f"${limpiar_texto(precio_unit)}" if precio_unit not in ("", None) else "",
-            f"${limpiar_texto(precio_total)}" if precio_total not in ("", None) else "",
+            Paragraph(limpiar_texto(item.get("int_cantidad", "")), style_centrado),  # Centrado
+            Paragraph(f"${format_decimal(precio_unit, 3)}" if precio_unit not in ("", None) else "", style_centrado),  # Centrado
+            Paragraph(f"${format_decimal(precio_total, 2)}" if precio_total not in ("", None) else "", style_centrado), # Centrado
+           
         ])
     body_style = [
         ('LINEABOVE', (0,0), (-1,0), 0, colors.black),
@@ -215,7 +239,10 @@ def generar_pdf_proforma(
     total = sum(float(item.get("flo_precioTotal", 0) or 0) for item in items)
     total_row = [[
         Paragraph('<b>TOTAL</b>', style_bold_centrado), '', '', '', '', '',
-        Paragraph(f'<b>${total:.2f}</b>', styleN)
+        #Paragraph(f'<b>${total:.2f}</b>', styleN)
+        #Paragraph(f'<b>${format_decimal(total)}</b>', styleN)
+        Paragraph(f'<b>${format_decimal(total, 2)}</b>', style_bold_centrado)
+
     ]]
     total_style = [
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#DAE9F7')),
