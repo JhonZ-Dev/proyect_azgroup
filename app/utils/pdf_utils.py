@@ -59,7 +59,7 @@ def generar_pdf_proforma(
     props_objeto_body  = [1.0]              # Respuesta OBJETO DE COMPRA
     #props_items = [0.10, 0.14, 0.10, 0.36, 0.10, 0.10, 0.10]  # Ítems
     # Ítems (No., CPC, UNIDAD, ESPECIFICACIONES, CANTIDAD, P. UNIT, P. TOTAL)
-    props_items = [0.06, 0.14, 0.10, 0.36, 0.12, 0.11, 0.11]
+    props_items = [0.06, 0.12, 0.10, 0.38, 0.12, 0.11, 0.11]
 
     props_leyenda = [1.0]                   # Leyenda RIMPE
     props_campos_finales = [0.28, 0.72]     # Campos finales (Etiqueta, Valor)
