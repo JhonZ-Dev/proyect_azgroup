@@ -102,7 +102,7 @@ export class CotizacionesComponentComponent {
         const bothSet = qty !== null && pu !== null;
 
         if (bothSet && !this.lastQtyPuSet) {
-          this.addItem();
+          //this.addItem();
         }
         this.lastQtyPuSet = bothSet;
       });
@@ -353,6 +353,9 @@ export class CotizacionesComponentComponent {
 }
 
 
+trackByIndex(index: number): number {
+  return index;
+}
 
 
 }
