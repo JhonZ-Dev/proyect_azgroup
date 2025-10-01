@@ -270,13 +270,15 @@ def generar_pdf_proforma(
         ('FORMA DE PAGO',             data.get('txt_formaPago', '')),
         ('METODOLOGIA DE TRABAJO',    data.get('txt_metodologiaTrabajo', '')),
         ('GARANTIA',                  data.get('txt_garantia', '')),
-        ('ENLACE',                    data.get('txt_enlace', '')),
+        ('ENLACE', f'<a href="{limpiar_texto(data.get("txt_enlace", ""))}">{limpiar_texto(data.get("txt_enlace", ""))}</a>'),
+
+        #('ENLACE',                    data.get('txt_enlace', '')),
     ]
     campos_rows = []
     for etiqueta, valor in nuevos_campos:
         campos_rows.append([
             Paragraph(f'<b>{limpiar_texto(etiqueta)}</b>', styleN),
-            Paragraph(limpiar_texto(valor), styleN)
+            Paragraph(valor, styleN)
         ])
     campos_style = [
         ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#DAE9F7')),  # columna de etiquetas
