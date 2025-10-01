@@ -191,6 +191,10 @@ export class CotizacionesComponentComponent {
       });
       return;
     }
+    itemsRaw = itemsRaw.map((it: any, idx: number) => ({
+      ...it,
+      int_orden: idx + 1 // 👈 el orden real en la tabla
+    }));
 
     //console.log('Payload Información a enviar:', infoPayload);
     //console.log('Items a enviar (filtrados):', itemsRaw);
@@ -273,89 +277,89 @@ export class CotizacionesComponentComponent {
     return this.itemsArray.at(index) as FormGroup;
   }
   cargarDesdeEnlace() {
-  const enlace = this.cotizacionForm.get('txt_enlace')?.value?.trim();
+    const enlace = this.cotizacionForm.get('txt_enlace')?.value?.trim();
 
-  if (!enlace) {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Falta el enlace',
-      detail: 'Debe ingresar el enlace de la necesidad',
-      life: 3000
+    if (!enlace) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Falta el enlace',
+        detail: 'Debe ingresar el enlace de la necesidad',
+        life: 3000
+      });
+      return;
+    }
+
+    this.cargandoEnlace = true;
+
+    this.infoSvc.extraerDesdeEnlace(enlace).subscribe({
+      next: (datosExtraidos) => {
+        this.cotizacionForm.patchValue({
+          txt_cliente: datosExtraidos.nombre_entidad || '',
+          txt_necesidad: datosExtraidos.codigo_necesidad || '',
+          txt_objetivoCompra: datosExtraidos.objeto_compra || '',
+          txt_fecha: datosExtraidos.fecha_publicacion || '',
+          tHora_maxina: datosExtraidos.fecha_limite || '',
+          txt_funcionario: datosExtraidos.funcionario_nombre || '',
+          txt_correo: datosExtraidos.funcionario_correo || '',
+          txt_direccion: `${datosExtraidos.lugar_direccion || ''}, ${datosExtraidos.lugar_parroquia || ''}, ${datosExtraidos.lugar_canton || ''}`
+        });
+
+        const necesidad = datosExtraidos.codigo_necesidad;
+        if (necesidad?.length >= 17) {
+          const ruc = necesidad.substr(4, 13);
+          this.cotizacionForm.get('txt_ruc')?.setValue(ruc);
+        }
+
+        // 🧩 Cargar ítems si existen
+        if (datosExtraidos.items?.length > 0) {
+          this.itemsArray.clear();
+          this.itemCounter = 0;
+          this.cotizarValores = [];
+
+          datosExtraidos.items.forEach((item: any) => {
+            this.itemCounter++;
+            const grupo = this.fb.group({
+              id: [this.itemCounter],
+              txt_cpc: [item.cpc || '', Validators.required],
+              txt_unidad: [item.unidad || 'UNIDAD', Validators.required],
+              txt_especificaciones: [item.descripcion_larga || '', Validators.required],
+              int_cantidad: [parseFloat(item.cantidad) || 0, Validators.required],
+              flo_precioUnitario: [null, Validators.required],
+              flo_precioTotal: [{ value: 0, disabled: true }],
+              flo_total: [{ value: 0, disabled: true }]
+            });
+
+            this.itemsArray.push(grupo);
+            this.cotizarValores.push({ puCotizar: 0, pt: 0, pv: 0, diferencia: 0 });
+          });
+        }
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: 'Datos extraídos correctamente desde el enlace',
+          life: 3000
+        });
+
+        this.cargandoEnlace = false;
+      },
+      error: (err) => {
+        console.error('Error al extraer datos:', err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo extraer la información del enlace',
+          life: 3000
+        });
+        this.cargandoEnlace = false;
+      }
     });
-    return;
   }
 
-  this.cargandoEnlace = true;
 
-  this.infoSvc.extraerDesdeEnlace(enlace).subscribe({
-    next: (datosExtraidos) => {
-      this.cotizacionForm.patchValue({
-        txt_cliente: datosExtraidos.nombre_entidad || '',
-        txt_necesidad: datosExtraidos.codigo_necesidad || '',
-        txt_objetivoCompra: datosExtraidos.objeto_compra || '',
-        txt_fecha: datosExtraidos.fecha_publicacion || '',
-        tHora_maxina: datosExtraidos.fecha_limite || '',
-        txt_funcionario: datosExtraidos.funcionario_nombre || '',
-        txt_correo: datosExtraidos.funcionario_correo || '',
-        txt_direccion: `${datosExtraidos.lugar_direccion || ''}, ${datosExtraidos.lugar_parroquia || ''}, ${datosExtraidos.lugar_canton || ''}`
-      });
-
-      const necesidad = datosExtraidos.codigo_necesidad;
-      if (necesidad?.length >= 17) {
-        const ruc = necesidad.substr(4, 13);
-        this.cotizacionForm.get('txt_ruc')?.setValue(ruc);
-      }
-
-      // 🧩 Cargar ítems si existen
-      if (datosExtraidos.items?.length > 0) {
-        this.itemsArray.clear();
-        this.itemCounter = 0;
-        this.cotizarValores = [];
-
-        datosExtraidos.items.forEach((item: any) => {
-          this.itemCounter++;
-          const grupo = this.fb.group({
-            id: [this.itemCounter],
-            txt_cpc: [item.cpc || '', Validators.required],
-            txt_unidad: [item.unidad || 'UNIDAD', Validators.required],
-            txt_especificaciones: [item.descripcion_larga || '', Validators.required],
-            int_cantidad: [parseFloat(item.cantidad) || 0, Validators.required],
-            flo_precioUnitario: [null, Validators.required],
-            flo_precioTotal: [{ value: 0, disabled: true }],
-            flo_total: [{ value: 0, disabled: true }]
-          });
-
-          this.itemsArray.push(grupo);
-          this.cotizarValores.push({ puCotizar: 0, pt: 0, pv: 0, diferencia: 0 });
-        });
-      }
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Éxito',
-        detail: 'Datos extraídos correctamente desde el enlace',
-        life: 3000
-      });
-
-      this.cargandoEnlace = false;
-    },
-    error: (err) => {
-      console.error('Error al extraer datos:', err);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No se pudo extraer la información del enlace',
-        life: 3000
-      });
-      this.cargandoEnlace = false;
-    }
-  });
-}
-
-
-trackByIndex(index: number): number {
-  return index;
-}
+  trackByIndex(index: number): number {
+    return index;
+  }
 
 
 }
