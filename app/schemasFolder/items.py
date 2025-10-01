@@ -10,6 +10,7 @@ class ItemBase(BaseModel):
     flo_precioUnitario:   Optional[float] = None
     flo_precioTotal:      Optional[float] = None
     flo_total:            Optional[float] = None
+    int_orden:            Optional[int] = None
 
 class ItemCreate(ItemBase):
     proforma_id: int

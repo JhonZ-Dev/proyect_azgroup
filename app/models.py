@@ -194,7 +194,7 @@ class Informacion(Base):
         nullable=False
     )
     estado = relationship("Estado", back_populates="informaciones")
-    items = relationship("Item", back_populates="informacion", cascade="all, delete")
+    items = relationship("Item", back_populates="informacion", cascade="all, delete",order_by="Item.int_orden.asc()")
     @property
     def estado_name(self) -> str:
         # devuelve el name de la relación Estado
@@ -210,6 +210,7 @@ class Item(Base):
     flo_precioUnitario = Column(Float, nullable=True)
     flo_precioTotal = Column(Float, nullable=True)
     flo_total = Column(Float, nullable=True) 
+    int_orden = Column(Integer, nullable=True)
     proforma_id     = Column(Integer, ForeignKey('tb_informacion.proforma_id'))
     informacion     = relationship("Informacion", back_populates="items")
 
