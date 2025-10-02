@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import date, time
 
-from app.schemasFolder.items import ItemRead
+from app.schemasFolder.items import ItemCreate, ItemCreateIn, ItemRead
 
 
 
@@ -59,3 +59,6 @@ class ProformaReporteOut(BaseModel):
     objeto_compra: Optional[str] = None
     valor_contrato: Optional[float] = None
     plazo_contractual: Optional[str] = None
+
+class InformacionCreateWithItems(InformacionCreate):
+    items: List[ItemCreateIn]

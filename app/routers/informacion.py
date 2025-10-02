@@ -5,9 +5,9 @@ from typing import Any, List
 from sqlalchemy.orm import Session
 from typing import List, Dict
 from app import crud
-from app.schemasFolder.informacion import EstadoCount, EstadoUpdate, InformacionRead, InformacionCreate, ProformaReporteOut
+from app.schemasFolder.informacion import EstadoCount, EstadoUpdate, InformacionCreateWithItems, InformacionRead, InformacionCreate, ProformaReporteOut
 from app.auth import get_db, require_permission
-from app.crudFolder.informacion import get_informacion_with_items_by_id, get_informaciones_with_items, get_reporte_proformas
+from app.crudFolder.informacion import create_informacion_con_items, get_informacion_with_items_by_id, get_informaciones_with_items, get_reporte_proformas
 from fastapi.responses import FileResponse
 from app.utils.docx_utils import generar_doc_proforma
 from app.utils.excel_utils import generar_excel_proforma
@@ -32,18 +32,55 @@ def list_informaciones(
 ):
     return crud.get_informaciones(db, skip, limit)
 
+# @router.post(
+#     "/create-informacion",
+#     response_model=InformacionRead,              # <-- y aquí
+#     dependencies=[Depends(require_permission("create"))]
+# )
+# def create_informacion(
+#     info_in: InformacionCreate,                  # <-- y aqui InformacionCreate
+#     db: Session = Depends(get_db)
+# ):
+#     return crud.create_informacion(db, info_in)
+
 @router.post(
     "/create-informacion",
-    response_model=InformacionRead,              # <-- y aquí
-    dependencies=[Depends(require_permission("create"))]
+    response_model=InformacionRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("create"))],
 )
 def create_informacion(
-    info_in: InformacionCreate,                  # <-- y aqui InformacionCreate
+    info_in: InformacionCreate,
     db: Session = Depends(get_db)
 ):
-    return crud.create_informacion(db, info_in)
-
+    try:
+        return crud.create_informacion(db, info_in)
+    except RuntimeError as e:
+        # Duplicada u otra regla de negocio desde el CRUD
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except ValueError as e:
+        # Datos faltantes/invalidos desde el CRUD
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 # … el resto de endpoints igual …
+
+@router.post(
+    "/full-create",
+    response_model=InformacionRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_permission("create"))],
+)
+def full_create_informacion(
+    payload: InformacionCreateWithItems,
+    db: Session = Depends(get_db)
+):
+    try:
+        return create_informacion_con_items(db, payload)
+    except RuntimeError as e:
+        # duplicada u otra regla de negocio
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
 @router.get(
     "/listar-informaciones",
     response_model=List[InformacionRead],

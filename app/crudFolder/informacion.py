@@ -3,10 +3,22 @@ from datetime import date, datetime
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.models import Estado, Informacion, Item
-from app.schemasFolder.informacion import InformacionCreate
+from app.schemasFolder.informacion import InformacionCreate, InformacionCreateWithItems
 from sqlalchemy.orm import Session, selectinload
-# —— CRUD para tb_informacion ——————————————————————————————
+import re
+from sqlalchemy.exc import IntegrityError
 
+# —— CRUD para tb_informacion ——————————————————————————————
+def _normalize_necesidad(value: str | None) -> str:
+    """
+    Normaliza txt_necesidad: quita espacios, pasa a mayúsculas.
+    (Evita duplicados por diferencias mínimas)
+    """
+    if not value:
+        return ""
+    # quita espacios en blanco (también saltos de línea/tab)
+    v = re.sub(r"\s+", "", value)
+    return v.upper()
 def get_informacion(db: Session, proforma_id: int) -> Informacion | None:
     return db.query(Informacion)\
              .filter(Informacion.proforma_id == proforma_id)\
@@ -24,41 +36,182 @@ def get_informaciones(db: Session, skip: int = 0, limit: int = 100) -> list[Info
 #     db.commit()
 #     db.refresh(db_info)
 #     return db_info
+# def create_informacion(db: Session, info_in: InformacionCreate) -> Informacion:
+#     # 1) Convertir a dict y añadir " DÍAS" a los campos de plazo y vigencia
+#     data = info_in.dict()
+#     if data.get("txt_plazoEntrega") is not None:
+#         data["txt_plazoEntrega"] = f"{data['txt_plazoEntrega']} DÍAS"
+#     if data.get("txt_vigenciaOferta") is not None:
+#         data["txt_vigenciaOferta"] = f"{data['txt_vigenciaOferta']} DÍAS"
+#     if data.get("txt_garantia") is not None:
+#         data["txt_garantia"] = f"{data['txt_garantia']} MESES"
+    
+#     # 2) Generar el txt_infimaNro
+#     now = datetime.utcnow()
+#     # Cuenta cuántas filas ya existen
+#     total = db.query(func.count(Informacion.proforma_id)).scalar() or 0
+#     seq = total + 1
+#     # Formato DD-MM-XXXXXXXXXX
+#     data["txt_infimaNro"] = f"{now.day:02d}-{now.month:02d}-{seq:010d}"
+#     ultimo = db.query(func.max(Informacion.txt_numeroProforma)).scalar()
+#     if ultimo:
+#         try:
+#             seq = int(ultimo) + 1
+#         except:
+#             seq = 700
+#     else:
+#         seq = 700
+#     data["txt_numeroProforma"] = f"{seq:06d}"
+#      # 3) Fijar estado_id a 1 (CREADO) de manera explícita
+#     data["estado_id"] = 1
+
+#     # 2) Crear la instancia de Informacion con los valores procesados
+#     db_info = Informacion(**data)
+#     db.add(db_info)
+#     db.commit()
+#     db.refresh(db_info)
+#     return db_info
 def create_informacion(db: Session, info_in: InformacionCreate) -> Informacion:
-    # 1) Convertir a dict y añadir " DÍAS" a los campos de plazo y vigencia
     data = info_in.dict()
+
+    # 🔹 Normaliza y valida necesidad
+    necesidad_norm = _normalize_necesidad(data.get("txt_necesidad"))
+    if not necesidad_norm:
+        # si prefieres, lanza excepción y que el router la convierta a 400
+        raise ValueError("El campo txt_necesidad es obligatorio.")
+    data["txt_necesidad"] = necesidad_norm  # guarda ya normalizado
+
+    # 🔎 Chequeo de existencia (case-insensitive)
+    # En SQL Server usualmente la collation ya es case-insensitive,
+    # pero igual lo hacemos explícito:
+    existe = (
+        db.query(Informacion)
+          .filter(func.upper(Informacion.txt_necesidad) == necesidad_norm)
+          .first()
+    )
+    if existe:
+        # Lanzamos una excepción "semántica" para que el router la traduzca a 409
+        raise RuntimeError(f"Ya existe una proforma con la necesidad '{necesidad_norm}'.")
+
+    # 🔧 Completa campos con sufijos
     if data.get("txt_plazoEntrega") is not None:
         data["txt_plazoEntrega"] = f"{data['txt_plazoEntrega']} DÍAS"
     if data.get("txt_vigenciaOferta") is not None:
         data["txt_vigenciaOferta"] = f"{data['txt_vigenciaOferta']} DÍAS"
     if data.get("txt_garantia") is not None:
         data["txt_garantia"] = f"{data['txt_garantia']} MESES"
-    
-    # 2) Generar el txt_infimaNro
+
+    # 🧾 Generar txt_infimaNro
     now = datetime.utcnow()
-    # Cuenta cuántas filas ya existen
     total = db.query(func.count(Informacion.proforma_id)).scalar() or 0
     seq = total + 1
-    # Formato DD-MM-XXXXXXXXXX
     data["txt_infimaNro"] = f"{now.day:02d}-{now.month:02d}-{seq:010d}"
+
+    # 🧾 Generar txt_numeroProforma
     ultimo = db.query(func.max(Informacion.txt_numeroProforma)).scalar()
     if ultimo:
         try:
             seq = int(ultimo) + 1
-        except:
+        except Exception:
             seq = 700
     else:
         seq = 700
     data["txt_numeroProforma"] = f"{seq:06d}"
-     # 3) Fijar estado_id a 1 (CREADO) de manera explícita
+
+    # Estado por defecto
     data["estado_id"] = 1
 
-    # 2) Crear la instancia de Informacion con los valores procesados
     db_info = Informacion(**data)
     db.add(db_info)
     db.commit()
     db.refresh(db_info)
     return db_info
+
+
+
+def create_informacion_con_items(db: Session, payload: InformacionCreateWithItems) -> Informacion:
+    data = payload.dict()
+    items_data = data.pop("items", []) or []
+
+    # Normaliza / valida
+    necesidad_norm = _normalize_necesidad(data.get("txt_necesidad"))
+    if not necesidad_norm:
+        raise ValueError("El campo txt_necesidad es obligatorio.")
+    data["txt_necesidad"] = necesidad_norm
+
+    # Duplicidad (case-insensitive)
+    existe = (
+        db.query(Informacion)
+          .filter(func.upper(Informacion.txt_necesidad) == necesidad_norm)
+          .first()
+    )
+    if existe:
+        # aquí puedes lanzar HTTPException(409, ...) en el router
+        raise RuntimeError(f"Ya existe una proforma con la necesidad '{necesidad_norm}'.")
+
+    # Sufijos
+    if data.get("txt_plazoEntrega") is not None:
+        data["txt_plazoEntrega"] = f"{data['txt_plazoEntrega']} DÍAS"
+    if data.get("txt_vigenciaOferta") is not None:
+        data["txt_vigenciaOferta"] = f"{data['txt_vigenciaOferta']} DÍAS"
+    if data.get("txt_garantia") is not None:
+        data["txt_garantia"] = f"{data['txt_garantia']} MESES"
+
+    # Consecutivos
+    now = datetime.utcnow()
+    total = db.query(func.count(Informacion.proforma_id)).scalar() or 0
+    seq = total + 1
+    data["txt_infimaNro"] = f"{now.day:02d}-{now.month:02d}-{seq:010d}"
+
+    ultimo = db.query(func.max(Informacion.txt_numeroProforma)).scalar()
+    if ultimo:
+        try:
+            seq = int(ultimo) + 1
+        except Exception:
+            seq = 700
+    else:
+        seq = 700
+    data["txt_numeroProforma"] = f"{seq:06d}"
+    data["estado_id"] = 1
+
+    try:
+        # ❌ NO usar with db.begin():
+        db_info = Informacion(**data)
+        db.add(db_info)
+        db.flush()  # obtiene proforma_id
+
+        # Inserta items en el orden indicado
+        for it in sorted(items_data, key=lambda x: x.get("int_orden", 0)):
+            db.add(Item(
+                proforma_id=db_info.proforma_id,
+                txt_cpc=it["txt_cpc"].strip(),
+                txt_unidad=(it["txt_unidad"] or "").strip().upper(),
+                txt_especificaciones=it["txt_especificaciones"].strip(),
+                int_cantidad=it["int_cantidad"],
+                flo_precioUnitario=it.get("flo_precioUnitario"),
+                flo_precioTotal=it.get("flo_precioTotal"),
+                flo_total=it.get("flo_total"),
+                int_orden=it["int_orden"],
+            ))
+
+        db.commit()          # ✅ confirmas todo junto
+        db.refresh(db_info)  # refresca cabecera
+    except IntegrityError as e:
+        db.rollback()
+        # si luego pones UNIQUE(txt_necesidad) puedes mapear a 409
+        raise
+    except Exception:
+        db.rollback()
+        raise
+
+    # Devuelve con items ordenados (relationship ya tiene order_by)
+    return (
+        db.query(Informacion)
+          .options(selectinload(Informacion.items))
+          .filter(Informacion.proforma_id == db_info.proforma_id)
+          .first()
+    )
+
 def update_informacion(
     db: Session,
     proforma_id: int,

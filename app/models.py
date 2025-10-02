@@ -3,6 +3,8 @@ from sqlalchemy import Column, Float, Integer, String, Boolean, DateTime, Table,
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
+from sqlalchemy import Text  # al inicio del archivo, si no lo has importado
+
 
 # ——— Tablas intermedias ————————————————————————————————————
 user_roles = Table(
@@ -205,7 +207,7 @@ class Item(Base):
     items_id        = Column(Integer, primary_key=True, index=True)
     txt_cpc         = Column(String(255), nullable=True)
     txt_unidad      = Column(String(255), nullable=True)
-    txt_especificaciones = Column(String(255), nullable=True)
+    txt_especificaciones = Column(Text, nullable=True)
     int_cantidad = Column(Integer, nullable=True)
     flo_precioUnitario = Column(Float, nullable=True)
     flo_precioTotal = Column(Float, nullable=True)
