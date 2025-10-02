@@ -163,7 +163,7 @@ class Informacion(Base):
     txt_ruc = Column(String(13), nullable=True)
     txt_direccion = Column(String(255), nullable=True)
     txt_fecha = Column(String(10), nullable=True)
-    txt_telefono = Column(String(11), nullable=True)
+    txt_telefono = Column(Text, nullable=True)
     txt_necesidad = Column(String(255), nullable=True)
     txt_funcionario = Column(String(255), nullable=True)
     txt_correo = Column(String(255), nullable=True)
@@ -176,7 +176,7 @@ class Informacion(Base):
     txt_garantia           = Column(String(255), nullable=True)
     txt_formaPago          = Column(String(255), nullable=True)
     txt_metodologiaTrabajo = Column(String(255), nullable=True)
-    txt_enlace             = Column(String(255), nullable=True)
+    txt_enlace             = Column(Text, nullable=True)
     txt_infimaNro          = Column(String(255), nullable=True)
     txtUsuarioRegistra     = Column(String(255), nullable=True)
     dFechaRegistro = Column(
