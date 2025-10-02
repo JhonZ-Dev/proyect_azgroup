@@ -33,6 +33,13 @@ span{
   font-size: 11px;
   text-align: center;
 }
+.p-floatlabel label{
+  font-size: 9px;
+}
+label{
+  font-size: 9px;
+}
+
 .material-icon-theme--pdf {
   display: inline-block;
   width: 28px;

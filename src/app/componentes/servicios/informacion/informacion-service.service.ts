@@ -21,16 +21,16 @@ export class InformacionServiceService {
   public createInformacion(payload: any) {
     // 1) Lee el token
     const token = localStorage.getItem('access_token');
-    console.log('[InformacionService] token leído de localStorage:', token);
+    //console.log('[InformacionService] token leído de localStorage:', token);
     // 2) Construye las cabeceras
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`
     });
-    console.log('[InformacionService] cabeceras a enviar:', {
-      'Content-Type': headers.get('Content-Type'),
-      Authorization: headers.get('Authorization')
-    });
+    // console.log('[InformacionService] cabeceras a enviar:', {
+    //   'Content-Type': headers.get('Content-Type'),
+    //   Authorization: headers.get('Authorization')
+    // });
     // 3) Lanza la petición
     return this.http.post<any>(
       `${this.urlInformacion}create-informacion`,
@@ -93,6 +93,16 @@ public extraerDesdeEnlace(url: string): Observable<any> {
   return this.http.post<any>(
     `${this.urlInformacion}extract`,   // ⬅️ ajusta el endpoint si es diferente
     { url },
+    { headers }
+  );
+}
+
+public fullCreate(payload: any) {
+  const headers = this.buildHeaders();
+  // Ajusta la ruta según tu router backend
+  return this.http.post<any>(
+    `${this.urlInformacion}full-create`,
+    payload,
     { headers }
   );
 }

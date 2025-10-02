@@ -3,10 +3,9 @@
   style="margin-bottom:1rem;">
   <h3 class="font-bold text-white font-[Montserrat] text-center">INFORMACIÓN DE CONTACTO</h3>
 </div>
-<form [formGroup]="cotizacionForm" (ngSubmit)="submit()">
-  <!-- Sección de Datos de la Información -->
+<form [formGroup]="cotizacionForm" (ngSubmit)="submitFull()">
   <div>
-    <div class="grid grid-cols-1 sm:grid-cols-10 gap-4">
+    <!-- <div class="grid grid-cols-1 sm:grid-cols-10 gap-4">
 
       <input pInputText formControlName="txt_cliente" placeholder="Cliente" class="col-span-2 input-field"
         appUppercase />
@@ -32,8 +31,65 @@
     <div class="text-center mt-5 mb-2">
       <textarea rows="1" cols="150" pTextarea formControlName="txt_objetivoCompra" placeholder="Objeto de Compra"
         [autoResize]="true" appUppercase></textarea>
+    </div> -->
+    <div class="grid grid-cols-3 gap-4">
+      <!-- Columna 1 -->
+      <div class="space-y-4 col-span-2">
+        <!-- Fila con 4 elementos -->
+        <div class="grid grid-cols-4 gap-2">
+          <div class="">
+            <input pInputText formControlName="txt_cliente" placeholder="Cliente" class="w-full" appUppercase
+              styleClass="w-full" />
+          </div>
+          <div class="">
+            <input pInputText formControlName="txt_necesidad" placeholder="Código Necesidad de Contratación"
+              class="w-full" styleClass="w-full" appUppercase />
+          </div>
+          <div class="">
+            <input pInputText formControlName="txt_ruc" placeholder="RUC" class="bg-gray-200 cursor-not-allowed w-full"
+              readonly styleClass="w-full" />
+          </div>
+          <div class="">
+            <input pInputText formControlName="txt_direccion" placeholder="Dirección" class="input-field w-full"
+              appUppercase styleClass="w-full" />
+          </div>
+        </div>
+        <hr>
+        <!-- Fila con 5 elementos -->
+        <div class="grid grid-cols-5 gap-2">
+          <div>
+            <input pInputText formControlName="txt_fecha" placeholder="Fecha de Publicación de la Necesidad"
+              class="input-field w-full" styleClass="w-full" />
+          </div>
+          <div>
+            <input pInputText formControlName="tHora_maxina" placeholder="Fecha Límite para la entrega de Proformas"
+              class="input-field w-full" styleClass="w-full" />
+
+          </div>
+          <!--Tercero-->
+          <div>
+            <input pInputText formControlName="txt_telefono" placeholder="Teléfono" class="input-field w-full"
+              styleClass="w-full" />
+          </div>
+          <div>
+            <input pInputText formControlName="txt_funcionario" placeholder="Funcionario" class="input-field w-full"
+              appUppercase styleClass="w-full" />
+          </div>
+          <div>
+            <input pInputText formControlName="txt_correo" placeholder="Correo" class="w-full input-field" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna 2 -->
+      <div class="pl-4 border-l-2 border-gray-300">
+        <textarea class="w-full resize-none" rows="5" pTextarea formControlName="txt_objetivoCompra"
+          placeholder="Objeto de Compra" [autoResize]="true" appUppercase></textarea>
+      </div>
+
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-9 justify-start items-center gap-4">
+    <hr class="h-2 my-4" >
+    <div class="grid grid-cols-1 md:grid-cols-9 justify-start items-center gap-4 mt-2">
       <div>
         <p-floatlabel variant="on">
           <p-inputgroup>
@@ -106,122 +162,148 @@
     </div>
   </div>
 
-  <!-- Sección de Ítems -->
-
   <div class="flex flex-row gap-4">
     <div class="flex-grow basis-2/3">
-      <div class="p-3 mt-2 bg-[#0898d1] rounded-lg card flex items-center space-x-4 justify-center"
+      <div class="p-2 mt-2 bg-[#0898d1] rounded-lg card flex items-center space-x-4 justify-center"
         style="margin-bottom:1rem; ">
         <h3 class="font-bold text-white font-[Montserrat]">ÍTEMS</h3>
       </div>
       <button type="button" (click)="addItem()"
-        class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 mb-4">
+        class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 mb-2">
         + Agregar Ítem
       </button>
-      <!-- Diseño tipo tabla -->
-      <div class="grid grid-cols-8 gap-2 items-center bg-gray-100 p-2 rounded-t-lg border border-gray-300">
-        <span class="font-bold text-gray-700 text-center">ID</span>
-        <span class="font-bold text-gray-700 text-center">CPC</span>
-        <span class="font-bold text-gray-700 text-center">Unidad</span>
-        <span class="font-bold text-gray-700 text-center">Especificaciones</span>
-        <span class="font-bold text-gray-700 text-center">Cantidad</span>
-        <span class="font-bold text-gray-700 text-center">Precio Unitario</span>
-        <span class="font-bold text-gray-700 text-center">Total</span>
-        <span class="font-bold text-gray-700 text-center">Acciones</span>
-      </div>
-      <div formArrayName="items"
-        class="space-y-2 max-h-80 overflow-y-auto border-x border-b border-gray-300 rounded-b-lg bg-white">
-        <div *ngFor="let itemCtrl of itemsArray.controls; let i = index" [formGroupName]="i"
-          class="grid grid-cols-8 gap-4 items-center p-2 border border-gray-300 rounded-lg bg-white">
-          <span class="text-center">{{ itemCtrl.get('id')?.value }}</span>
-          <input pInputText formControlName="txt_cpc" placeholder="CPC" class="w-full" styleClass="w-full" />
-          <input pInputText formControlName="txt_unidad" placeholder="Unidad" class="w-full" styleClass="w-full"
-            appUppercase />
-          <input pInputText formControlName="txt_especificaciones" placeholder="Especificaciones" class="w-full"
-            styleClass="w-full" appUppercase (dblclick)="abrirDialogEspecificacion(i)" />
-          <input pInputText type="number" formControlName="int_cantidad" (input)="updateTotals(i)"
-            placeholder="Cantidad" class="w-full" styleClass="w-full" />
-          <input pInputText type="number" formControlName="flo_precioUnitario" step="0.01" (input)="updateTotals(i)"
-            placeholder="Precio Unitario" class="w-full" styleClass="w-full" />
-          <input pInputText formControlName="flo_precioTotal" readonly placeholder="Precio Total"
-            class="w-full bg-gray-200" styleClass="w-full" />
-          <button type="button" (click)="removeItem(i)" class="pi pi-trash">
-          </button>
-        </div>
-      </div>
-      <div class="grid grid-cols-7 gap-4 p-4 border-t border-gray-300 bg-gray-50 font-semibold">
-        <!-- Ocupamos 5 columnas para la etiqueta -->
-        <div class="col-span-5 text-right">Total General:</div>
-        <!-- Sexta columna: el valor -->
-        <div>{{ totalGeneral | number:'1.2-2' }}</div>
-        <!-- Séptima columna: vacía o un espacio -->
-        <div></div>
-      </div>
-    </div>
-    <div class="basis-1/3">
-      <div class="p-3 mt-2 bg-[#0898d1] rounded-lg card flex items-center space-x-4 justify-center"
-        style="margin-bottom:1rem;">
-        <h3 class="font-bold text-white font-[Montserrat]">COTIZAR</h3>
-      </div>
+
       <br>
-      <br>
-      <!-- Cabecera -->
-      <div class="grid grid-cols-6 gap-2 items-center bg-gray-100 p-2 rounded-t-lg border border-gray-300">
-        <span class="font-bold text-gray-700 text-center">ID</span>
-        <span class="font-bold text-gray-700 text-center">P.U (Cotizar)</span>
-        <span class="font-bold text-gray-700 text-center">P.T</span>
-        <span class="font-bold text-gray-700 text-center">DIFERENCIA</span>
-        <span class="font-bold text-gray-700 text-center">P.U (Base)</span>
-        <span class="font-bold text-gray-700 text-center">P.V</span>
-      </div>
-      <!-- Filas dinámicas -->
-      <div class="space-y-2 max-h-80 overflow-y-auto border-x border-gray-300 bg-white">
-        <div *ngFor="let itemCtrl of itemsArray.controls; let i = index"
-          class="grid grid-cols-6 gap-2 items-center p-2 border-x border-b border-gray-300 bg-white">
-          <span class="text-center">{{ itemCtrl.get('id')?.value }}</span>
-          <!-- P.U Cotizar (input libre) -->
-          <input pInputText class="w-full border rounded p-1 text-xs" name="puCotizar_{{ i }}"
-            [(ngModel)]="cotizarValores[i].puCotizar" [ngModelOptions]="{ standalone: true }"
-            (ngModelChange)="calcularCotizar(i)" styleClass="w-full" />
+      <table class="w-full table-auto text-xs">
+        <thead class="bg-gray-100 text-xs">
+          <tr class="text-gray-700 text-xs">
+            <th class="px-2 py-2 text-center w-14">ID</th>
+            <th class="px-2 py-2 text-center w-28">CPC</th>
+            <th class="px-2 py-2 text-center w-24">Unidad</th>
+            <th class="px-2 py-2 text-center min-w-[280px]">Especificaciones</th>
+            <th class="px-2 py-2 text-center w-24">Cantidad</th>
+            <th class="px-2 py-2 text-center w-24">Precio Unitario</th>
+            <th class="px-2 py-2 text-center w-28">Total</th>
 
-          <!-- P.T = cantidad * P.U Cotizar -->
-          <span class="text-center">{{ cotizarValores[i].pt | number:'1.2-2' }}</span>
+            <!--SEGUNDA TABLA PARA NO PERDERSE-->
+            <th class="px-2 py-2 text-center w-28 border-l-2 border-gray-300">P.U (Cotizar)</th>
+            <th class="px-2 py-2 text-center w-24">P.T</th>
+            <th class="px-2 py-2 text-center w-28">DIFERENCIA</th>
+            <th class="px-2 py-2 text-center w-28">P.U (Base)</th>
+            <th class="px-2 py-2 text-center w-24">P.V</th>
+            <th class="px-2 py-2 text-center w-16">Acciones</th>
+          </tr>
+        </thead>
+        <tbody formArrayName="items" class="align-top">
+          <tr *ngFor="let itemCtrl of itemsArray.controls; let i = index" [formGroupName]="i"
+            class="border-t odd:bg-white even:bg-gray-50">
+            <td class="px-2 py-2 text-center">
+              {{ itemCtrl.get('id')?.value }}
+            </td>
+            <td class="px-2 py-2">
+              <input pInputText formControlName="txt_cpc" placeholder="CPC" class="w-full text-sm"
+                styleClass="w-full" />
+            </td>
+            <td class="px-2 py-2">
+              <input pInputText formControlName="txt_unidad" placeholder="Unidad" class="w-full text-sm"
+                styleClass="w-full" appUppercase />
+            </td>
+            <td class="px-2 py-2">
+              <input pInputText formControlName="txt_especificaciones" placeholder="Especificaciones"
+                class="w-full text-sm" styleClass="w-full" appUppercase (dblclick)="abrirDialogEspecificacion(i)" />
+            </td>
+            <td class="px-2 py-2">
+              <input pInputText type="number" formControlName="int_cantidad" (input)="updateTotals(i)" placeholder="0"
+                class="w-full text-sm" styleClass="w-full" />
+            </td>
+            <td class="px-2 py-2">
+              <input pInputText type="number" formControlName="flo_precioUnitario" step="0.01" (input)="updateTotals(i)"
+                placeholder="Precio Unitario" class="w-full text-sm" styleClass="w-full" />
+            </td>
+            <td class="px-2 py-2">
+              <input pInputText formControlName="flo_precioTotal" readonly placeholder="0.00"
+                class="w-full text-sm bg-gray-100" styleClass="w-full" />
+            </td>
 
-          <!-- DIFERENCIA (de la tabla principal) -->
-          <span class="text-center">{{ cotizarValores[i].diferencia | number:'1.2-2' }}</span>
-          <!-- P.U Base (ya ingresado en la tabla principal) -->
-          <span class="text-center">{{ itemCtrl.get('flo_precioUnitario')?.value }}</span>
-          <!-- P.V = cantidad * P.U Base -->
-          <span class="text-center">{{ cotizarValores[i].pv | number:'1.2-2' }}</span>
-        </div>
-      </div>
+            <!--SEGUNDA TABLA-->
+            <td class="px-2 py-2 text-center border-l-2 border-gray-300">
+              <input pInputText class="w-full text-sm" name="puCotizar_{{ i }}"
+                [(ngModel)]="cotizarValores[i].puCotizar" [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="calcularCotizar(i)" styleClass="w-full" />
+            </td>
 
-      <!-- Totales generales Cotizar -->
-      <div class="grid grid-cols-6 gap-2 p-2 border-t border-gray-300 bg-gray-50 font-semibold">
-        <!-- PT debajo de col 3 -->
-        <div class="col-start-3 text-xs text-center">
-          {{ totalPT | number:'1.2-2' }}
-        </div>
+            <td class="px-2 py-2 text-center text-amber-600">
+              {{ cotizarValores[i].pt | number:'1.2-2' }}
+            </td>
+            <td class="px-2 py-2 text-center text-rose-600">
+              {{ cotizarValores[i].diferencia | number:'1.2-2' }}
+            </td>
+            <td class="px-2 py-2 text-center">
+              {{ itemCtrl.get('flo_precioUnitario')?.value }}
+            </td>
+            <td class="px-2 py-2 text-center text-blue-600">
+              {{ cotizarValores[i].pv | number:'1.2-2' }}
+            </td>
+            <td class="px-2 py-2 text-center">
+              <button type="button" (click)="removeItem(i)" class="p-2 rounded hover:bg-red-50"
+                aria-label="Eliminar fila">
+                <i class="pi pi-trash text-red-600"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
 
-        <!-- Diferencia debajo de col 4 -->
-        <div class="col-start-4 text-xs text-center">
-          {{ totalDiferencia | number:'1.2-2' }}
-        </div>
+        <tfoot>
+          <tr class="bg-gray-50 font-semibold border-t">
+            <!-- Cols 1..6 -->
+            <td colspan="6" class="px-2 py-3 text-right">Total General:</td>
 
-        <!-- PV debajo de col 6 -->
-        <div class="col-start-6 text-xs text-center">
-          {{ totalPV | number:'1.2-2' }}
-        </div>
-      </div>
+            <!-- Col 7: Total -->
+            <td class="px-2 py-3 text-center text-emerald-600">
+              {{ totalGeneral | number:'1.2-2' }}
+            </td>
+
+            <!-- Col 8: P.U (Cotizar) -> vacío -->
+            <td></td>
+
+            <!-- Col 9: P.T -->
+            <td class="px-2 py-3 text-center text-green-400">
+              {{ totalPT | number:'1.2-2' }}
+            </td>
+
+            <!-- Col 10: DIFERENCIA -->
+            <td class="px-2 py-3 text-center" [ngClass]="{
+                'text-red-600': totalDiferencia < 0,
+                'text-green-600': totalDiferencia > 0,
+                'text-gray-600': totalDiferencia === 0
+              }">
+              {{ totalDiferencia | number:'1.2-2' }}
+            </td>
+
+            <!-- Col 11: P.U (Base) -> vacío -->
+            <td></td>
+
+            <!-- Col 12: P.V -->
+            <td class="px-2 py-3 text-center">
+              {{ totalPV | number:'1.2-2' }}
+            </td>
+
+            <!-- Col 13: Acciones -> vacío -->
+            <td></td>
+          </tr>
+        </tfoot>
+
+      </table>
     </div>
   </div>
-
-  <!-- Botón de Guardar -->
   <div class="text-right">
-    <button type="submit" class="btn-grad  py-3 px-6 rounded-lg">
-      Guardar Todo
+    <button type="submit" class="btn-grad py-3 px-6 rounded-lg inline-flex items-center gap-2"
+      [disabled]="cotizacionForm.disabled || saving" [attr.aria-busy]="saving ? 'true' : null">
+      <i *ngIf="saving" class="pi pi-spinner pi-spin"></i>
+      <span>{{ saving ? 'Guardando...' : 'Guardar Todo' }}</span>
     </button>
   </div>
+
 </form>
 
 
@@ -249,3 +331,53 @@
     <span class="text-lg">Cargando datos del enlace...</span>
   </div>
 </p-dialog>
+
+<!-- <div class="grid grid-cols-3 gap-4">
+  <div class="space-y-4 col-span-2">
+    <div class="grid grid-cols-4 gap-2">
+      <div class="">
+        <input pInputText formControlName="txt_cliente" placeholder="Cliente" class="w-full" appUppercase
+          styleClass="w-full" />
+      </div>
+      <div class="">
+        <input pInputText formControlName="txt_necesidad" placeholder="Código Necesidad de Contratación" class="w-full"
+          styleClass="w-full" appUppercase />
+      </div>
+      <div class="">
+        <input pInputText formControlName="txt_ruc" placeholder="RUC" class="bg-gray-200 cursor-not-allowed w-full"
+          readonly styleClass="w-full" />
+      </div>
+      <div class="">
+        <input pInputText formControlName="txt_direccion" placeholder="Dirección" class="input-field w-full"
+          appUppercase styleClass="w-full" />
+      </div>
+    </div>
+    <hr>
+    <div class="grid grid-cols-5 gap-2">
+      <div>
+        <input pInputText formControlName="txt_fecha" placeholder="Fecha de Publicación de la Necesidad"
+          class="input-field w-full" styleClass="w-full" />
+      </div>
+      <div>
+        <input pInputText formControlName="tHora_maxina" placeholder="Fecha Límite para la entrega de Proformas"
+          class="input-field w-full" styleClass="w-full" />
+      </div>
+      <div>
+        <input pInputText formControlName="txt_telefono" placeholder="Teléfono" class="input-field w-full"
+          styleClass="w-full" />
+      </div>
+      <div>
+        <input pInputText formControlName="txt_funcionario" placeholder="Funcionario" class="input-field w-full"
+          appUppercase styleClass="w-full" />
+      </div>
+      <div>
+        <input pInputText formControlName="txt_correo" placeholder="Correo" class="w-full input-field" />
+      </div>
+    </div>
+  </div>
+  <div class="">
+    <textarea class="w-full resize-none" rows="5" pTextarea formControlName="txt_objetivoCompra"
+      placeholder="Objeto de Compra" [autoResize]="true" appUppercase></textarea>
+  </div>
+
+</div> -->

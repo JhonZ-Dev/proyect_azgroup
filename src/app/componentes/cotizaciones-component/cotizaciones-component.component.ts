@@ -2,7 +2,7 @@ import { Component, EventEmitter, HostListener, Input, Output } from '@angular/c
 import { ItemsServiceService } from '../servicios/items/items-service.service';
 import { InformacionServiceService } from '../servicios/informacion/informacion-service.service';
 import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, NgControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { combineLatest, forkJoin, startWith, switchMap } from 'rxjs';
+import { combineLatest, finalize, forkJoin, startWith, switchMap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -174,58 +174,207 @@ export class CotizacionesComponentComponent {
       item.flo_precioTotal !== null;
   }
 
+  saving = false;
 
   submit() {
+    if (this.cotizacionForm.invalid) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Formulario incompleto',
+        detail: 'Revisa los campos obligatorios.',
+        life: 3000,
+      });
+      return;
+    }
+
     const raw = this.cotizacionForm.getRawValue();
     let { items: itemsRaw, ...infoPayload } = raw;
 
-    // 🔹 Filtrar ítems incompletos
+    // Filtrar ítems incompletos
     itemsRaw = itemsRaw.filter((it: any) => this.isItemComplete(it));
-
     if (itemsRaw.length === 0) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Advertencia',
         detail: 'Debe ingresar al menos un ítem válido antes de guardar.',
-        life: 3000
+        life: 3000,
       });
       return;
     }
+
+    // Orden explícito para conservar el orden visual del usuario
     itemsRaw = itemsRaw.map((it: any, idx: number) => ({
       ...it,
-      int_orden: idx + 1 // 👈 el orden real en la tabla
+      int_orden: idx + 1,
     }));
 
-    //console.log('Payload Información a enviar:', infoPayload);
-    //console.log('Items a enviar (filtrados):', itemsRaw);
+    // Bloquea la UI mientras guarda
+    const prevDisabled = this.cotizacionForm.disabled;
+    this.saving = true;
+    this.cotizacionForm.disable();
+    console.log("Info a enviar", infoPayload)
+    // this.infoSvc.createInformacion(infoPayload).pipe(
+    //   // Solo si la info se crea OK, pasamos a crear ítems
+    //   switchMap(resInfo => {
+    //     const proforma_id = resInfo.proforma_id;
+    //     return forkJoin(
+    //       itemsRaw.map((it: any) => this.itemSvc.createItem({ ...it, proforma_id }))
+    //     );
+    //   }),
+    //   finalize(() => {
+    //     this.saving = false;
+    //     if (!prevDisabled) this.cotizacionForm.enable();
+    //   })
+    // ).subscribe({
+    //   next: _ => {
+    //     this.messageService.add({
+    //       severity: 'success',
+    //       summary: 'Éxito',
+    //       detail: 'Cotización creada',
+    //       life: 3000
+    //     });
 
-    // // 3) Crear la información primero
-    this.infoSvc.createInformacion(infoPayload).pipe(
-      // 4) Con el proforma_id crear todos los ítems
-      switchMap(resInfo => {
-        const proforma_id = resInfo.proforma_id;
-        const calls = itemsRaw.map((it: any) =>
-          this.itemSvc.createItem({ ...it, proforma_id })
-        );
-        return forkJoin(calls);
+    //     // Reset del formulario y reinicio de la primera fila
+    //     this.cotizacionForm.reset();
+    //     this.itemsArray.clear();
+    //     this.addItem();
+    //   },
+    //   error: err => {
+    //     // Usar los mensajes del backend si existen
+    //     const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
+
+    //     if (err?.status === 409) {
+    //       // txt_necesidad duplicada
+    //       this.messageService.add({
+    //         severity: 'warn',
+    //         summary: 'Registro duplicado',
+    //         detail: backendMsg || 'La necesidad ya existe. No se puede crear otra proforma con el mismo código.',
+    //         life: 4000
+    //       });
+    //       return;
+    //     }
+
+    //     if (err?.status === 400) {
+    //       // Datos inválidos
+    //       this.messageService.add({
+    //         severity: 'warn',
+    //         summary: 'Datos inválidos',
+    //         detail: backendMsg || 'Revise los campos enviados.',
+    //         life: 4000
+    //       });
+    //       return;
+    //     }
+
+    //     // Otros errores (500, red, etc.)
+    //     this.messageService.add({
+    //       severity: 'error',
+    //       summary: 'Error',
+    //       detail: backendMsg || 'No se pudo guardar la cotización.',
+    //       life: 4000
+    //     });
+    //   }
+    // });
+  }
+
+  submitFull() {
+    if (this.cotizacionForm.invalid) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Formulario incompleto',
+        detail: 'Revisa los campos obligatorios.',
+        life: 3000,
+      });
+      return;
+    }
+
+    const raw = this.cotizacionForm.getRawValue();
+    let { items: itemsRaw, ...infoPayload } = raw;
+
+    // Filtrar ítems incompletos
+    itemsRaw = itemsRaw.filter((it: any) => this.isItemComplete(it));
+    if (itemsRaw.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'Debe ingresar al menos un ítem válido antes de guardar.',
+        life: 3000,
+      });
+      return;
+    }
+
+    // Mapea ítems y agrega int_orden (1..n). OJO: no enviamos el "id" del front.
+    const itemsPayload = itemsRaw.map((it: any, idx: number) => ({
+      txt_cpc: it.txt_cpc,
+      txt_unidad: it.txt_unidad,
+      txt_especificaciones: it.txt_especificaciones,
+      int_cantidad: it.int_cantidad,
+      flo_precioUnitario: it.flo_precioUnitario,
+      flo_precioTotal: it.flo_precioTotal,
+      flo_total: it.flo_total,
+      int_orden: idx + 1,
+    }));
+
+    // Payload único para el endpoint full-create
+    const payload = {
+      ...infoPayload,      // incluye txtUsuarioRegistra porque usamos getRawValue()
+      items: itemsPayload, // 👈 aquí van los ítems con int_orden
+    };
+
+    const prevDisabled = this.cotizacionForm.disabled;
+    this.saving = true;
+    this.cotizacionForm.disable();
+    console.log("payload a enviar", payload)
+    this.infoSvc.fullCreate(payload).pipe(
+      finalize(() => {
+        this.saving = false;
+        if (!prevDisabled) this.cotizacionForm.enable();
       })
     ).subscribe({
       next: _ => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Cotización creada', life: 3000 });
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: 'Cotización creada',
+          life: 3000
+        });
 
-        // 5) Resetear el formulario a su estado inicial
+        // Reset del formulario y reinicio de la primera fila
         this.cotizacionForm.reset();
-        // Limpiar el arreglo de items y volver a crear la primera fila
         this.itemsArray.clear();
         this.addItem();
       },
       error: err => {
-        console.error('Error al guardar:', err);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la cotización', life: 3000 });
+        const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
+
+        if (err?.status === 409) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Registro duplicado',
+            detail: backendMsg || 'La necesidad ya existe. No se puede crear otra proforma con el mismo código.',
+            life: 4000
+          });
+          return;
+        }
+
+        if (err?.status === 400) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Datos inválidos',
+            detail: backendMsg || 'Revise los campos enviados.',
+            life: 4000
+          });
+          return;
+        }
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: backendMsg || 'No se pudo guardar la cotización.',
+          life: 4000
+        });
       }
     });
   }
-
   calcularCotizar(i: number) {
     const item = this.itemsArray.at(i);
     const cantidad = Number(item.get('int_cantidad')?.value) || 0;
