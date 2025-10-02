@@ -15,6 +15,17 @@ class ItemBase(BaseModel):
 class ItemCreate(ItemBase):
     proforma_id: int
 
+class ItemCreateIn(BaseModel):
+    txt_cpc: str
+    txt_unidad: str
+    txt_especificaciones: str
+    int_cantidad: int
+    flo_precioUnitario: Optional[float] = None
+    flo_precioTotal: Optional[float] = None
+    flo_total: Optional[float] = None
+    int_orden: int
+    class Config:
+        extra = "ignore"  # ignora campos extra si llegan
 class ItemRead(ItemBase):
     items_id:    int
     proforma_id: int
