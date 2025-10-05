@@ -1,4 +1,7 @@
 <p-toast />
+<div class="text-right">
+  <app-update-cotizaciones (cotizacionEncontrada)="cargarCotizacion($event)"></app-update-cotizaciones>
+</div>
 <div class="p-3 mt-2 bg-[#0898d1] rounded-lg card flex items-center justify-center space-x-4"
   style="margin-bottom:1rem;">
   <h3 class="font-bold text-white font-[Montserrat] text-center">INFORMACIÓN DE CONTACTO</h3>
@@ -88,7 +91,7 @@
       </div>
 
     </div>
-    <hr class="h-2 my-4" >
+    <hr class="h-2 my-4">
     <div class="grid grid-cols-1 md:grid-cols-9 justify-start items-center gap-4 mt-2">
       <div>
         <p-floatlabel variant="on">
@@ -298,10 +301,16 @@
   </div>
   <div class="text-right">
     <button type="submit" class="btn-grad py-3 px-6 rounded-lg inline-flex items-center gap-2"
+    [disabled]="cotizacionForm.disabled || saving"
+    [attr.aria-busy]="saving ? 'true' : null">
+    <i *ngIf="saving" class="pi pi-spinner pi-spin"></i>
+    <span>{{ saving ? (cargandoParaEditar ? 'Actualizando...' : 'Guardando...') : (cargandoParaEditar ? 'Actualizar Todo' : 'Guardar Todo') }}</span>
+  </button>
+    <!-- <button type="submit" class="btn-grad py-3 px-6 rounded-lg inline-flex items-center gap-2"
       [disabled]="cotizacionForm.disabled || saving" [attr.aria-busy]="saving ? 'true' : null">
       <i *ngIf="saving" class="pi pi-spinner pi-spin"></i>
       <span>{{ saving ? 'Guardando...' : 'Guardar Todo' }}</span>
-    </button>
+    </button> -->
   </div>
 
 </form>
@@ -332,52 +341,3 @@
   </div>
 </p-dialog>
 
-<!-- <div class="grid grid-cols-3 gap-4">
-  <div class="space-y-4 col-span-2">
-    <div class="grid grid-cols-4 gap-2">
-      <div class="">
-        <input pInputText formControlName="txt_cliente" placeholder="Cliente" class="w-full" appUppercase
-          styleClass="w-full" />
-      </div>
-      <div class="">
-        <input pInputText formControlName="txt_necesidad" placeholder="Código Necesidad de Contratación" class="w-full"
-          styleClass="w-full" appUppercase />
-      </div>
-      <div class="">
-        <input pInputText formControlName="txt_ruc" placeholder="RUC" class="bg-gray-200 cursor-not-allowed w-full"
-          readonly styleClass="w-full" />
-      </div>
-      <div class="">
-        <input pInputText formControlName="txt_direccion" placeholder="Dirección" class="input-field w-full"
-          appUppercase styleClass="w-full" />
-      </div>
-    </div>
-    <hr>
-    <div class="grid grid-cols-5 gap-2">
-      <div>
-        <input pInputText formControlName="txt_fecha" placeholder="Fecha de Publicación de la Necesidad"
-          class="input-field w-full" styleClass="w-full" />
-      </div>
-      <div>
-        <input pInputText formControlName="tHora_maxina" placeholder="Fecha Límite para la entrega de Proformas"
-          class="input-field w-full" styleClass="w-full" />
-      </div>
-      <div>
-        <input pInputText formControlName="txt_telefono" placeholder="Teléfono" class="input-field w-full"
-          styleClass="w-full" />
-      </div>
-      <div>
-        <input pInputText formControlName="txt_funcionario" placeholder="Funcionario" class="input-field w-full"
-          appUppercase styleClass="w-full" />
-      </div>
-      <div>
-        <input pInputText formControlName="txt_correo" placeholder="Correo" class="w-full input-field" />
-      </div>
-    </div>
-  </div>
-  <div class="">
-    <textarea class="w-full resize-none" rows="5" pTextarea formControlName="txt_objetivoCompra"
-      placeholder="Objeto de Compra" [autoResize]="true" appUppercase></textarea>
-  </div>
-
-</div> -->

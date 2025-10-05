@@ -17,10 +17,12 @@ import { LoginServiceService } from '../servicios/login/login-service.service';
 import { UppercaseDirective } from '../../shared/directives/uppercase.directive';
 import { FloatLabel } from 'primeng/floatlabel';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { UpdateCotizacionesComponent } from "./update-cotizaciones/update-cotizaciones.component";
+import { InformacionRead } from '../modelos/informacion/informacion';
 
 @Component({
   selector: 'app-cotizaciones-component',
-  imports: [FormsModule, CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, InputNumberModule, TextareaModule, InputGroupModule, InputGroupAddonModule, Toast, DialogModule, UppercaseDirective, FloatLabel, ProgressSpinnerModule],
+  imports: [FormsModule, CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, InputNumberModule, TextareaModule, InputGroupModule, InputGroupAddonModule, Toast, DialogModule, UppercaseDirective, FloatLabel, ProgressSpinnerModule, UpdateCotizacionesComponent],
   templateUrl: './cotizaciones-component.component.html',
   styleUrl: './cotizaciones-component.component.css',
   standalone: true,
@@ -42,6 +44,7 @@ export class CotizacionesComponentComponent {
 
   // Para saber qué item está editando
   itemEnEdicionIndex: number | null = null;
+  cargandoParaEditar = false;
 
   constructor(private itemSvc: ItemsServiceService, private infoSvc: InformacionServiceService, private fb: FormBuilder, private messageService: MessageService, private loginSvc: LoginServiceService) { }
 
@@ -276,34 +279,266 @@ export class CotizacionesComponentComponent {
     // });
   }
 
-  submitFull() {
-    if (this.cotizacionForm.invalid) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Formulario incompleto',
-        detail: 'Revisa los campos obligatorios.',
-        life: 3000,
-      });
-      return;
-    }
+  // submitFull() {
+  //   if (this.cotizacionForm.invalid) {
+  //     this.messageService.add({
+  //       severity: 'warn',
+  //       summary: 'Formulario incompleto',
+  //       detail: 'Revisa los campos obligatorios.',
+  //       life: 3000,
+  //     });
+  //     return;
+  //   }
 
-    const raw = this.cotizacionForm.getRawValue();
-    let { items: itemsRaw, ...infoPayload } = raw;
+  //   const raw = this.cotizacionForm.getRawValue();
+  //   let { items: itemsRaw, ...infoPayload } = raw;
 
-    // Filtrar ítems incompletos
-    itemsRaw = itemsRaw.filter((it: any) => this.isItemComplete(it));
-    if (itemsRaw.length === 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Advertencia',
-        detail: 'Debe ingresar al menos un ítem válido antes de guardar.',
-        life: 3000,
-      });
-      return;
-    }
+  //   // Filtrar ítems incompletos
+  //   itemsRaw = itemsRaw.filter((it: any) => this.isItemComplete(it));
+  //   if (itemsRaw.length === 0) {
+  //     this.messageService.add({
+  //       severity: 'warn',
+  //       summary: 'Advertencia',
+  //       detail: 'Debe ingresar al menos un ítem válido antes de guardar.',
+  //       life: 3000,
+  //     });
+  //     return;
+  //   }
 
-    // Mapea ítems y agrega int_orden (1..n). OJO: no enviamos el "id" del front.
-    const itemsPayload = itemsRaw.map((it: any, idx: number) => ({
+  //   // Mapea ítems y agrega int_orden (1..n). OJO: no enviamos el "id" del front.
+  //   // const itemsPayload = itemsRaw.map((it: any, idx: number) => ({
+  //   //   txt_cpc: it.txt_cpc,
+  //   //   txt_unidad: it.txt_unidad,
+  //   //   txt_especificaciones: it.txt_especificaciones,
+  //   //   int_cantidad: it.int_cantidad,
+  //   //   flo_precioUnitario: it.flo_precioUnitario,
+  //   //   flo_precioTotal: it.flo_precioTotal,
+  //   //   flo_total: it.flo_total,
+  //   //   int_orden: idx + 1,
+  //   // }));
+  //   const itemsPayload = itemsRaw.map((it: any, idx: number) => {
+  //     const orden = idx + 1;
+  //     const cotizacion = this.cotizarValores[idx] || { puCotizar: 0, pt: 0, diferencia: 0, pv: 0 };
+
+  //     return {
+  //       txt_cpc: it.txt_cpc,
+  //       txt_unidad: it.txt_unidad,
+  //       txt_especificaciones: it.txt_especificaciones,
+  //       int_cantidad: it.int_cantidad,
+  //       flo_precioUnitario: it.flo_precioUnitario,
+  //       flo_precioTotal: it.flo_precioTotal,
+  //       flo_total: it.flo_total,
+  //       int_orden: orden,
+  //       cotizaciones: [
+  //         {
+  //           flo_precioUnitarioCotizar: cotizacion.puCotizar,
+  //           flo_precioTotalCotizar: cotizacion.pt,
+  //           flo_diferencia: cotizacion.diferencia,
+  //           flo_precioUnitarioBase: it.flo_precioUnitario,
+  //           precio_venta: cotizacion.pv,
+  //           int_orden: orden,
+  //         }
+  //       ]
+  //     };
+  //   });
+
+
+  //   // Payload único para el endpoint full-create
+  //   const payload = {
+  //     ...infoPayload,      // incluye txtUsuarioRegistra porque usamos getRawValue()
+  //     items: itemsPayload, // 👈 aquí van los ítems con int_orden
+  //   };
+
+  //   const prevDisabled = this.cotizacionForm.disabled;
+  //   this.saving = true;
+  //   this.cotizacionForm.disable();
+  //   console.log("payload a enviar", payload)
+  //   this.infoSvc.fullCreate(payload).pipe(
+  //     finalize(() => {
+  //       this.saving = false;
+  //       if (!prevDisabled) this.cotizacionForm.enable();
+  //     })
+  //   ).subscribe({
+  //     next: _ => {
+  //       this.messageService.add({
+  //         severity: 'success',
+  //         summary: 'Éxito',
+  //         detail: 'Cotización creada',
+  //         life: 3000
+  //       });
+
+  //       // Reset del formulario y reinicio de la primera fila
+  //       this.cotizacionForm.reset();
+  //       this.itemsArray.clear();
+  //       this.addItem();
+  //     },
+  //     error: err => {
+  //       const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
+
+  //       if (err?.status === 409) {
+  //         this.messageService.add({
+  //           severity: 'warn',
+  //           summary: 'Registro duplicado',
+  //           detail: backendMsg || 'La necesidad ya existe. No se puede crear otra proforma con el mismo código.',
+  //           life: 4000
+  //         });
+  //         return;
+  //       }
+
+  //       if (err?.status === 400) {
+  //         this.messageService.add({
+  //           severity: 'warn',
+  //           summary: 'Datos inválidos',
+  //           detail: backendMsg || 'Revise los campos enviados.',
+  //           life: 4000
+  //         });
+  //         return;
+  //       }
+
+  //       this.messageService.add({
+  //         severity: 'error',
+  //         summary: 'Error',
+  //         detail: backendMsg || 'No se pudo guardar la cotización.',
+  //         life: 4000
+  //       });
+  //     }
+  //   });
+  // }
+//   submitFull() {
+//   if (this.cotizacionForm.invalid) {
+//     this.messageService.add({
+//       severity: 'warn',
+//       summary: 'Formulario incompleto',
+//       detail: 'Revisa los campos obligatorios.',
+//       life: 3000,
+//     });
+//     return;
+//   }
+
+//   const raw = this.cotizacionForm.getRawValue();
+//   let { items: itemsRaw, ...infoPayload } = raw;
+
+//   // 🔹 Filtrar ítems incompletos
+//   itemsRaw = itemsRaw.filter((it: any) => this.isItemComplete(it));
+//   if (itemsRaw.length === 0) {
+//     this.messageService.add({
+//       severity: 'warn',
+//       summary: 'Advertencia',
+//       detail: 'Debe ingresar al menos un ítem válido antes de guardar.',
+//       life: 3000,
+//     });
+//     return;
+//   }
+
+//   // 🔹 Armar payload de items + cotizaciones
+//   const itemsPayload = itemsRaw.map((it: any, idx: number) => {
+//     const orden = idx + 1;
+//     const cotizacion = this.cotizarValores[idx] || { puCotizar: 0, pt: 0, diferencia: 0, pv: 0 };
+
+//     return {
+//       txt_cpc: it.txt_cpc,
+//       txt_unidad: it.txt_unidad,
+//       txt_especificaciones: it.txt_especificaciones,
+//       int_cantidad: it.int_cantidad,
+//       flo_precioUnitario: it.flo_precioUnitario,
+//       flo_precioTotal: it.flo_precioTotal,
+//       flo_total: it.flo_total,
+//       int_orden: orden,
+//       cotizaciones: [
+//         {
+//           flo_precioUnitarioCotizar: cotizacion.puCotizar,
+//           flo_precioTotalCotizar: cotizacion.pt,
+//           flo_diferencia: cotizacion.diferencia,
+//           flo_precioUnitarioBase: it.flo_precioUnitario,
+//           precio_venta: cotizacion.pv,
+//           int_orden: orden,
+//         }
+//       ]
+//     };
+//   });
+
+//   // 🔹 Payload final
+//   const payload = {
+//     ...infoPayload,
+//     items: itemsPayload,
+//   };
+
+//   const prevDisabled = this.cotizacionForm.disabled;
+//   this.saving = true;
+//   this.cotizacionForm.disable();
+
+//   // 🔹 Si estamos editando -> PUT, si no -> POST
+//   const request$ = this.cargandoParaEditar
+//     ? this.infoSvc.updateInformacionFull(this.cotizacionForm.get('txt_necesidad')!.value, payload)
+//     : this.infoSvc.fullCreate(payload);
+
+//   request$.pipe(
+//     finalize(() => {
+//       this.saving = false;
+//       if (!prevDisabled) this.cotizacionForm.enable();
+//     })
+//   ).subscribe({
+//     next: () => {
+//       this.messageService.add({
+//         severity: 'success',
+//         summary: 'Éxito',
+//         detail: this.cargandoParaEditar ? 'Cotización actualizada' : 'Cotización creada',
+//         life: 3000
+//       });
+
+//       if (!this.cargandoParaEditar) {
+//         // Solo limpiar si fue creación
+//         this.cotizacionForm.reset();
+//         this.itemsArray.clear();
+//         this.addItem();
+//       }
+
+//       // reset del estado de edición
+//       this.cargandoParaEditar = false;
+//     },
+//     error: (err) => {
+//       const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
+//       this.messageService.add({
+//         severity: 'error',
+//         summary: 'Error',
+//         detail: backendMsg || 'No se pudo guardar la cotización.',
+//         life: 4000
+//       });
+//     }
+//   });
+// }
+submitFull() {
+  if (this.cotizacionForm.invalid) {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Formulario incompleto',
+      detail: 'Revisa los campos obligatorios.',
+      life: 3000,
+    });
+    return;
+  }
+
+  const raw = this.cotizacionForm.getRawValue();
+  let { items: itemsRaw, ...infoPayload } = raw;
+
+  // 🔹 Filtrar ítems incompletos
+  itemsRaw = itemsRaw.filter((it: any) => this.isItemComplete(it));
+  if (itemsRaw.length === 0) {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Advertencia',
+      detail: 'Debe ingresar al menos un ítem válido antes de guardar.',
+      life: 3000,
+    });
+    return;
+  }
+
+  // 🔹 Armar payload de items + cotizaciones
+  const itemsPayload = itemsRaw.map((it: any, idx: number) => {
+    const orden = idx + 1;
+    const cotizacion = this.cotizarValores[idx] || { puCotizar: 0, pt: 0, diferencia: 0, pv: 0 };
+
+    return {
       txt_cpc: it.txt_cpc,
       txt_unidad: it.txt_unidad,
       txt_especificaciones: it.txt_especificaciones,
@@ -311,70 +546,89 @@ export class CotizacionesComponentComponent {
       flo_precioUnitario: it.flo_precioUnitario,
       flo_precioTotal: it.flo_precioTotal,
       flo_total: it.flo_total,
-      int_orden: idx + 1,
-    }));
-
-    // Payload único para el endpoint full-create
-    const payload = {
-      ...infoPayload,      // incluye txtUsuarioRegistra porque usamos getRawValue()
-      items: itemsPayload, // 👈 aquí van los ítems con int_orden
+      int_orden: orden,
+      cotizaciones: [
+        {
+          flo_precioUnitarioCotizar: cotizacion.puCotizar,
+          flo_precioTotalCotizar: cotizacion.pt,
+          flo_diferencia: cotizacion.diferencia,
+          flo_precioUnitarioBase: it.flo_precioUnitario,
+          precio_venta: cotizacion.pv,
+          int_orden: orden,
+        }
+      ]
     };
+  });
 
-    const prevDisabled = this.cotizacionForm.disabled;
-    this.saving = true;
-    this.cotizacionForm.disable();
-    console.log("payload a enviar", payload)
-    this.infoSvc.fullCreate(payload).pipe(
-      finalize(() => {
-        this.saving = false;
-        if (!prevDisabled) this.cotizacionForm.enable();
-      })
-    ).subscribe({
-      next: _ => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Éxito',
-          detail: 'Cotización creada',
-          life: 3000
-        });
+  // 🔹 Payload final
+  const payload = {
+    ...infoPayload,
+    items: itemsPayload,
+  };
 
-        // Reset del formulario y reinicio de la primera fila
-        this.cotizacionForm.reset();
-        this.itemsArray.clear();
-        this.addItem();
-      },
-      error: err => {
-        const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
+  const prevDisabled = this.cotizacionForm.disabled;
+  this.saving = true;
+  this.cotizacionForm.disable();
 
-        if (err?.status === 409) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Registro duplicado',
-            detail: backendMsg || 'La necesidad ya existe. No se puede crear otra proforma con el mismo código.',
-            life: 4000
-          });
-          return;
-        }
+  const request$ = this.cargandoParaEditar
+    ? this.infoSvc.updateInformacionFull(this.cotizacionForm.get('txt_necesidad')!.value, payload)
+    : this.infoSvc.fullCreate(payload);
 
-        if (err?.status === 400) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Datos inválidos',
-            detail: backendMsg || 'Revise los campos enviados.',
-            life: 4000
-          });
-          return;
-        }
+  request$.pipe(
+    finalize(() => {
+      this.saving = false;
+      if (!prevDisabled) this.cotizacionForm.enable();
+    })
+  ).subscribe({
+    next: () => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Éxito',
+        detail: this.cargandoParaEditar ? 'Cotización actualizada' : 'Cotización creada',
+        life: 3000
+      });
 
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: backendMsg || 'No se pudo guardar la cotización.',
-          life: 4000
-        });
-      }
-    });
-  }
+      // 🔹 Reiniciar completamente al estado inicial del ngOnInit()
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
+
+      const valoresFijos = {
+        txt_fecha: todayStr,
+        txt_telefono: 'SN',
+        txt_plazoEntrega: '10',
+        txt_vigenciaOferta: '60',
+        txt_garantia: '12',
+        txt_formaPago: 'CONTRA ENTREGA TOTAL DE LOS BIENES',
+        txt_metodologiaTrabajo: 'NOS ADHERIMOS A LA METODOLOGIA ESTABLECIDA POR LA ENTIDAD',
+        txtUsuarioRegistra: this.loginSvc.getUsername() ?? ''
+      };
+
+      this.cotizacionForm.reset();
+      this.cotizacionForm.patchValue(valoresFijos);
+      this.itemsArray.clear();
+      this.cotizarValores = [];
+      this.itemCounter = 0;
+      this.addItem();
+
+      // 🔹 volver a modo creación
+      this.cargandoParaEditar = false;
+    },
+    error: (err) => {
+      const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: backendMsg || 'No se pudo guardar la cotización.',
+        life: 4000
+      });
+    }
+  });
+}
+
+
   calcularCotizar(i: number) {
     const item = this.itemsArray.at(i);
     const cantidad = Number(item.get('int_cantidad')?.value) || 0;
@@ -446,7 +700,7 @@ export class CotizacionesComponentComponent {
           txt_cliente: datosExtraidos.nombre_entidad || '',
           txt_necesidad: datosExtraidos.codigo_necesidad || '',
           txt_objetivoCompra: datosExtraidos.objeto_compra || '',
-          txt_fecha: datosExtraidos.fecha_publicacion || '',
+          // txt_fecha: datosExtraidos.fecha_publicacion || '',
           tHora_maxina: datosExtraidos.fecha_limite || '',
           txt_funcionario: datosExtraidos.funcionario_nombre || '',
           txt_correo: datosExtraidos.funcionario_correo || '',
@@ -510,5 +764,58 @@ export class CotizacionesComponentComponent {
     return index;
   }
 
+  cargarCotizacion(data: InformacionRead) {
+  this.cargandoParaEditar = true; // 👈 esto cambia el botón a "Actualizar"
+
+  // 🔹 Rellena los campos de cabecera
+  this.cotizacionForm.patchValue({
+    txt_cliente: data.txt_cliente,
+    txt_ruc: data.txt_ruc,
+    txt_direccion: data.txt_direccion,
+    txt_fecha: data.txt_fecha,
+    txt_telefono: data.txt_telefono,
+    txt_necesidad: data.txt_necesidad,
+    txt_funcionario: data.txt_funcionario,
+    txt_correo: data.txt_correo,
+    tHora_maxina: data.tHora_maxina,
+    txt_objetivoCompra: data.txt_objetivoCompra,
+    txt_plazoEntrega: data.txt_plazoEntrega,
+    txt_vigenciaOferta: data.txt_vigenciaOferta,
+    txt_garantia: data.txt_garantia,
+    txt_formaPago: data.txt_formaPago,
+    txt_metodologiaTrabajo: data.txt_metodologiaTrabajo,
+    txt_enlace: data.txt_enlace,
+  });
+
+  // 🔹 Limpiar items actuales
+  this.itemsArray.clear();
+  this.itemCounter = 0;
+  this.cotizarValores = [];
+
+  // 🔹 Cargar ítems existentes
+  data.items.forEach((item, idx) => {
+    this.itemCounter++;
+    const grupo = this.fb.group({
+      id: [this.itemCounter],
+      txt_cpc: [item.txt_cpc, Validators.required],
+      txt_unidad: [item.txt_unidad, Validators.required],
+      txt_especificaciones: [item.txt_especificaciones, Validators.required],
+      int_cantidad: [item.int_cantidad, Validators.required],
+      flo_precioUnitario: [item.flo_precioUnitario, Validators.required],
+      flo_precioTotal: [item.flo_precioTotal],
+      flo_total: [item.flo_total]
+    });
+    this.itemsArray.push(grupo);
+
+    // Si ya tiene cotizaciones, cargamos el primero
+    const cot = item.cotizaciones?.[0] || { flo_precioUnitarioCotizar: 0, flo_precioTotalCotizar: 0, precio_venta: 0, flo_diferencia: 0 };
+    this.cotizarValores.push({
+      puCotizar: cot.flo_precioUnitarioCotizar || 0,
+      pt: cot.flo_precioTotalCotizar || 0,
+      pv: cot.precio_venta || 0,
+      diferencia: cot.flo_diferencia || 0
+    });
+  });
+}
 
 }

@@ -1,0 +1,10 @@
+<div class="grid grid-cols-1 md:grid-cols-5 col-span-2 gap-3">
+        <p-inputgroup>
+          <p-inputgroup-addon>
+            <span><i class="pi pi-spin pi-cog"></i></span>
+          </p-inputgroup-addon>
+          <input pInputText placeholder="Buscar por NIC" class="w-full"[(ngModel)]="searchCode"/>
+          <button pButton type="button" icon="pi pi-search-plus" class="p-button-sm"
+            (click)="buscarPorNecesidad()"></button>
+        </p-inputgroup>
+</div>

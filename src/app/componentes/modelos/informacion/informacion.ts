@@ -2,7 +2,16 @@ export class Informacion {
 }
 
 // src/app/modelos/informacion.ts
-
+export interface InfoCotizacionRead {
+  cotizacionesid: number;
+  flo_precioUnitarioCotizar?: number | null;
+  flo_precioTotalCotizar?: number | null;
+  flo_diferencia?: number | null;
+  flo_precioUnitarioBase?: number | null;
+  precio_venta?: number | null;
+  items_id?: number;
+  int_orden?: number;
+}
 // --- Primero el ItemRead, que usamos dentro de InformacionRead ---
 export interface ItemRead {
   items_id:             number;
@@ -14,6 +23,7 @@ export interface ItemRead {
   flo_precioTotal:      number;
   flo_total:            number;
   proforma_id:          number;
+  cotizaciones?:        InfoCotizacionRead[]; 
 }
 
 // --- Payload para crear una Informacion (no incluye proforma_id ni items) ---

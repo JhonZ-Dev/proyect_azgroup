@@ -65,8 +65,8 @@
                         tooltipPosition="top" class="pdf material-icon-theme--pdf"></button>
                     <button pButton type="button" (click)="descargarProforma(c.proforma_id)" pInputText pTooltip="Word"
                         tooltipPosition="top" class="ml-1 word vscode-icons--file-type-word"></button>
-                    <button pButton type="button" [pTooltip]="'Enlace'" tooltipPosition="top"
-                        icon="pi pi-link" class="ml-1 p-button-sm p-button-text enlace" (click)="abrirEnlace(c.txt_enlace)">
+                    <button pButton type="button" [pTooltip]="'Enlace'" tooltipPosition="top" icon="pi pi-link"
+                        class="ml-1 p-button-sm p-button-text enlace" (click)="abrirEnlace(c.txt_enlace)">
                     </button>
 
 
@@ -96,13 +96,16 @@
                 <th class="th_items">Cantidad</th>
                 <th class="th_items">Precio Unitario</th>
                 <th class="th_items">Precio Total</th>
+                <th class="th_items_cot">P.U. Cotizar</th>
+                <th class="th_items_cot">P.T. Cotizar</th>
+                <th class="th_items_cot">Diferencia</th>
             </tr>
         </ng-template>
 
         <!-- BODY DETALLE -->
         <ng-template pTemplate="body" let-item let-i="rowIndex">
             <tr>
-                
+
                 <td>{{ first2 + i + 1 }}</td>
                 <td [ngClass]="{ highlight: isMatch(item.txt_cpc) }">{{ item.txt_cpc }}</td>
                 <td [ngClass]="{ highlight: isMatch(item.txt_unidad) }">{{ item.txt_unidad }}</td>
@@ -114,6 +117,15 @@
                 </td>
                 <td [ngClass]="{ highlight: isMatch(item.flo_precioTotal) }">
                     {{ item.flo_precioTotal | number: '1.2-2' }}
+                </td>
+                <td class="text-amber-600">
+                    {{ item.cotizaciones?.[0]?.flo_precioUnitarioCotizar | number: '1.2-2' }}
+                </td>
+                <td class="text-blue-600">
+                    {{ item.cotizaciones?.[0]?.flo_precioTotalCotizar | number: '1.2-2' }}
+                </td>
+                <td class="text-emerald-600">
+                    {{ item.cotizaciones?.[0]?.flo_diferencia | number: '1.2-2' }}
                 </td>
             </tr>
         </ng-template>
