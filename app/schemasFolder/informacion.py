@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import date, time
 
-from app.schemasFolder.items import ItemCreate, ItemCreateIn, ItemRead
+from app.schemasFolder.items import ItemCreate, ItemCreateIn, ItemCreateInWithCotizaciones, ItemRead, ItemReadWithCotizaciones
 
 
 
@@ -39,7 +39,8 @@ class InformacionRead(InformacionBase):
     estado_name: str
     dFechaRegistro: date
     tTimeHora:    time
-    items:       List[ItemRead] = []
+    #items:       List[ItemRead] = []
+    items: List[ItemReadWithCotizaciones] = []   # 👈 ahora con cotizaciones
 
     class Config:
         orm_mode = True
@@ -60,5 +61,9 @@ class ProformaReporteOut(BaseModel):
     valor_contrato: Optional[float] = None
     plazo_contractual: Optional[str] = None
 
+# class InformacionCreateWithItems(InformacionCreate):
+#     items: List[ItemCreateIn]
+
+
 class InformacionCreateWithItems(InformacionCreate):
-    items: List[ItemCreateIn]
+    items: List[ItemCreateInWithCotizaciones]

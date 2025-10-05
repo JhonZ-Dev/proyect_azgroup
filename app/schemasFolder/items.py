@@ -1,6 +1,8 @@
 # app/schemas/items.py
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
+
+from app.schemasFolder.info_cotizaciones import InfoCotizacionCreate, InfoCotizacionSimple
 
 class ItemBase(BaseModel):
     txt_cpc:              Optional[str] = None
@@ -32,3 +34,10 @@ class ItemRead(ItemBase):
 
     class Config:
         orm_mode = True
+
+
+class ItemCreateInWithCotizaciones(ItemCreateIn):
+    cotizaciones: Optional[List[InfoCotizacionCreate]] = []
+
+class ItemReadWithCotizaciones(ItemRead):
+    cotizaciones: List[InfoCotizacionSimple] = []

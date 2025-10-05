@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm, HTTPBasic, HTTPBasicCred
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from app import schemas
-from app.routers import pagos, products, users, roles, informacion, items, detalle_proceso, extractor
+from app.routers import pagos, products, users, roles, informacion, items, detalle_proceso, extractor,info_cotizaciones
 from app.auth import get_db, authenticate_user, create_access_token
 from datetime import timedelta
 import app.config as config
@@ -93,6 +93,7 @@ app.include_router(items.router)
 app.include_router(pagos.router)
 app.include_router(detalle_proceso.router)
 app.include_router(extractor.router)
+app.include_router(info_cotizaciones.router)
 
 # ---------- Seguridad para /docs y /openapi ----------
 security = HTTPBasic()

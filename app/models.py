@@ -215,6 +215,8 @@ class Item(Base):
     int_orden = Column(Integer, nullable=True)
     proforma_id     = Column(Integer, ForeignKey('tb_informacion.proforma_id'))
     informacion     = relationship("Informacion", back_populates="items")
+    cotizaciones = relationship("InfoCotizaciones", back_populates="item", cascade="all, delete-orphan")
+
 
 
 class Pago(Base):
@@ -292,6 +294,17 @@ class DetalleProceso(Base):
 
 
 
+class InfoCotizaciones(Base):
+    __tablename__ = 'info_cotizaciones'
+    cotizacionesid        = Column(Integer, primary_key=True, index=True)
+    flo_precioUnitarioCotizar  = Column(Float, nullable=True) 
+    flo_precioTotalCotizar     = Column(Float, nullable=True) 
+    flo_diferencia             = Column(Float, nullable=True) 
+    flo_precioUnitarioBase     = Column(Float, nullable=True) 
+    precio_venta               = Column(Float, nullable=True) 
+    items_id                   = Column(Integer, ForeignKey('tb_items.items_id'))
+    int_orden                  = Column(Integer, nullable=True)
+    item                       = relationship("Item", back_populates="cotizaciones")
 
 
  

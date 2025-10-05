@@ -7,7 +7,7 @@ from typing import List, Dict
 from app import crud
 from app.schemasFolder.informacion import EstadoCount, EstadoUpdate, InformacionCreateWithItems, InformacionRead, InformacionCreate, ProformaReporteOut
 from app.auth import get_db, require_permission
-from app.crudFolder.informacion import create_informacion_con_items, get_informacion_with_items_by_id, get_informaciones_with_items, get_reporte_proformas
+from app.crudFolder.informacion import create_informacion_con_items, get_informacion_by_necesidad, get_informacion_with_items_by_id, get_informaciones_with_items, get_informaciones_with_items_and_cotizaciones, get_reporte_proformas, update_informacion_con_items
 from fastapi.responses import FileResponse
 from app.utils.docx_utils import generar_doc_proforma
 from app.utils.excel_utils import generar_excel_proforma
@@ -91,6 +91,17 @@ def list_informaciones(db: Session = Depends(get_db)):
     Retorna todas las informaciones con su lista de items anidados.
     """
     return get_informaciones_with_items(db)
+
+@router.get(
+    "/listar-informaciones-full",
+    response_model=List[InformacionRead],
+    dependencies=[Depends(require_permission("list"))]
+)
+def list_informaciones_full(db: Session = Depends(get_db)):
+    """
+    Retorna todas las informaciones con sus items y cotizaciones anidadas.
+    """
+    return get_informaciones_with_items_and_cotizaciones(db)
 @router.get(
     "/estadisticas-por-estado",
     response_model=List[EstadoCount],
@@ -129,6 +140,27 @@ def resumen_proformas(
     rows = crud.get_resumen_proformas(db=db, skip=skip, limit=limit, fecha_ini=fecha_ini, fecha_fin=fecha_fin)
     return rows
 
+
+@router.get(
+    "/by-necesidad/{codigo}",
+    response_model=InformacionRead,
+    dependencies=[Depends(require_permission("list"))]
+)
+def get_by_necesidad(codigo: str, db: Session = Depends(get_db)):
+    return get_informacion_by_necesidad(db, codigo)
+
+
+@router.put(
+    "/update-full/{codigo}",
+    response_model=InformacionRead,
+    dependencies=[Depends(require_permission("update"))]
+)
+def update_full_informacion(
+    codigo: str,
+    payload: InformacionCreateWithItems,
+    db: Session = Depends(get_db)
+):
+    return update_informacion_con_items(db, codigo, payload)
 @router.get(
     "/reporte/proformas",
     response_model=List[ProformaReporteOut],

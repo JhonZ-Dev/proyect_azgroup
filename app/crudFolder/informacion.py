@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from app.models import Estado, Informacion, Item
+from app.models import Estado, InfoCotizaciones, Informacion, Item
 from app.schemasFolder.informacion import InformacionCreate, InformacionCreateWithItems
 from sqlalchemy.orm import Session, selectinload
 import re
@@ -129,27 +129,109 @@ def create_informacion(db: Session, info_in: InformacionCreate) -> Informacion:
 
 
 
+# def create_informacion_con_items(db: Session, payload: InformacionCreateWithItems) -> Informacion:
+#     data = payload.dict()
+#     items_data = data.pop("items", []) or []
+
+#     # Normaliza / valida
+#     necesidad_norm = _normalize_necesidad(data.get("txt_necesidad"))
+#     if not necesidad_norm:
+#         raise ValueError("El campo txt_necesidad es obligatorio.")
+#     data["txt_necesidad"] = necesidad_norm
+
+#     # Duplicidad (case-insensitive)
+#     existe = (
+#         db.query(Informacion)
+#           .filter(func.upper(Informacion.txt_necesidad) == necesidad_norm)
+#           .first()
+#     )
+#     if existe:
+#         # aquí puedes lanzar HTTPException(409, ...) en el router
+#         raise RuntimeError(f"Ya existe una proforma con la necesidad '{necesidad_norm}'.")
+
+#     # Sufijos
+#     if data.get("txt_plazoEntrega") is not None:
+#         data["txt_plazoEntrega"] = f"{data['txt_plazoEntrega']} DÍAS"
+#     if data.get("txt_vigenciaOferta") is not None:
+#         data["txt_vigenciaOferta"] = f"{data['txt_vigenciaOferta']} DÍAS"
+#     if data.get("txt_garantia") is not None:
+#         data["txt_garantia"] = f"{data['txt_garantia']} MESES"
+
+#     # Consecutivos
+#     now = datetime.utcnow()
+#     total = db.query(func.count(Informacion.proforma_id)).scalar() or 0
+#     seq = total + 1
+#     data["txt_infimaNro"] = f"{now.day:02d}-{now.month:02d}-{seq:010d}"
+
+#     ultimo = db.query(func.max(Informacion.txt_numeroProforma)).scalar()
+#     if ultimo:
+#         try:
+#             seq = int(ultimo) + 1
+#         except Exception:
+#             seq = 700
+#     else:
+#         seq = 700
+#     data["txt_numeroProforma"] = f"{seq:06d}"
+#     data["estado_id"] = 1
+
+#     try:
+#         # ❌ NO usar with db.begin():
+#         db_info = Informacion(**data)
+#         db.add(db_info)
+#         db.flush()  # obtiene proforma_id
+
+#         # Inserta items en el orden indicado
+#         for it in sorted(items_data, key=lambda x: x.get("int_orden", 0)):
+#             db.add(Item(
+#                 proforma_id=db_info.proforma_id,
+#                 txt_cpc=it["txt_cpc"].strip(),
+#                 txt_unidad=(it["txt_unidad"] or "").strip().upper(),
+#                 txt_especificaciones=it["txt_especificaciones"].strip(),
+#                 int_cantidad=it["int_cantidad"],
+#                 flo_precioUnitario=it.get("flo_precioUnitario"),
+#                 flo_precioTotal=it.get("flo_precioTotal"),
+#                 flo_total=it.get("flo_total"),
+#                 int_orden=it["int_orden"],
+#             ))
+
+#         db.commit()          # ✅ confirmas todo junto
+#         db.refresh(db_info)  # refresca cabecera
+#     except IntegrityError as e:
+#         db.rollback()
+#         # si luego pones UNIQUE(txt_necesidad) puedes mapear a 409
+#         raise
+#     except Exception:
+#         db.rollback()
+#         raise
+
+#     # Devuelve con items ordenados (relationship ya tiene order_by)
+#     return (
+#         db.query(Informacion)
+#           .options(selectinload(Informacion.items))
+#           .filter(Informacion.proforma_id == db_info.proforma_id)
+#           .first()
+#     )
+
 def create_informacion_con_items(db: Session, payload: InformacionCreateWithItems) -> Informacion:
-    data = payload.dict()
+    data = payload.dict(exclude_none=True)
     items_data = data.pop("items", []) or []
 
-    # Normaliza / valida
+    # 🔹 Normalizar necesidad
     necesidad_norm = _normalize_necesidad(data.get("txt_necesidad"))
     if not necesidad_norm:
         raise ValueError("El campo txt_necesidad es obligatorio.")
     data["txt_necesidad"] = necesidad_norm
 
-    # Duplicidad (case-insensitive)
+    # 🔹 Validar duplicidad
     existe = (
         db.query(Informacion)
           .filter(func.upper(Informacion.txt_necesidad) == necesidad_norm)
           .first()
     )
     if existe:
-        # aquí puedes lanzar HTTPException(409, ...) en el router
         raise RuntimeError(f"Ya existe una proforma con la necesidad '{necesidad_norm}'.")
 
-    # Sufijos
+    # 🔹 Sufijos
     if data.get("txt_plazoEntrega") is not None:
         data["txt_plazoEntrega"] = f"{data['txt_plazoEntrega']} DÍAS"
     if data.get("txt_vigenciaOferta") is not None:
@@ -157,7 +239,7 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
     if data.get("txt_garantia") is not None:
         data["txt_garantia"] = f"{data['txt_garantia']} MESES"
 
-    # Consecutivos
+    # 🔹 Consecutivos
     now = datetime.utcnow()
     total = db.query(func.count(Informacion.proforma_id)).scalar() or 0
     seq = total + 1
@@ -175,14 +257,16 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
     data["estado_id"] = 1
 
     try:
-        # ❌ NO usar with db.begin():
+        # 🔹 Crear cabecera
         db_info = Informacion(**data)
         db.add(db_info)
         db.flush()  # obtiene proforma_id
 
-        # Inserta items en el orden indicado
+        # 🔹 Crear ítems
         for it in sorted(items_data, key=lambda x: x.get("int_orden", 0)):
-            db.add(Item(
+            cotizaciones_data = it.pop("cotizaciones", []) or []
+
+            item_db = Item(
                 proforma_id=db_info.proforma_id,
                 txt_cpc=it["txt_cpc"].strip(),
                 txt_unidad=(it["txt_unidad"] or "").strip().upper(),
@@ -192,19 +276,47 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
                 flo_precioTotal=it.get("flo_precioTotal"),
                 flo_total=it.get("flo_total"),
                 int_orden=it["int_orden"],
-            ))
+            )
+            db.add(item_db)
+            db.flush()  # obtiene items_id para cotizaciones
 
-        db.commit()          # ✅ confirmas todo junto
-        db.refresh(db_info)  # refresca cabecera
-    except IntegrityError as e:
+            # 🔹 Crear cotizaciones asociadas
+            for cot in cotizaciones_data:
+                # Limpiar posibles duplicados
+                cot_clean = {
+                    k: v for k, v in cot.items() if k not in ("items_id", "int_orden")
+                }
+
+                # Convertir a float valores numéricos si vienen como string
+                for num_key in (
+                    "flo_precioUnitarioCotizar",
+                    "flo_precioTotalCotizar",
+                    "flo_diferencia",
+                    "flo_precioUnitarioBase",
+                    "precio_venta",
+                ):
+                    if num_key in cot_clean and cot_clean[num_key] is not None:
+                        try:
+                            cot_clean[num_key] = float(cot_clean[num_key])
+                        except (ValueError, TypeError):
+                            cot_clean[num_key] = None
+
+                db.add(InfoCotizaciones(
+                    items_id=item_db.items_id,
+                    int_orden=item_db.int_orden,
+                    **cot_clean
+                ))
+
+        db.commit()
+        db.refresh(db_info)
+    except IntegrityError:
         db.rollback()
-        # si luego pones UNIQUE(txt_necesidad) puedes mapear a 409
         raise
     except Exception:
         db.rollback()
         raise
 
-    # Devuelve con items ordenados (relationship ya tiene order_by)
+    # 🔹 Devuelve la información con ítems cargados
     return (
         db.query(Informacion)
           .options(selectinload(Informacion.items))
@@ -252,6 +364,110 @@ def get_informaciones_with_items(db: Session) -> list[Informacion]:
     return (
         db.query(Informacion)
           .options(selectinload(Informacion.items))
+          .all()
+    )
+def get_informacion_by_necesidad(db: Session, necesidad: str) -> Informacion | None:
+    """
+    Busca una información por su código txt_necesidad y carga sus items + cotizaciones.
+    """
+    necesidad_norm = _normalize_necesidad(necesidad)
+    return (
+        db.query(Informacion)
+          .options(
+              selectinload(Informacion.items)
+              .selectinload(Item.cotizaciones)
+          )
+          .filter(func.upper(Informacion.txt_necesidad) == necesidad_norm)
+          .first()
+    )
+def update_informacion_con_items(
+    db: Session,
+    necesidad: str,
+    payload: InformacionCreateWithItems
+) -> Informacion:
+    """
+    Actualiza una información existente (cabecera, items y cotizaciones)
+    buscándola por txt_necesidad.
+    """
+    necesidad_norm = _normalize_necesidad(necesidad)
+
+    db_info = (
+        db.query(Informacion)
+          .options(selectinload(Informacion.items).selectinload(Item.cotizaciones))
+          .filter(func.upper(Informacion.txt_necesidad) == necesidad_norm)
+          .first()
+    )
+    if not db_info:
+        raise RuntimeError(f"No existe la proforma con necesidad {necesidad_norm}")
+
+    data = payload.dict(exclude_none=True)
+    items_data = data.pop("items", []) or []
+
+    # 🔹 Actualizar cabecera
+    for field, value in data.items():
+        if hasattr(db_info, field):
+            setattr(db_info, field, value)
+
+    # 🔹 Borrar items y cotizaciones previas
+    for item in db_info.items:
+        db.delete(item)
+    db.flush()
+
+    # 🔹 Insertar nuevamente los items y cotizaciones
+    for it in sorted(items_data, key=lambda x: x.get("int_orden", 0)):
+        cotizaciones_data = it.pop("cotizaciones", []) or []
+
+        item_db = Item(
+            proforma_id=db_info.proforma_id,
+            txt_cpc=it["txt_cpc"].strip(),
+            txt_unidad=(it["txt_unidad"] or "").strip().upper(),
+            txt_especificaciones=it["txt_especificaciones"].strip(),
+            int_cantidad=it["int_cantidad"],
+            flo_precioUnitario=it.get("flo_precioUnitario"),
+            flo_precioTotal=it.get("flo_precioTotal"),
+            flo_total=it.get("flo_total"),
+            int_orden=it["int_orden"],
+        )
+        db.add(item_db)
+        db.flush()
+
+        for cot in cotizaciones_data:
+            cot_clean = {k: v for k, v in cot.items() if k not in ("items_id", "int_orden")}
+
+            for num_key in (
+                "flo_precioUnitarioCotizar",
+                "flo_precioTotalCotizar",
+                "flo_diferencia",
+                "flo_precioUnitarioBase",
+                "precio_venta",
+            ):
+                if num_key in cot_clean and cot_clean[num_key] is not None:
+                    try:
+                        cot_clean[num_key] = float(cot_clean[num_key])
+                    except (ValueError, TypeError):
+                        cot_clean[num_key] = None
+
+            db.add(InfoCotizaciones(
+                items_id=item_db.items_id,
+                int_orden=item_db.int_orden,
+                **cot_clean
+            ))
+
+    db.commit()
+    db.refresh(db_info)
+    return db_info
+
+def get_informaciones_with_items_and_cotizaciones(db: Session) -> list[Informacion]:
+    """
+    Devuelve todas las Informacion, cargando sus items relacionados
+    y las cotizaciones anidadas en cada item.
+    """
+    return (
+        db.query(Informacion)
+          .options(
+              selectinload(Informacion.items)
+              .selectinload(Item.cotizaciones)   # 👈 anidado
+          )
           .all()
     )
 def get_informacion_with_items_by_id(
