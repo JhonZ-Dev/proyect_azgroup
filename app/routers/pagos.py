@@ -1,7 +1,7 @@
 # app/routers/pagos.py
 
 import os
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from typing import List
 from fastapi.responses import FileResponse
 from sqlalchemy import text
@@ -96,6 +96,33 @@ def delete_pago_endpoint(
     return pago
 
 #####POR CORREOS
+# @router.post(
+#     "/crear-pago/email",
+#     response_model=PagosRead,
+#     status_code=status.HTTP_201_CREATED,
+#     dependencies=[Depends(require_permission("create"))]
+# )
+# def create_pago_email(
+#     pago_in: PagoCreate,
+#     background_tasks: BackgroundTasks,
+#     db: Session = Depends(get_db),
+# ):
+#     pago = create_pago(db, pago_in)
+#     # 1. Leer todos los emails a notificar de la base
+#     #emails = [r.emails for r in db.execute("SELECT emails FROM tb_email").fetchall()]
+#     emails = [r.emails for r in db.execute(text("SELECT emails FROM tb_email")).fetchall()]
+#     print("DEBUG: Emails a notificar:", emails)
+#     # 2. Generar cuerpo del correo
+#     cuerpo = render_template("pago_realizado.html", {"pago": pago})
+#     subject = "Nuevo pago registrado"
+#     # 3. Enviar email en background
+#     background_tasks.add_task(enviar_email, subject, cuerpo, emails)
+#     print("DEBUG: Agregando background task para enviar email")
+
+#     return pago
+
+
+
 @router.post(
     "/crear-pago/email",
     response_model=PagosRead,
@@ -105,40 +132,61 @@ def delete_pago_endpoint(
 def create_pago_email(
     pago_in: PagoCreate,
     background_tasks: BackgroundTasks,
+    request: Request,
     db: Session = Depends(get_db),
 ):
+    # 1) Crear el pago
     pago = create_pago(db, pago_in)
-    # 1. Leer todos los emails a notificar de la base
-    #emails = [r.emails for r in db.execute("SELECT emails FROM tb_email").fetchall()]
+    # 2) Construir URL absoluta al comprobante desde la request
+    base_url = str(request.base_url).rstrip("/")
+    url_comprobante = f"{base_url}/pagos/{pago.idPagos}/comprobante"
+    # 3) Leer destinatarios de la BD
     emails = [r.emails for r in db.execute(text("SELECT emails FROM tb_email")).fetchall()]
     print("DEBUG: Emails a notificar:", emails)
-    # 2. Generar cuerpo del correo
+    # 4) Pasar URL al template del email
+    setattr(pago, "urlComprobante", url_comprobante)
     cuerpo = render_template("pago_realizado.html", {"pago": pago})
     subject = "Nuevo pago registrado"
-    # 3. Enviar email en background
+    # 5) Enviar email en background
     background_tasks.add_task(enviar_email, subject, cuerpo, emails)
-    print("DEBUG: Agregando background task para enviar email")
-
+    print("DEBUG: Email con botón de comprobante:", url_comprobante)
     return pago
 
 
-def obtener_pago_desde_db(id_pago: int) -> dict | None:
-    # TODO: Reemplazar con tu consulta real
-    # Debe devolver claves: nbIdPago, txtMontoPagar, dFechaPago, txtFormaPago, txtUsuarioPaga, txtUsuarioRecibe, txtUsuarioCorreo, txtMongoPagarTexto
-    return None
-
-@router.get("/pagos/{id_pago}/comprobante")
-def descargar_comprobante(id_pago: int):
-    pago = obtener_pago_desde_db(id_pago)
+@router.get(
+    "/{idPagos}/comprobante",
+    response_class=FileResponse,
+    dependencies=[Depends(require_permission("list"))]
+)
+def descargar_comprobante(
+    idPagos: int,
+    db: Session = Depends(get_db)
+):
+    pago = get_pago(db, idPagos)
     if not pago:
         raise HTTPException(status_code=404, detail="Pago no encontrado")
 
-    # URL de validación/visualización opcional (para QR)
-    url_validacion = f"https://tu-dominio.com/pagos/{id_pago}/validar"
+    # Convertimos el objeto ORM a dict plano (si es necesario)
+    pago_dict = {
+        "nbIdPago": pago.idPagos,
+        "txtMontoPagar": pago.txtMontoPagar,
+        "dFechaPago": pago.dFechaPago,
+        "txtFormaPago": pago.txtFormaPago,
+        "txtUsuarioPaga": pago.txtUsuarioPaga,
+        "txtUsuarioRecibe": pago.txtUsuarioRecibe,
+        "txtUsuarioCorreo": pago.txtUsuarioCorreo,
+        "txtMongoPagarTexto": pago.txtMongoPagarTexto,
+    }
+
+    # URL opcional para validación vía QR
+    url_validacion = f"https://tu-dominio.com/pagos/{idPagos}/validar"
     empresa_footer = "Empresa S.A. · Av. Siempre Viva 123 · Tel. (000) 000 000"
 
     pdf_path = generar_comprobante_pdf_weasy(
-        pago=pago, url_validacion=url_validacion, empresa_footer=empresa_footer
+        pago=pago_dict,
+        url_validacion=url_validacion,
+        empresa_footer=empresa_footer
     )
+
     filename = os.path.basename(pdf_path)
     return FileResponse(pdf_path, media_type="application/pdf", filename=filename)
