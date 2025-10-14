@@ -19,6 +19,8 @@ from app.schemasFolder.pagos import PagoCreate, PagoUpdate, PagosRead
 from app.templates.email_templates import pago_realizado_template
 from app.utils.email_utils import enviar_email, render_template
 from app.services.receipt_service import generar_comprobante_pdf_weasy
+from app.config import SECRET_KEY
+from app.utils.sign_link import sign_token, verify_token
 
 router = APIRouter(
     prefix="/pagos",
@@ -135,23 +137,28 @@ def create_pago_email(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    # 1) Crear el pago
     pago = create_pago(db, pago_in)
-    # 2) Construir URL absoluta al comprobante desde la request
+
     base_url = str(request.base_url).rstrip("/")
-    url_comprobante = f"{base_url}/pagos/{pago.idPagos}/comprobante"
-    # 3) Leer destinatarios de la BD
+    # Token por 24 horas (ajusta si quieres)
+    payload = f"pago:{pago.idPagos}"
+    token = sign_token(SECRET_KEY, payload, ttl_seconds=24*3600)
+
+    # URL pública con token
+    url_comprobante_publico = f"{base_url}/pagos/publico/{pago.idPagos}/comprobante/{token}"
+
     emails = [r.emails for r in db.execute(text("SELECT emails FROM tb_email")).fetchall()]
     print("DEBUG: Emails a notificar:", emails)
-    # 4) Pasar URL al template del email
-    setattr(pago, "urlComprobante", url_comprobante)
+
+    # Pasar la URL al template
+    setattr(pago, "urlComprobante", url_comprobante_publico)
     cuerpo = render_template("pago_realizado.html", {"pago": pago})
     subject = "Nuevo pago registrado"
-    # 5) Enviar email en background
-    background_tasks.add_task(enviar_email, subject, cuerpo, emails)
-    print("DEBUG: Email con botón de comprobante:", url_comprobante)
-    return pago
 
+    background_tasks.add_task(enviar_email, subject, cuerpo, emails)
+    print("DEBUG: Email con botón (público, firmado):", url_comprobante_publico)
+
+    return pago
 
 @router.get(
     "/{idPagos}/comprobante",
@@ -188,5 +195,48 @@ def descargar_comprobante(
         empresa_footer=empresa_footer
     )
 
+    filename = os.path.basename(pdf_path)
+    return FileResponse(pdf_path, media_type="application/pdf", filename=filename)
+
+
+@router.get(
+    "/publico/{idPagos}/comprobante/{token}",
+    response_class=FileResponse,
+)  # <-- SIN require_permission
+def descargar_comprobante_publico(
+    idPagos: int,
+    token: str,
+    db: Session = Depends(get_db)
+):
+    # 1) Validar token
+    payload = f"pago:{idPagos}"
+    if not verify_token(SECRET_KEY, token, payload):
+        raise HTTPException(status_code=401, detail="Link inválido o expirado")
+
+    # 2) Buscar pago
+    pago = get_pago(db, idPagos)
+    if not pago:
+        raise HTTPException(status_code=404, detail="Pago no encontrado")
+
+    # 3) Generar/obtener PDF
+    pago_dict = {
+        "nbIdPago": pago.idPagos,
+        "txtMontoPagar": pago.txtMontoPagar,
+        "dFechaPago": pago.dFechaPago,
+        "txtFormaPago": pago.txtFormaPago,
+        "txtUsuarioPaga": pago.txtUsuarioPaga,
+        "txtUsuarioRecibe": pago.txtUsuarioRecibe,
+        "txtUsuarioCorreo": pago.txtUsuarioCorreo,
+        "txtMongoPagarTexto": pago.txtMongoPagarTexto,
+    }
+
+    url_validacion = None  # si quieres, arma otra URL pública
+    empresa_footer = "Empresa S.A. · Av. Siempre Viva 123 · Tel. (000) 000 000"
+
+    pdf_path = generar_comprobante_pdf_weasy(
+        pago=pago_dict,
+        url_validacion=url_validacion,
+        empresa_footer=empresa_footer
+    )
     filename = os.path.basename(pdf_path)
     return FileResponse(pdf_path, media_type="application/pdf", filename=filename)
