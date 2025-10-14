@@ -1,0 +1,79 @@
+@page {
+  size: A4;
+  margin: 16mm 16mm 18mm 16mm;
+}
+
+* { box-sizing: border-box; }
+body {
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  color: #111827;
+  font-size: 12pt;
+  line-height: 1.4;
+}
+
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14mm; border-bottom: 2px solid #0ea5e9; padding-bottom: 6mm;
+}
+.brand { display: flex; align-items: center; gap: 10pt; }
+.logo { width: 42mm; height: auto; }
+.brand-text h1 { margin: 0; font-size: 18pt; }
+.brand-text .subtitle { margin: 2pt 0 0; color:#6b7280; font-size: 10pt; }
+
+.code-box {
+  text-align: right; font-size: 10pt; color:#374151;
+}
+.code-box .code {
+  font-size: 14pt; font-weight: 700; color: #0ea5e9;
+}
+.code-box .date { margin-top: 4pt; color: #6b7280; }
+
+.summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6mm; margin-bottom: 10mm;
+}
+.summary-item { border: 1px solid #e5e7eb; border-radius: 8pt; padding: 6mm; background: #f8fafc; }
+.summary-item .label { font-size: 10pt; color:#6b7280; margin-bottom: 3pt; }
+.summary-item .value { font-size: 13pt; font-weight: 600; }
+.summary-item .amount { color:#0ea5e9; }
+
+.details h2 {
+  margin: 0 0 6mm 0; font-size: 14pt;
+}
+.table {
+  width: 100%; border-collapse: collapse;
+  border: 1px solid #e5e7eb; border-radius: 8pt; overflow: hidden;
+}
+.table th, .table td {
+  text-align: left; padding: 10pt 10pt; font-size: 11pt;
+  vertical-align: top;
+}
+.table th { width: 45mm; background: #f3f4f6; color:#111827; }
+.table tr + tr td, .table tr + tr th { border-top: 1px solid #e5e7eb; }
+
+.verify {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 8mm; margin-top: 10mm;
+}
+.hash { flex: 1; }
+.hash > div:first-child { color:#6b7280; font-size:10pt; }
+.hash-code {
+  font-family: "Consolas", "SFMono-Regular", Menlo, monospace;
+  font-size: 12pt; font-weight: 700; letter-spacing: .06em; color:#0ea5e9;
+  margin: 2pt 0 4pt;
+}
+.hint { color:#6b7280; font-size: 10pt; margin: 0; }
+
+.qr { text-align: center; }
+.qr img { width: 34mm; height: 34mm; }
+.qr-caption { font-size: 9pt; color:#6b7280; margin-top: 4pt; }
+
+.footer {
+  position: running(footer);
+  border-top: 1px solid #e5e7eb; margin-top: 14mm; padding-top: 5mm;
+  display: flex; justify-content: space-between; font-size: 9.5pt; color:#6b7280;
+}
+.footer-right { text-align: right; margin-left: 6mm; }
+
+/* Utilidad para resolver rutas estáticas desde Jinja */

@@ -16,7 +16,7 @@ def enviar_email(subject: str, body: str, to_emails: List[str]):
     with smtplib.SMTP('smtp.gmail.com', 587) as server:
         print("DEBUG: Conectando SMTP...")
         server.starttls()
-        server.login("jhonmacias1999@gmail.com", "zambranoJhon12024.*")
+        server.login("zambranomaciasjhon@gmail.com", "jfvc ubbf wkxa sguz")
         print("DEBUG: Login SMTP exitoso")
         server.send_message(msg)
         print("DEBUG: Email enviado correctamente")

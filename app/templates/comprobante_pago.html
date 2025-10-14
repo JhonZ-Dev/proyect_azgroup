@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Comprobante de pago</title>
+  <link rel="stylesheet" href="{{ static('css/receipt.css') }}">
+</head>
+<body>
+
+  <section class="header">
+    <div class="brand">
+      <img src="{{ static('img/logo.png') }}" alt="Logo" class="logo">
+      <div class="brand-text">
+        <h1>COMPROBANTE DE PAGO</h1>
+        <p class="subtitle">Recibo interno (no tributario)</p>
+      </div>
+    </div>
+    <div class="code-box">
+      <div>N° comprobante</div>
+      <div class="code">CMP-{{ "%06d"|format(pago.nbIdPago) }}</div>
+      <div class="date">Emitido: {{ now }}</div>
+    </div>
+  </section>
+
+  <section class="summary">
+    <div class="summary-item">
+      <div class="label">Fecha de pago</div>
+      <div class="value">{{ pago.dFechaPago }}</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">Monto</div>
+      <div class="value amount">{{ pago.txtMontoPagar | money }}</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">Forma de pago</div>
+      <div class="value">{{ pago.txtFormaPago }}</div>
+    </div>
+  </section>
+
+  <section class="details">
+    <h2>Detalles</h2>
+    <table class="table">
+      <tbody>
+        <tr>
+          <th>Usuario que paga</th>
+          <td>{{ pago.txtUsuarioPaga }}</td>
+        </tr>
+        <tr>
+          <th>Usuario que recibe</th>
+          <td>{{ pago.txtUsuarioRecibe }}</td>
+        </tr>
+        <tr>
+          <th>Correo de contacto</th>
+          <td>{{ pago.txtUsuarioCorreo }}</td>
+        </tr>
+        <tr>
+          <th>Observaciones</th>
+          <td>{{ pago.txtMongoPagarTexto or '-' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="verify">
+    <div class="hash">
+      <div>Hash de verificación</div>
+      <div class="hash-code">{{ hash_seg }}</div>
+      <p class="hint">Valida este comprobante comparando el hash con el mostrado en el sistema.</p>
+    </div>
+    {% if qr_png_path %}
+    <div class="qr">
+      <img src="{{ qr_png_path }}" alt="QR" />
+      <div class="qr-caption">Escanea para ver/validar</div>
+    </div>
+    {% endif %}
+  </section>
+
+  <footer class="footer">
+    <div>Este documento es un comprobante informativo. No reemplaza una factura electrónica.</div>
+    <div class="footer-right">{{ empresa_footer or '' }}</div>
+  </footer>
+
+</body>
+</html>

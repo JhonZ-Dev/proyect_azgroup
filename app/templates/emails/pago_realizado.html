@@ -1,15 +1,153 @@
 <!DOCTYPE html>
-<html>
-  <body>
-    <h2>¡Pago registrado!</h2>
-    <p>Se ha registrado un pago por <b>{{ pago.txtMontoPagar }}</b> el día <b>{{ pago.dFechaPago }}</b>.</p>
-    <ul>
-      <li><b>Forma de pago:</b> {{ pago.txtFormaPago }}</li>
-      <li><b>Usuario que paga:</b> {{ pago.txtUsuarioPaga }}</li>
-      <li><b>Usuario que recibe:</b> {{ pago.txtUsuarioRecibe }}</li>
-      <li><b>Correo:</b> {{ pago.txtUsuarioCorreo }}</li>
-      <li><b>Observaciones:</b> {{ pago.txtMongoPagarTexto }}</li>
-    </ul>
-    <p>Saludos,<br>Equipo de Finanzas</p>
+<html lang="es" style="margin:0; padding:0; background:#f4f5f7;">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pago registrado</title>
+    <!-- Preheader (oculto) -->
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">
+      Se registró un pago por {{ pago.txtMontoPagar }} el {{ pago.dFechaPago }}.
+    </div>
+  </head>
+  <body style="margin:0; padding:0; background:#f4f5f7;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; background:#f4f5f7;">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <!-- Contenedor -->
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%; max-width:600px; border-collapse:separate; border-spacing:0; background:#ffffff; border-radius:14px; box-shadow:0 6px 24px rgba(0,0,0,0.08); overflow:hidden;">
+            <!-- Header -->
+            <tr>
+              <td style="background:#0ea5e9; padding:24px 24px; text-align:left;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                  <tr>
+                    <td style="font-family:Segoe UI, Arial, Helvetica, sans-serif; color:#EAFEFF; font-size:12px; letter-spacing:.08em; text-transform:uppercase;">
+                      Confirmación de pago
+                    </td>
+                    <td align="right">
+                      <!-- Logo opcional -->
+                      <!-- <img src="https://tu-dominio/logo.png" alt="Logo" width="96" height="32" style="display:block; border:0; outline:none; text-decoration:none;"> -->
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="padding-top:4px; font-family:Segoe UI, Arial, Helvetica, sans-serif; color:#ffffff; font-size:22px; font-weight:700;">
+                      ¡Pago registrado!
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:24px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                  <tr>
+                    <td style="font-family:Segoe UI, Arial, Helvetica, sans-serif; color:#111827; font-size:16px; line-height:24px;">
+                      <p style="margin:0 0 12px 0;">Hola,</p>
+                      <p style="margin:0 0 16px 0;">
+                        Se ha registrado un pago por
+                        <strong style="color:#0ea5e9;">{{ pago.txtMontoPagar }}</strong>
+                        el día <strong>{{ pago.dFechaPago }}</strong>.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Tarjeta de detalles -->
+                  <tr>
+                    <td style="padding:12px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:12px;">
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                        <tr>
+                          <td style="padding:8px 6px; font-family:Segoe UI, Arial, Helvetica, sans-serif; font-size:14px; color:#374151;">
+                            <strong style="color:#111827;">Forma de pago:</strong>
+                            <span style="color:#111827;"> {{ pago.txtFormaPago }}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:8px 6px; font-family:Segoe UI, Arial, Helvetica, sans-serif; font-size:14px; color:#374151;">
+                            <strong style="color:#111827;">Usuario que paga:</strong>
+                            <span style="color:#111827;"> {{ pago.txtUsuarioPaga }}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:8px 6px; font-family:Segoe UI, Arial, Helvetica, sans-serif; font-size:14px; color:#374151;">
+                            <strong style="color:#111827;">Usuario que recibe:</strong>
+                            <span style="color:#111827;"> {{ pago.txtUsuarioRecibe }}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:8px 6px; font-family:Segoe UI, Arial, Helvetica, sans-serif; font-size:14px; color:#374151;">
+                            <strong style="color:#111827;">Correo de contacto:</strong>
+                            <a href="mailto:{{ pago.txtUsuarioCorreo }}" style="color:#0ea5e9; text-decoration:none;">{{ pago.txtUsuarioCorreo }}</a>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:8px 6px; font-family:Segoe UI, Arial, Helvetica, sans-serif; font-size:14px; color:#374151;">
+                            <strong style="color:#111827;">Observaciones:</strong>
+                            <span style="color:#111827;"> {{ pago.txtMongoPagarTexto }}</span>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Espacio -->
+                  <tr>
+                    <td style="height:16px; line-height:16px; font-size:0;">&nbsp;</td>
+                  </tr>
+
+                  <!-- CTA -->
+                  <tr>
+                    <td align="left">
+                      <!-- Botón "bulletproof" simple (suficiente para Gmail) -->
+                      <a href="{{ pago.urlComprobante or '#' }}"
+                         style="display:inline-block; background:#0ea5e9; color:#ffffff; text-decoration:none; font-family:Segoe UI, Arial, Helvetica, sans-serif; font-size:14px; font-weight:600; padding:12px 18px; border-radius:10px;">
+                        Ver comprobante
+                      </a>
+                    </td>
+                  </tr>
+
+                  <!-- Espacio -->
+                  <tr>
+                    <td style="height:20px; line-height:20px; font-size:0;">&nbsp;</td>
+                  </tr>
+
+                  <!-- Nota -->
+                  <tr>
+                    <td style="font-family:Segoe UI, Arial, Helvetica, sans-serif; color:#6b7280; font-size:12px; line-height:18px;">
+                      Si no reconoces esta operación, por favor responde a este correo o contacta con el equipo de Finanzas.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background:#ffffff; padding:16px 24px; border-top:1px solid #e5e7eb;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                  <tr>
+                    <td style="font-family:Segoe UI, Arial, Helvetica, sans-serif; color:#374151; font-size:14px;">
+                      Saludos,<br>
+                      <strong>Equipo de Finanzas</strong>
+                    </td>
+                    <td align="right" style="font-family:Segoe UI, Arial, Helvetica, sans-serif; color:#9ca3af; font-size:12px;">
+                      <!-- Datos de empresa opcionales -->
+                      <!-- Empresa S.A. · Av. Siempre Viva 123 · Tel. (000) 000 000 -->
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+          </table>
+          <!-- /Contenedor -->
+          <div style="padding:16px 0; font-family:Segoe UI, Arial, Helvetica, sans-serif; font-size:11px; color:#9ca3af; text-align:center;">
+            Este es un mensaje automático, por favor no respondas a este correo.
+          </div>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>

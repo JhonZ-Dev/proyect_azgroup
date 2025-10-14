@@ -1,7 +1,9 @@
 # app/routers/pagos.py
 
+import os
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from typing import List
+from fastapi.responses import FileResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -16,6 +18,7 @@ from app.auth import get_db, require_permission
 from app.schemasFolder.pagos import PagoCreate, PagoUpdate, PagosRead
 from app.templates.email_templates import pago_realizado_template
 from app.utils.email_utils import enviar_email, render_template
+from app.services.receipt_service import generar_comprobante_pdf_weasy
 
 router = APIRouter(
     prefix="/pagos",
@@ -117,3 +120,25 @@ def create_pago_email(
     print("DEBUG: Agregando background task para enviar email")
 
     return pago
+
+
+def obtener_pago_desde_db(id_pago: int) -> dict | None:
+    # TODO: Reemplazar con tu consulta real
+    # Debe devolver claves: nbIdPago, txtMontoPagar, dFechaPago, txtFormaPago, txtUsuarioPaga, txtUsuarioRecibe, txtUsuarioCorreo, txtMongoPagarTexto
+    return None
+
+@router.get("/pagos/{id_pago}/comprobante")
+def descargar_comprobante(id_pago: int):
+    pago = obtener_pago_desde_db(id_pago)
+    if not pago:
+        raise HTTPException(status_code=404, detail="Pago no encontrado")
+
+    # URL de validación/visualización opcional (para QR)
+    url_validacion = f"https://tu-dominio.com/pagos/{id_pago}/validar"
+    empresa_footer = "Empresa S.A. · Av. Siempre Viva 123 · Tel. (000) 000 000"
+
+    pdf_path = generar_comprobante_pdf_weasy(
+        pago=pago, url_validacion=url_validacion, empresa_footer=empresa_footer
+    )
+    filename = os.path.basename(pdf_path)
+    return FileResponse(pdf_path, media_type="application/pdf", filename=filename)
