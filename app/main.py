@@ -1,6 +1,7 @@
 # main.py
 from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm, HTTPBasic, HTTPBasicCredentials
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from app import schemas
@@ -94,6 +95,7 @@ app.include_router(pagos.router)
 app.include_router(detalle_proceso.router)
 app.include_router(extractor.router)
 app.include_router(info_cotizaciones.router)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ---------- Seguridad para /docs y /openapi ----------
 security = HTTPBasic()

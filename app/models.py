@@ -232,6 +232,7 @@ class Pago(Base):
     txtMongoPagarTexto = Column(String(255), nullable=True)
     dFechaRegistro = Column(Date,nullable=False,server_default=func.getdate())
     tTimeHora      = Column(Time,nullable=False,server_default=func.getdate())
+    ruta_evidencia = Column(String(255), nullable=True)
     estado_id = Column(
         Integer,
         ForeignKey("estados.id"),

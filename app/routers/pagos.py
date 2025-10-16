@@ -1,7 +1,10 @@
 # app/routers/pagos.py
 
+import json
 import os
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
+import shutil
+from uuid import uuid4
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Request, UploadFile, status
 from typing import List
 from fastapi.responses import FileResponse
 from sqlalchemy import text
@@ -27,17 +30,17 @@ router = APIRouter(
     tags=["pagos"]
 )
 
-@router.get(
-    "/listar-pagos",
-    response_model=List[PagosRead],
-    dependencies=[Depends(require_permission("list"))]
-)
+@router.get("/listar-pagos", response_model=List[PagosRead])
 def list_pagos(
     skip: int = 0,
     limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    request: Request = None
 ):
-    return get_pagos(db, skip, limit)
+    pagos = get_pagos(db, skip, limit)
+    base_url = str(request.base_url).rstrip("/")
+    return [PagosRead.from_orm_with_url(p, base_url) for p in pagos]
+
 
 
 @router.get(
@@ -125,6 +128,54 @@ def delete_pago_endpoint(
 
 
 
+# @router.post(
+#     "/crear-pago/email",
+#     response_model=PagosRead,
+#     status_code=status.HTTP_201_CREATED,
+#     dependencies=[Depends(require_permission("create"))]
+# )
+# def create_pago_email(
+#     pago_in: PagoCreate,
+#     background_tasks: BackgroundTasks,
+#     request: Request,
+#     evidencia: UploadFile = File(None),
+#     db: Session = Depends(get_db),
+# ):
+#     ruta_archivo = None
+#     if evidencia:
+#         nombre_archivo = f"{uuid4()}_{evidencia.filename}"
+#         ruta_carpeta = "uploads/evidencias"
+#         os.makedirs(ruta_carpeta, exist_ok=True)
+#         ruta_archivo = os.path.join(ruta_carpeta, nombre_archivo)
+
+#         with open(ruta_archivo, "wb") as buffer:
+#             shutil.copyfileobj(evidencia.file, buffer)
+
+#         # Guardar solo la ruta relativa
+#         pago_in.ruta_evidencia = ruta_archivo
+#     pago = create_pago(db, pago_in)
+
+#     base_url = str(request.base_url).rstrip("/")
+#     # Token por 24 horas (ajusta si quieres)
+#     payload = f"pago:{pago.idPagos}"
+#     token = sign_token(SECRET_KEY, payload, ttl_seconds=24*3600)
+
+#     # URL pública con token
+#     url_comprobante_publico = f"{base_url}/pagos/publico/{pago.idPagos}/comprobante/{token}"
+
+#     emails = [r.emails for r in db.execute(text("SELECT emails FROM tb_email")).fetchall()]
+#     print("DEBUG: Emails a notificar:", emails)
+
+#     # Pasar la URL al template
+#     setattr(pago, "urlComprobante", url_comprobante_publico)
+#     cuerpo = render_template("pago_realizado.html", {"pago": pago})
+#     subject = "Nuevo pago registrado"
+
+#     background_tasks.add_task(enviar_email, subject, cuerpo, emails)
+#     print("DEBUG: Email con botón (público, firmado):", url_comprobante_publico)
+
+#     return pago
+
 @router.post(
     "/crear-pago/email",
     response_model=PagosRead,
@@ -132,34 +183,54 @@ def delete_pago_endpoint(
     dependencies=[Depends(require_permission("create"))]
 )
 def create_pago_email(
-    pago_in: PagoCreate,
-    background_tasks: BackgroundTasks,
-    request: Request,
+    pago_in: str = Form(...),  # JSON como texto
+    evidencia: UploadFile = File(None),  # Imagen opcional
+    background_tasks: BackgroundTasks = None,
+    request: Request = None,
     db: Session = Depends(get_db),
 ):
-    pago = create_pago(db, pago_in)
+    # Parsear string JSON a dict
+    try:
+        data = json.loads(pago_in)
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=400, detail=f"Error al parsear JSON: {str(e)}")
 
+    # Validar con esquema Pydantic
+    try:
+        pago_schema = PagoCreate(**data)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Datos inválidos: {str(e)}")
+
+    # Guardar imagen si existe
+    if evidencia:
+        nombre_archivo = f"{uuid4()}_{evidencia.filename}"
+        ruta_carpeta = "uploads/evidencias"
+        os.makedirs(ruta_carpeta, exist_ok=True)
+        ruta_archivo = os.path.join(ruta_carpeta, nombre_archivo)
+
+        with open(ruta_archivo, "wb") as buffer:
+            shutil.copyfileobj(evidencia.file, buffer)
+
+        # Guardar la ruta en el schema
+        pago_schema.ruta_evidencia = ruta_archivo
+
+    # Guardar el pago en la base
+    pago = create_pago(db, pago_schema)
+
+    # Generar URL pública para comprobante
     base_url = str(request.base_url).rstrip("/")
-    # Token por 24 horas (ajusta si quieres)
-    payload = f"pago:{pago.idPagos}"
-    token = sign_token(SECRET_KEY, payload, ttl_seconds=24*3600)
+    token = sign_token(SECRET_KEY, f"pago:{pago.idPagos}", ttl_seconds=24 * 3600)
+    url_comprobante = f"{base_url}/pagos/publico/{pago.idPagos}/comprobante/{token}"
 
-    # URL pública con token
-    url_comprobante_publico = f"{base_url}/pagos/publico/{pago.idPagos}/comprobante/{token}"
-
+    # Enviar correo
+    #emails = [r.emails for r in db.execute("SELECT emails FROM tb_email").fetchall()]
     emails = [r.emails for r in db.execute(text("SELECT emails FROM tb_email")).fetchall()]
-    print("DEBUG: Emails a notificar:", emails)
-
-    # Pasar la URL al template
-    setattr(pago, "urlComprobante", url_comprobante_publico)
+    setattr(pago, "urlComprobante", url_comprobante)
     cuerpo = render_template("pago_realizado.html", {"pago": pago})
     subject = "Nuevo pago registrado"
-
     background_tasks.add_task(enviar_email, subject, cuerpo, emails)
-    print("DEBUG: Email con botón (público, firmado):", url_comprobante_publico)
 
     return pago
-
 @router.get(
     "/{idPagos}/comprobante",
     response_class=FileResponse,
