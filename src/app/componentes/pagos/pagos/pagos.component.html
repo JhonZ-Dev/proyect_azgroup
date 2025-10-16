@@ -5,31 +5,38 @@
 </div>
 <!--HTML PARA CREAR EL PAGO-->
 <div class=" p-3 bg-white rounded-lg card">
-<p-table [value]="pagos" [tableStyle]="{ 'min-width': '50rem' }" showGridlines paginator="true"
- [rows]="5" [showCurrentPageReport]="true" >
-    <ng-template #header>
-        <tr>
-            <th>Forma de pago</th>
-            <th>Usuario pagó</th>
-            <th>Usuario recibió</th>
-            <th>Fecha del pago</th>
-            <th>Hora del pago</th>
-            <th>Cantidad</th>
-            <th>Cantidad en texto</th>
-            <th>Estado</th>
-        </tr>
-    </ng-template>
-    <ng-template #body let-pago>
-        <tr>
-            <td>{{ pago.txtFormaPago }}</td>
-            <td>{{ pago.txtUsuarioPaga }}</td>
-            <td>{{ pago.txtUsuarioRecibe }}</td>
-            <td>{{ pago.dFechaPago }}</td>
-            <td>{{ pago.tHoraPago }}</td>
-            <td>{{ pago.txtMontoPagar }}</td>
-            <td>{{ pago.txtMongoPagarTexto }}</td>
-            <td><p-tag [value]="pago.estado_name" [severity]="getSeverity(pago.estado_name)" /></td>
-        </tr>
-    </ng-template>
-</p-table>
+    <p-table [value]="pagos" [tableStyle]="{ 'min-width': '50rem' }" showGridlines paginator="true" [rows]="5"
+        [showCurrentPageReport]="true">
+        <ng-template #header>
+            <tr>
+                <th>Forma de pago</th>
+                <th>Usuario pagó</th>
+                <th>Usuario recibió</th>
+                <th>Fecha del pago</th>
+                <th>Hora del pago</th>
+                <th>Cantidad</th>
+                <th>Cantidad en texto</th>
+                <th>Evidencia</th>
+                <th>Estado</th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-pago>
+            <tr>
+                <td>{{ pago.txtFormaPago }}</td>
+                <td>{{ pago.txtUsuarioPaga }}</td>
+                <td>{{ pago.txtUsuarioRecibe }}</td>
+                <td>{{ pago.dFechaPago }}</td>
+                <td>{{ pago.tHoraPago }}</td>
+                <td>{{ pago.txtMontoPagar }}</td>
+                <td>{{ pago.txtMongoPagarTexto }}</td>
+                <td>
+                    <img *ngIf="pago.url_evidencia" [src]="pago.url_evidencia" alt="Evidencia" width="60" height="60"
+                        style="border-radius: 8px; object-fit: cover;" />
+                    <span *ngIf="!pago.url_evidencia">Sin imagen</span>
+                </td>
+                <td><p-tag [value]="pago.estado_name" [severity]="getSeverity(pago.estado_name)" /></td>
+                
+            </tr>
+        </ng-template>
+    </p-table>
 </div>

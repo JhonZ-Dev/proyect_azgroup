@@ -31,7 +31,17 @@ export class PagosService {
   //crear pago
   public createPago(payload: PagosCreate) {
     const headers = this.buildHeaders();
-    return this.http.post<PagosCreate>(`${this.apiPagos}crear-pago`, payload, { headers });
+    return this.http.post<PagosCreate>(`${this.apiPagos}crear-pago/email`, payload, { headers });
   }
+
+  public createPagoFormData(formData: FormData) {
+  const token = localStorage.getItem('access_token');
+  const headers = new HttpHeaders({
+    Authorization: token ? `Bearer ${token}` : ''
+    // No pongas Content-Type → Angular lo infiere automáticamente como multipart/form-data
+  });
+  return this.http.post(`${this.apiPagos}crear-pago/email`, formData, { headers });
+}
+
 
 }

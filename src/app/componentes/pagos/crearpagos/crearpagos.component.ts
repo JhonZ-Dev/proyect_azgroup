@@ -9,7 +9,7 @@ import { SelectModule } from 'primeng/select';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePickerModule } from 'primeng/datepicker';
-
+import { FileUploadModule } from 'primeng/fileupload';
 
 
 export interface FormasPago {
@@ -19,7 +19,7 @@ export interface FormasPago {
 @Component({
   selector: 'app-crearpagos',
   imports: [ButtonModule, DialogModule, FieldsetModule, InputTextModule, SelectModule, CommonModule, FormsModule, ReactiveFormsModule,
-    DatePickerModule
+    DatePickerModule, FileUploadModule
   ],
   templateUrl: './crearpagos.component.html',
   styleUrl: './crearpagos.component.css',
@@ -45,6 +45,7 @@ export class CrearpagosComponent {
     txtMongoPagarTexto: '',
     estado_id: 0
   };
+  evidenciaFile: File | null = null;
 
   ngOnInit() {
     this.formaspagos = [
@@ -67,41 +68,87 @@ export class CrearpagosComponent {
     this.visible = true;
   }
 
-  crearPago() {
-    if (this.pagosForm.valid) {
-      const datos = this.pagosForm.value;
-      const ahora = new Date();
-      const dFechaPago = ahora.toISOString().slice(0, 10);
-      const tHoraPago = ahora.toTimeString().slice(0, 8);
-      const monto = datos.txtMontoPagar ?? 0;
-      const txtMongoPagarTexto = this.numeroATexto(monto) + ' dólares';
-      const pago: PagosCreate = {
-        txtFormaPago: datos.formaPago?.name ?? '',
-        txtUsuarioPaga: datos.txtUsuarioPaga ?? '',
-        txtUsuarioRecibe: datos.txtUsuarioRecibe ?? '',
-        dFechaPago,
-        tHoraPago,
-        txtUsuarioCorreo: datos.txtUsuarioCorreo ?? '',
-        txtMontoPagar: datos.txtMontoPagar ?? 0,
-        txtMongoPagarTexto,
-        estado_id: 2
-      };
-      console.log('Pago a crear:', pago);
-      // this.srvPagos.createPago(pago).subscribe({
-      //   next: (resp) => {
-      //     alert('Pago creado correctamente');
-      //     this.pagosForm.reset();
-      //   },
-      //   error: (err) => {
-      //     alert('Error al crear el pago');
-      //   }
-      // });
+  // crearPago() {
+  //   if (this.pagosForm.valid) {
+  //     const datos = this.pagosForm.value;
+  //     const ahora = new Date();
+  //     const dFechaPago = ahora.toISOString().slice(0, 10);
+  //     const tHoraPago = ahora.toTimeString().slice(0, 8);
+  //     const monto = datos.txtMontoPagar ?? 0;
+  //     const txtMongoPagarTexto = this.numeroATexto(monto) + ' dólares';
+  //     const pago: PagosCreate = {
+  //       txtFormaPago: datos.formaPago?.name ?? '',
+  //       txtUsuarioPaga: datos.txtUsuarioPaga ?? '',
+  //       txtUsuarioRecibe: datos.txtUsuarioRecibe ?? '',
+  //       dFechaPago,
+  //       tHoraPago,
+  //       txtUsuarioCorreo: datos.txtUsuarioCorreo ?? '',
+  //       txtMontoPagar: datos.txtMontoPagar ?? 0,
+  //       txtMongoPagarTexto,
+  //       estado_id: 2
+  //     };
+  //     console.log('Pago a crear:', pago);
+  //     this.srvPagos.createPago(pago).subscribe({
+  //       next: (resp) => {
+  //         alert('Pago creado correctamente');
+  //         this.pagosForm.reset();
+  //       },
+  //       error: (err) => {
+  //         alert('Error al crear el pago');
+  //       }
+  //     });
 
-    } else {
-      this.pagosForm.markAllAsTouched();
-      alert('Faltan campos obligatorios');
+  //   } else {
+  //     this.pagosForm.markAllAsTouched();
+  //     alert('Faltan campos obligatorios');
+  //   }
+  // }
+  crearPago() {
+  if (this.pagosForm.valid) {
+    const datos = this.pagosForm.value;
+    const ahora = new Date();
+    const dFechaPago = ahora.toISOString().slice(0, 10);
+    const tHoraPago = ahora.toTimeString().slice(0, 8);
+    const monto = datos.txtMontoPagar ?? 0;
+    const txtMongoPagarTexto = this.numeroATexto(monto) + ' dólares';
+
+    const pago: PagosCreate = {
+      txtFormaPago: datos.formaPago?.name ?? '',
+      txtUsuarioPaga: datos.txtUsuarioPaga ?? '',
+      txtUsuarioRecibe: datos.txtUsuarioRecibe ?? '',
+      dFechaPago,
+      tHoraPago,
+      txtUsuarioCorreo: datos.txtUsuarioCorreo ?? '',
+      txtMontoPagar: datos.txtMontoPagar ?? 0,
+      txtMongoPagarTexto,
+      estado_id: 2
+    };
+
+    const formData = new FormData();
+    formData.append('pago_in', JSON.stringify(pago));
+
+    if (this.evidenciaFile) {
+      formData.append('evidencia', this.evidenciaFile);
     }
+
+    this.srvPagos.createPagoFormData(formData).subscribe({
+      next: (resp) => {
+        alert('Pago creado correctamente');
+        this.pagosForm.reset();
+        this.evidenciaFile = null;
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Error al crear el pago');
+      }
+    });
+
+  } else {
+    this.pagosForm.markAllAsTouched();
+    alert('Faltan campos obligatorios');
   }
+}
+
 
   limpiarFormulario() {
     this.pagos = {
@@ -150,6 +197,19 @@ private cerrarDialog() {
   this.visible = false;
   this.visibleChange.emit(false);
 }
+
+onFileSelected(event: any) {
+  const file: File = event.files?.[0];
+  if (file) {
+    this.evidenciaFile = file;
+    console.log('Archivo capturado:', file.name);
+  } else {
+    console.warn('No se capturó archivo');
+  }
+}
+
+
+
 
 
 }

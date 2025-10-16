@@ -1,11 +1,10 @@
 <p-dialog header="Crear pago" [modal]="true" [(visible)]="visible" [style]="{ width: '70rem' }"
-    [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" [maximizable]="true"  (onHide)="onHide()"
-  (onShow)="onShow()">
+    [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" [maximizable]="true" (onHide)="onHide()" (onShow)="onShow()">
     <form [formGroup]="pagosForm" (ngSubmit)="crearPago()">
         <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
                 <p-fieldset legend="Información del usuario">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
+                    <div class="grid grid-cols-1 md:grid-cols-6 gap-2">
                         <div>
                             <input pInputText formControlName="txtUsuarioPaga" placeholder="Usuario paga"
                                 class="w-full input-field" styleClass="w-full" />
@@ -23,6 +22,14 @@
                         <div>
                             <input pInputText formControlName="txtMontoPagar" placeholder="Monto a pagar"
                                 class=" w-full input-field" styleClass="w-full" />
+
+                        </div>
+                        <div>
+                            <!-- <input type="file" (change)="onFileSelected($event)" /> -->
+                            <p-fileUpload #fu mode="basic" chooseLabel="Cargar" chooseIcon="pi pi-upload"
+                                name="evidencia" (onSelect)="onFileSelected($event)" [auto]="false" />
+
+
 
                         </div>
                         <div>
