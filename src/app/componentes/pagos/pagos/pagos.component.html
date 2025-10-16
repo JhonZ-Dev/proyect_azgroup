@@ -29,9 +29,9 @@
                 <td>{{ pago.tHoraPago }}</td>
                 <td>{{ pago.txtMontoPagar }}</td>
                 <td>{{ pago.txtMongoPagarTexto }}</td>
-                <td>
+                <td class="cursor-pointer">
                     <img *ngIf="pago.url_evidencia" [src]="pago.url_evidencia" alt="Evidencia" width="60" height="60"
-                        style="border-radius: 8px; object-fit: cover;" />
+                        style="border-radius: 8px; object-fit: cover;" (click)="abrirImagen(pago.url_evidencia)"/>
                     <span *ngIf="!pago.url_evidencia">Sin imagen</span>
                 </td>
                 <td><p-tag [value]="pago.estado_name" [severity]="getSeverity(pago.estado_name)" /></td>
@@ -40,3 +40,20 @@
         </ng-template>
     </p-table>
 </div>
+
+
+<p-dialog 
+  header="Evidencia de Pago" 
+  [(visible)]="mostrarImagen" 
+  [modal]="true" 
+  [closable]="true" 
+  (onHide)="cerrarImagen()"
+  [style]="{width: 'auto'}"
+>
+  <img 
+    *ngIf="imagenSeleccionada"
+    [src]="imagenSeleccionada" 
+    alt="Evidencia ampliada" 
+    style="max-width: 100%; max-height: 80vh;"
+  />
+</p-dialog>

@@ -24,7 +24,8 @@ export class PagosComponent {
   pagos: PagosRead[] = [];
   pago: PagosRead | null = null;
   modalVisible = false;
-
+  imagenSeleccionada: string | null = null;
+mostrarImagen: boolean = false;
   ngOnInit() {
     this.getAllPagos();
   }
@@ -63,5 +64,13 @@ export class PagosComponent {
         return 'info';  // o 'info', lo que prefieras para estados desconocidos
     }
   }
+abrirImagen(url: string) {
+  this.imagenSeleccionada = url;
+  this.mostrarImagen = true;
+}
 
+cerrarImagen() {
+  this.mostrarImagen = false;
+  this.imagenSeleccionada = null;
+}
 }

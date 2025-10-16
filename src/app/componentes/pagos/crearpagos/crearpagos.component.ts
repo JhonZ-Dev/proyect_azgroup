@@ -202,9 +202,9 @@ onFileSelected(event: any) {
   const file: File = event.files?.[0];
   if (file) {
     this.evidenciaFile = file;
-    console.log('Archivo capturado:', file.name);
+    //console.log('Archivo capturado:', file.name);
   } else {
-    console.warn('No se capturó archivo');
+    //console.warn('No se capturó archivo');
   }
 }
 
