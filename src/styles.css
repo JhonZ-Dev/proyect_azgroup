@@ -68,5 +68,8 @@ label{
 
 
 
+.ui-tooltip, .p-tooltip {
+  font-size: 12px !important; 
+}
 
 

@@ -99,6 +99,7 @@
                 <th class="th_items_cot">P.U. Cotizar</th>
                 <th class="th_items_cot">P.T. Cotizar</th>
                 <th class="th_items_cot">Diferencia</th>
+                <th class="th_items_cot">Evidencia</th>
             </tr>
         </ng-template>
 
@@ -127,6 +128,30 @@
                 <td class="text-emerald-600">
                     {{ item.cotizaciones?.[0]?.flo_diferencia | number: '1.2-2' }}
                 </td>
+                <td class="text-center">
+                    <ng-container *ngIf="parseEvidencia(item.txt_evidencia) as ev">
+                        <!-- Imagen -->
+                        <ng-container *ngIf="ev.imagen; else soloTexto">
+                            <img [src]="getProxyImage(ev.imagen)" alt="Evidencia"
+                                class="max-h-20 rounded border border-gray-300 shadow-sm cursor-pointer hover:scale-105 transition-transform"
+                                (click)="abrirEnlace(ev.imagen)" />
+
+                            <!-- Texto adicional (si existe) -->
+                            <div *ngIf="ev.texto" class="mt-1 text-gray-600 italic">
+                                {{ ev.texto }}
+                            </div>
+                        </ng-container>
+
+                        <!-- Solo texto (sin imagen) -->
+                        <ng-template #soloTexto>
+                            <span class="text-gray-500 italic">
+                                {{ ev.texto || 'Sin evidencia' }}
+                            </span>
+                        </ng-template>
+                    </ng-container>
+                </td>
+
+
             </tr>
         </ng-template>
         <p-paginator [first]="first2" [rows]="rows2" [totalRecords]="c.items.length"

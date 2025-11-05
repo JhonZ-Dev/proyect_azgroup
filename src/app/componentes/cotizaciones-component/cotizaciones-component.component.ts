@@ -41,9 +41,11 @@ export class CotizacionesComponentComponent {
   private itemCounter = 0;
   // Estado del modal
   especificacionDialogVisible = false;
+  evidenciaDialogVisible = false;
 
   // Para saber qué item está editando
   itemEnEdicionIndex: number | null = null;
+  evidenciaEnEdicionIndex: number | null = null;
   cargandoParaEditar = false;
 
   constructor(private itemSvc: ItemsServiceService, private infoSvc: InformacionServiceService, private fb: FormBuilder, private messageService: MessageService, private loginSvc: LoginServiceService) { }
@@ -125,6 +127,7 @@ export class CotizacionesComponentComponent {
       txt_unidad: ['UNIDAD', Validators.required],
       txt_especificaciones: ['', Validators.required],
       int_cantidad: [null, Validators.required],
+      txt_evidencia: [''],
       flo_precioUnitario: [null, Validators.required],
       flo_precioTotal: [{ value: 0, disabled: true }],
       flo_total: [{ value: 0, disabled: true }]
@@ -547,6 +550,7 @@ submitFull() {
       flo_precioTotal: it.flo_precioTotal,
       flo_total: it.flo_total,
       int_orden: orden,
+      txt_evidencia: it.txt_evidencia,
       cotizaciones: [
         {
           flo_precioUnitarioCotizar: cotizacion.puCotizar,
@@ -675,6 +679,10 @@ submitFull() {
     this.itemEnEdicionIndex = index;
     this.especificacionDialogVisible = true;
   }
+    abrirDialogEvidencia(index: number) {
+    this.evidenciaEnEdicionIndex = index;
+    this.evidenciaDialogVisible = true;
+  }
 
   getItemFormGroup(index: number): FormGroup {
     return this.itemsArray.at(index) as FormGroup;
@@ -729,7 +737,8 @@ submitFull() {
               int_cantidad: [parseFloat(item.cantidad) || 0, Validators.required],
               flo_precioUnitario: [null, Validators.required],
               flo_precioTotal: [{ value: 0, disabled: true }],
-              flo_total: [{ value: 0, disabled: true }]
+              flo_total: [{ value: 0, disabled: true }],
+              txt_evidencia: ['']
             });
 
             this.itemsArray.push(grupo);

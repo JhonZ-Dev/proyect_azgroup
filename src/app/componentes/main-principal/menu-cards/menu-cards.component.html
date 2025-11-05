@@ -1,7 +1,7 @@
 <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
   <div *ngFor="let card of menuCards" class="cursor-pointer group">
     <div
-      class="bg-white shadow-xl rounded-2xl p-6 flex flex-col items-center transition-transform group-hover:scale-105 group-hover:shadow-2xl"
+      class="bg-white shadow-xl rounded-2xl p-6 flex flex-col items-center transition-transform"
       (click)="goTo(card.path!)"
     >
       <i [class]="card.icon + ' text-4xl text-indigo-600 mb-3'"></i>

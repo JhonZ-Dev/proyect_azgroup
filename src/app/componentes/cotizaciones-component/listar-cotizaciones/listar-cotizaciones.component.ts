@@ -105,19 +105,19 @@ export class ListarCotizacionesComponent {
       }
     });
   }
-abrirEnlace(url: string | undefined | null): void {
-  if (!url || typeof url !== 'string' || url.trim() === '') {
-    alert('⚠️ El enlace no está disponible.');
-    return;
-  }
+  abrirEnlace(url: string | undefined | null): void {
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      alert('⚠️ El enlace no está disponible.');
+      return;
+    }
 
-  // Si no empieza con http(s), prepéndelo
-  if (!/^https?:\/\//.test(url)) {
-    url = 'https://' + url;
-  }
+    // Si no empieza con http(s), prepéndelo
+    if (!/^https?:\/\//.test(url)) {
+      url = 'https://' + url;
+    }
 
-  window.open(url, '_blank');
-}
+    window.open(url, '_blank');
+  }
 
 
 
@@ -252,44 +252,44 @@ abrirEnlace(url: string | undefined | null): void {
     this.first2 = 0; // reset paginación si usas paginador manual
   }
   descargarProforma(proformaId: number): void {
-  this.wordSvc.descargarProforma(proformaId).subscribe({
-    next: (response) => {
-      const blob = response.body as Blob;
+    this.wordSvc.descargarProforma(proformaId).subscribe({
+      next: (response) => {
+        const blob = response.body as Blob;
 
-      if (!blob) {
-        console.error('No se recibió ningún archivo Word');
-        return;
-      }
-
-      // 🧠 Extraer el nombre desde el header Content-Disposition
-      const contentDisposition = response.headers.get('content-disposition');
-      let filename = `proforma_${proformaId}.docx`; // Fallback por si no viene
-
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?([^"]+)"?/);
-        if (match && match[1]) {
-          filename = match[1];
+        if (!blob) {
+          console.error('No se recibió ningún archivo Word');
+          return;
         }
+
+        // 🧠 Extraer el nombre desde el header Content-Disposition
+        const contentDisposition = response.headers.get('content-disposition');
+        let filename = `proforma_${proformaId}.docx`; // Fallback por si no viene
+
+        if (contentDisposition) {
+          const match = contentDisposition.match(/filename="?([^"]+)"?/);
+          if (match && match[1]) {
+            filename = match[1];
+          }
+        }
+
+        // 🧠 Crear la descarga
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+
+        // 🧹 Limpieza
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+        }, 1000);
+      },
+      error: (err) => {
+        console.error('❌ Error al descargar el archivo Word:', err);
+        alert('No se pudo descargar el archivo Word. Intenta nuevamente.');
       }
-
-      // 🧠 Crear la descarga
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
-
-      // 🧹 Limpieza
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-      }, 1000);
-    },
-    error: (err) => {
-      console.error('❌ Error al descargar el archivo Word:', err);
-      alert('No se pudo descargar el archivo Word. Intenta nuevamente.');
-    }
-  });
-}
+    });
+  }
 
 
   // exportToPdf(proformaId:number){
@@ -355,5 +355,35 @@ abrirEnlace(url: string | undefined | null): void {
   onPagoCreado(resp: any) {
     this.loadCotizaciones();
   }
+
+  esImagen(valor: string | null | undefined): boolean {
+    if (!valor) return false;
+    const url = valor.trim().toLowerCase();
+    // Verifica si parece una URL de imagen
+    return /^https?:\/\/.+\.(jpg|jpeg|png|gif|bmp|webp|svg)$/.test(url);
+  }
+  imagenError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.src = 'https://via.placeholder.com/100x100?text=Sin+imagen'; // 👈 imagen por defecto
+  }
+  getProxyImage(url: string): string {
+    return 'https://images.weserv.nl/?url=' + encodeURIComponent(url);
+  }
+  parseEvidencia(valor: string | null | undefined): { imagen?: string, texto?: string } {
+    if (!valor) return {};
+
+    const urlRegex = /(https?:\/\/[^\s]+?\.(?:jpg|jpeg|png|gif|bmp|webp|svg|avif))/i;
+    const match = valor.match(urlRegex);
+
+    if (match) {
+      const imagen = match[0]; //  firt match is the image URL
+      const texto = valor.replace(match[0], '').trim(); // todo lo demás como texto
+      return { imagen, texto };
+    } else {
+      return { texto: valor.trim() };
+    }
+  }
+
+
 
 }

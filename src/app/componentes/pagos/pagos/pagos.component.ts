@@ -9,11 +9,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-
+import { TooltipModule } from 'primeng/tooltip';
 @Component({
   selector: 'app-pagos',
   imports: [CrearpagosComponent, ButtonModule, DialogModule, CommonModule, FormsModule, TableModule,
-    TagModule
+    TagModule, TooltipModule
   ],
   templateUrl: './pagos.component.html',
   styleUrl: './pagos.component.css',
@@ -25,9 +25,10 @@ export class PagosComponent {
   pago: PagosRead | null = null;
   modalVisible = false;
   imagenSeleccionada: string | null = null;
-mostrarImagen: boolean = false;
+  mostrarImagen: boolean = false;
   ngOnInit() {
     this.getAllPagos();
+    this.verificarSiPuedeCrearPago();
   }
 
   getAllPagos() {
@@ -48,7 +49,7 @@ mostrarImagen: boolean = false;
   onPagoCreado(resp: any) {
     this.getAllPagos();
   }
- getSeverity(status: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
+  getSeverity(status: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
     switch (status) {
       case 'ACEPTADA':
         return 'success';
@@ -64,13 +65,23 @@ mostrarImagen: boolean = false;
         return 'info';  // o 'info', lo que prefieras para estados desconocidos
     }
   }
-abrirImagen(url: string) {
-  this.imagenSeleccionada = url;
-  this.mostrarImagen = true;
-}
+  abrirImagen(url: string) {
+    this.imagenSeleccionada = url;
+    this.mostrarImagen = true;
+  }
 
-cerrarImagen() {
-  this.mostrarImagen = false;
-  this.imagenSeleccionada = null;
-}
+  cerrarImagen() {
+    this.mostrarImagen = false;
+    this.imagenSeleccionada = null;
+  }
+
+
+  puedeCrearPago: boolean = false;
+  verificarSiPuedeCrearPago() {
+    const hoy = new Date();
+    const dia = hoy.getDate();
+
+    // Habilita el botón solo si hoy es día 15
+    this.puedeCrearPago = (dia === 16);
+  }
 }
