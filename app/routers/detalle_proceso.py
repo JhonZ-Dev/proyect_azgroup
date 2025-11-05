@@ -6,11 +6,12 @@ from sqlalchemy.orm import Session
 from app.auth import get_db, require_permission  # si no usas permisos, quita require_permission
 from app.crudFolder import detalle_proceso as crud
 from app.schemasFolder.detalle_proceso import (
+    DetalleProcesoFirmaEntregaUpdate,
     DetalleProcesoRead,
     DetalleProcesoCreate,
     DetalleProcesoUpdate,
 )
-from app.crudFolder.detalle_proceso import get_details
+from app.crudFolder.detalle_proceso import get_details, update_detalle_firma_y_entrega
 from app.models import EstadoDetalle
 
 router = APIRouter(
@@ -153,3 +154,22 @@ def totales_por_estado(
     db: Session = Depends(get_db)
 ):
     return crud.get_totales_por_estado_by_detalleproceso(db)
+
+
+
+
+@router.put("/{detalle_id}/firma-entrega", response_model=DetalleProcesoRead)
+def actualizar_firma_entrega(
+    detalle_id: int,
+    payload: DetalleProcesoFirmaEntregaUpdate,
+    db: Session = Depends(get_db),
+):
+    row = crud.update_detalle_firma_y_entrega(
+        db=db,
+        detalle_id=detalle_id,
+        txt_firmacontrato=payload.txt_firmacontrato,
+        txt_fechaentrega=payload.txt_fechaentrega,
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="Detalle no encontrado")
+    return row

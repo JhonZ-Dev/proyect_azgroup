@@ -1,5 +1,5 @@
 # models.py
-from sqlalchemy import Column, Float, Integer, String, Boolean, DateTime, Table, ForeignKey,Date, Time, func
+from sqlalchemy import Column, Float, Integer, Numeric, String, Boolean, DateTime, Table, ForeignKey,Date, Time, func
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
@@ -269,12 +269,15 @@ class DetalleProceso(Base):
     txt_codigo_proceso = Column(String(500), nullable=True)
     txt_entidad_contratante = Column(String(500), nullable=True)
     txt_objeto_compra = Column(String(500), nullable=True)
-    int_valor_contrato = Column(Integer, nullable=True)
+    #int_valor_contrato = Column(Integer, nullable=True)
+    # from sqlalchemy import Float, Numeric
+    int_valor_contrato = Column(Numeric(18, 2), nullable=True)  # o Float
     txt_plazocontractual = Column(String(100), nullable=True)
     txt_firmacontrato = Column(String(100), nullable=True)
     txt_fechafin = Column(String(100), nullable=True)
     txt_fechaentrega = Column(String(100), nullable=True)
     int_diasmora = Column(Integer, nullable=True)
+    estado_anterior = Column(Integer, nullable=True)
     txtUsuarioRegistra =  Column(String(100), nullable=True)
     dFechaRegistro = Column(Date,nullable=False,server_default=func.getdate())
     tTimeHora      = Column(Time,nullable=False,server_default=func.getdate())

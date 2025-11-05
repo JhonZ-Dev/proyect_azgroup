@@ -22,6 +22,7 @@ class DetalleProcesoBase(BaseModel):
     txtUsuarioRegistra: Optional[str] = None
     # estado_id requerido para crear (lo dejamos aquí y en Create)
     estado_id: Optional[int] = None
+    estado_anterior   : Optional[int] = None
 
 
 # --- Create: lo que necesitas para insertar ---
@@ -56,7 +57,7 @@ class DetalleProcesoRead(BaseModel):
     txt_codigo_proceso: Optional[str] = None
     txt_entidad_contratante: Optional[str] = None
     txt_objeto_compra: Optional[str] = None
-    int_valor_contrato: Optional[int] = None
+    int_valor_contrato: Optional[float] = None
     txt_plazocontractual: Optional[str] = None
     txt_firmacontrato: Optional[str] = None
     txt_fechafin: Optional[str] = None
@@ -65,8 +66,14 @@ class DetalleProcesoRead(BaseModel):
     txtUsuarioRegistra: Optional[str] = None
     dFechaRegistro: date
     tTimeHora: time
-    estado_id: int
-    estado_name: str                 # viene de la @property del modelo
+    estado_id: Optional[int] = None 
+    estado_name:  Optional[str] = None                 # viene de la @property del modelo
     estado: Optional[EstadoRead] = None  # anidado si quieres enviar el objeto
+    estado_anterior   : Optional[int] = None
     class Config:
         orm_mode = True
+
+
+class DetalleProcesoFirmaEntregaUpdate(BaseModel):
+    txt_firmacontrato: Optional[str] = None  # "dd-mm-yyyy"
+    txt_fechaentrega: Optional[str] = None   # "dd-mm-yyyy"
