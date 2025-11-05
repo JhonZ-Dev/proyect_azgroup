@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session, selectinload
 import re
 from sqlalchemy.exc import IntegrityError
 
+from app.crudFolder.detalle_proceso import get_estado_detalle_default_id, upsert_detalle_from_informacion
+
 # —— CRUD para tb_informacion ——————————————————————————————
 def _normalize_necesidad(value: str | None) -> str:
     """
@@ -276,6 +278,7 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
                 flo_precioTotal=it.get("flo_precioTotal"),
                 flo_total=it.get("flo_total"),
                 int_orden=it["int_orden"],
+                txt_evidencia=it["txt_evidencia"],
             )
             db.add(item_db)
             db.flush()  # obtiene items_id para cotizaciones
@@ -485,6 +488,26 @@ def get_informacion_with_items_by_id(
     )
 
 
+# def update_estado_informacion(
+#     db: Session,
+#     proforma_id: int,
+#     estado_id: int
+# ) -> Informacion | None:
+#     info = db.query(Informacion).filter(Informacion.proforma_id == proforma_id).first()
+#     if not info:
+#         return None
+#     info.estado_id = estado_id
+#     db.commit()
+#     db.refresh(info)
+#     return info
+def _get_estado_id_by_name(db: Session, nombre: str) -> int | None:
+    row = (
+        db.query(Estado)
+          .filter(func.upper(Estado.name) == func.upper(nombre))
+          .first()
+    )
+    return row.id if row else None
+
 def update_estado_informacion(
     db: Session,
     proforma_id: int,
@@ -493,10 +516,33 @@ def update_estado_informacion(
     info = db.query(Informacion).filter(Informacion.proforma_id == proforma_id).first()
     if not info:
         return None
+
+    estado_anterior = info.estado_id
     info.estado_id = estado_id
-    db.commit()
-    db.refresh(info)
-    return info
+
+    try:
+        # ¿El nuevo estado de Informacion es ACEPTADA?
+        estado_aceptada_id = _get_estado_id_by_name(db, "ACEPTADA")
+
+        if estado_aceptada_id is not None and estado_id == estado_aceptada_id:
+            # Elegimos el estado por defecto en estado_detalle para DetalleProceso
+            estado_detalle_id = get_estado_detalle_default_id(db)
+
+            # Si quieres asegurar que info.items esté cargado para valor_contrato, puedes hacer:
+            # db.refresh(info)  # o usar selectinload en consulta previa
+
+            upsert_detalle_from_informacion(
+                db=db,
+                info=info,
+                estado_detalle_id=estado_detalle_id,
+            )
+
+        db.commit()
+        db.refresh(info)
+        return info
+    except Exception:
+        db.rollback()
+        raise
 
 def get_totales_por_estado(db: Session):
     res = (

@@ -213,6 +213,7 @@ class Item(Base):
     flo_precioTotal = Column(Float, nullable=True)
     flo_total = Column(Float, nullable=True) 
     int_orden = Column(Integer, nullable=True)
+    txt_evidencia = Column(Text, nullable=True)
     proforma_id     = Column(Integer, ForeignKey('tb_informacion.proforma_id'))
     informacion     = relationship("Informacion", back_populates="items")
     cotizaciones = relationship("InfoCotizaciones", back_populates="item", cascade="all, delete-orphan")

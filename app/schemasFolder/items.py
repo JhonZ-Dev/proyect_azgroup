@@ -13,6 +13,7 @@ class ItemBase(BaseModel):
     flo_precioTotal:      Optional[float] = None
     flo_total:            Optional[float] = None
     int_orden:            Optional[int] = None
+    txt_evidencia:        Optional[str] = None
 
 class ItemCreate(ItemBase):
     proforma_id: int
@@ -26,6 +27,7 @@ class ItemCreateIn(BaseModel):
     flo_precioTotal: Optional[float] = None
     flo_total: Optional[float] = None
     int_orden: int
+    txt_evidencia: Optional[str] = None
     class Config:
         extra = "ignore"  # ignora campos extra si llegan
 class ItemRead(ItemBase):
