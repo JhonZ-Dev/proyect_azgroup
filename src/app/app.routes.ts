@@ -27,7 +27,7 @@ export const routes: Routes = [
         {path:'listar-pagos', component:PagosComponent},
         {path:'listar-pagos-cot', component:CrearpagosComponent},
         {path:'count', component:CountcotizacionesComponent},
-        {path:'list-procesos', component:ListProcesosComponent},
+        {path:'list-procesos', component:ListProcesosComponent}
 
 
       ]

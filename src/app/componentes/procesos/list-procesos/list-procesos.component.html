@@ -1,1 +1,74 @@
-<p>list-procesos works!</p>
+<p-toast></p-toast>
+
+<div class="card">
+    <p-table [value]="procesos" [tableStyle]="{ 'min-width': '60rem' }">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>N°</th>
+                <th>PROFORMA</th>
+                <th>FECHA PROFORMA</th>
+                <th>ENTIDAD CONTRATANTE</th>
+                <th>VALOR CONTRATO</th>
+                <th>PLAZO</th>
+                <th>FIRMA DEL CONTRATO</th>
+                <th>FECHA FIN</th>
+                <th>FECHA ENTREGADA</th>
+                <th>DÍAS DE MORA</th>
+                <th>ESTADO</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-proceso let-i="rowIndex">
+            <tr>
+                <td>{{ i + 1 }}</td>
+                <td>{{ proceso.txt_proforma }}</td>
+                <td>{{ proceso.txt_fecha_proforma }}</td>
+                <td>
+                    <span [title]="proceso.txt_entidad_contratante"
+                        style="display: inline-block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        {{ proceso.txt_entidad_contratante }}
+                    </span>
+                </td>
+
+                <td>{{ proceso.int_valor_contrato | number:'1.2-2' }}</td>
+                <td>{{ proceso.txt_plazocontractual }}</td>
+
+                <!-- Firma del contrato -->
+                <td>
+                    <div *ngIf="editingField[proceso.detalle_id] !== 'txt_firmacontrato'; else editFirma">
+                        <span (click)="enableEdit(proceso.detalle_id, 'txt_firmacontrato')" style="cursor: pointer;"
+                            title="Click para editar">
+                            {{ proceso.txt_firmacontrato || '—' }}
+                        </span>
+                    </div>
+                    <ng-template #editFirma>
+                        <input type="text" [(ngModel)]="proceso.txt_firmacontrato"
+                            (blur)="onBlurOrEnter(proceso, 'txt_firmacontrato')"
+                            (keyup.enter)="onBlurOrEnter(proceso, 'txt_firmacontrato')" class="p-inputtext p-component"
+                            placeholder="dd-mm-yyyy" autofocus pInputText />
+                    </ng-template>
+                </td>
+                <td>{{ proceso.txt_fechafin }}</td>
+                <!-- Fecha entregada -->
+                <td>
+                    <div *ngIf="editingField[proceso.detalle_id] !== 'txt_fechaentrega'; else editEntrega">
+                        <span (click)="enableEdit(proceso.detalle_id, 'txt_fechaentrega')" style="cursor: pointer;"
+                            title="Click para editar">
+                            {{ proceso.txt_fechaentrega || '—' }}
+                        </span>
+                    </div>
+                    <ng-template #editEntrega>
+                        <input type="text" [(ngModel)]="proceso.txt_fechaentrega"
+                            (blur)="onBlurOrEnter(proceso, 'txt_fechaentrega')"
+                            (keyup.enter)="onBlurOrEnter(proceso, 'txt_fechaentrega')" class="p-inputtext p-component"
+                            placeholder="dd-mm-yyyy" autofocus pInputText />
+                    </ng-template>
+                </td>
+
+
+                <td>{{ proceso.int_diasmora }}</td>
+                <td>{{proceso.estado_name}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

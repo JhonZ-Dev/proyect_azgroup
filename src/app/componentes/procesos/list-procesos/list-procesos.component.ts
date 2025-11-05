@@ -3,27 +3,32 @@ import { ProcesosService } from '../../servicios/procesos/procesos.service';
 import { ListProcesos, ReporteInformacion } from '../../modelos/procesos/procesos';
 import { finalize, map } from 'rxjs';
 import { CommonModule } from '@angular/common';
-
+import { TableModule } from 'primeng/table';
+import { ToastModule } from 'primeng/toast';
+import { FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
+import { InputTextModule } from 'primeng/inputtext';
 @Component({
   selector: 'app-list-procesos',
-  imports: [CommonModule],
+  imports: [CommonModule, TableModule, ToastModule, FormsModule, InputTextModule],
   templateUrl: './list-procesos.component.html',
   styleUrl: './list-procesos.component.css',
   standalone: true,
+  providers: [MessageService]
 })
 export class ListProcesosComponent {
 
-  constructor(private _srvProcesos: ProcesosService) { }
+  constructor(private _srvProcesos: ProcesosService, private message: MessageService) { }
   procesos: ListProcesos[] = []
   allProcesos: ListProcesos[] = [];
   infoProcesos: ReporteInformacion[] = []
   error = '';
   loading = false;
   errorMessage = '';
+  editingField: { [id: number]: string | null } = {}; // {detalle_id: 'campo'}
 
   ngOnInit() {
     this.loadProcesos();
-    this.loadInfoProcesos();
   }
 
   private loadProcesos(): void {
@@ -53,18 +58,44 @@ export class ListProcesosComponent {
     });
   }
 
+   enableEdit(detalleId: number, field: 'txt_firmacontrato' | 'txt_fechaentrega') {
+    this.editingField[detalleId] = field;
+  }
 
-  private loadInfoProcesos(): void {
-    this._srvProcesos.getAllInfProcesos().subscribe({
-      next: (data: ReporteInformacion[]) => {
-        this.infoProcesos = data;
-        console.log('Información de procesos cargada:', this.infoProcesos);
+onBlurOrEnter(proceso: ListProcesos, field: 'txt_firmacontrato' | 'txt_fechaentrega') {
+    const value = proceso[field];
+    const payload: any = {};
+    payload[field] = value;
+
+    this._srvProcesos.updateFirmaEntrega(proceso.detalle_id, payload).subscribe({
+      next: (res) => {
+        proceso.txt_firmacontrato = res.txt_firmacontrato;
+        proceso.txt_fechaentrega = res.txt_fechaentrega;
+        proceso.txt_fechafin = res.txt_fechafin;
+        proceso.int_diasmora = res.int_diasmora;
+
+        this.message.add({
+          severity: 'success',
+          summary: 'Actualizado',
+          detail: `Campo ${field === 'txt_firmacontrato' ? 'Firma de contrato' : 'Fecha de entrega'} actualizado`,
+          life: 2500,
+        });
+
+        this.editingField[proceso.detalle_id] = null;
       },
       error: (err) => {
-        console.error('Error cargando información de procesos', err);
-        this.errorMessage = 'No se pudo cargar la información de los procesos';
-      }
+        console.error('Error actualizando', err);
+        this.message.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo actualizar el proceso',
+          life: 3000,
+        });
+        this.editingField[proceso.detalle_id] = null;
+      },
     });
   }
+
+
 
 }

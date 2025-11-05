@@ -25,9 +25,18 @@ export class ProcesosService {
     const headers = this.buildHeaders();
     return this.http.get<ListProcesos[]>(`${this.apiUrlDetalleProcesos}listar-detallesprocesos`, { headers });
   }
-    public getAllInfProcesos(): Observable<ReporteInformacion[]> {
-    const headers = this.buildHeaders();
-    return this.http.get<ReporteInformacion[]>(`${this.urlInformacion}reporte/proformas`, { headers });
-  }
+
+  public updateFirmaEntrega(
+  detalleId: number,
+  payload: Partial<{ txt_firmacontrato: string; txt_fechaentrega: string }>
+): Observable<ListProcesos> {
+  const headers = this.buildHeaders();
+  return this.http.put<ListProcesos>(
+    `${this.apiUrlDetalleProcesos}${detalleId}/firma-entrega`,
+    payload,
+    { headers }
+  );
+}
+
 
 }

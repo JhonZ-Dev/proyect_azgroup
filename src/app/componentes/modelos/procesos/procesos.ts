@@ -2,6 +2,7 @@ export class Procesos {
 
 }
 export class ListProcesos{
+    detalle_id: number;
     txt_oferente: string;
     txt_proforma: string;
     txt_fecha_proforma: string;
