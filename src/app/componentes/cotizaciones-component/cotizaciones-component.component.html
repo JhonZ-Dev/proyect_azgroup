@@ -187,7 +187,7 @@
             <th class="px-2 py-2 text-center w-24">Cantidad</th>
             <th class="px-2 py-2 text-center w-24">Precio Unitario</th>
             <th class="px-2 py-2 text-center w-28">Total</th>
-            <th class="px-2 py-2 text-center w-28">Evidencia</th>
+            
             <!--SEGUNDA TABLA PARA NO PERDERSE-->
             <th class="px-2 py-2 text-center w-28 border-l-2 border-gray-300">P.U (Cotizar)</th>
             <th class="px-2 py-2 text-center w-24">P.T</th>
@@ -195,6 +195,7 @@
             <th class="px-2 py-2 text-center w-28">P.U (Base)</th>
             <th class="px-2 py-2 text-center w-24">P.V</th>
             <th class="px-2 py-2 text-center w-16">Acciones</th>
+            <th class="px-2 py-2 text-center w-28">Evidencia</th>
           </tr>
         </thead>
         <tbody formArrayName="items" class="align-top">
@@ -227,9 +228,7 @@
               <input pInputText formControlName="flo_precioTotal" readonly placeholder="0.00"
                 class="w-full text-sm bg-gray-100" styleClass="w-full" />
             </td>
-            <td class="px-2 py-2">
-              <input pInputText formControlName="txt_evidencia" placeholder="Evidencia" class="w-full text-sm"
-                styleClass="w-full" (dblclick)="abrirDialogEvidencia(i)" />
+           
 
             <!--SEGUNDA TABLA-->
             <td class="px-2 py-2 text-center border-l-2 border-gray-300">
@@ -256,13 +255,16 @@
                 <i class="pi pi-trash text-red-600"></i>
               </button>
             </td>
+             <td class="px-2 py-2">
+              <input pInputText formControlName="txt_evidencia" placeholder="Evidencia" class="w-full text-sm"
+                styleClass="w-full" (dblclick)="abrirDialogEvidencia(i)" />
           </tr>
         </tbody>
 
         <tfoot>
           <tr class="bg-gray-50 font-semibold border-t">
             <!-- Cols 1..6 -->
-            <td colspan="7" class="px-2 py-3 text-right">Total General:</td>
+            <td colspan="6" class="px-2 py-3 text-right">Total General:</td>
 
             <!-- Col 7: Total -->
             <td class="px-2 py-3 text-center text-emerald-600">
