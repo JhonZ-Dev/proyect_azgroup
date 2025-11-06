@@ -1,0 +1,34 @@
+/* Colores suaves y legibles */
+:host ::ng-deep .p-datatable .row-pagado > td {
+  background: #fff7cc;           /* amarillo suave */
+}
+
+:host ::ng-deep .p-datatable .row-por-cobrar > td {
+  background: #ffe0e0;           /* rojo suave */
+}
+
+:host ::ng-deep .p-datatable .row-en-proceso > td {
+  background: #e6ffed;           /* verde suave */
+}
+
+/* (Opcional) una banda en el borde izquierdo para mayor contraste */
+:host ::ng-deep .p-datatable .row-pagado > td:first-child {
+  box-shadow: inset 4px 0 0 #ffd84d;
+}
+:host ::ng-deep .p-datatable .row-por-cobrar > td:first-child {
+  box-shadow: inset 4px 0 0 #ff6b6b;
+}
+:host ::ng-deep .p-datatable .row-en-proceso > td:first-child {
+  box-shadow: inset 4px 0 0 #22c55e;
+}
+
+
+th{
+    font-size: 11px;
+    font-weight: bold;
+}
+
+td{
+    font-size: 10px;
+    
+}

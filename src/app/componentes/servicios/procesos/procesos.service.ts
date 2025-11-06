@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 })
 export class ProcesosService {
   private apiUrlDetalleProcesos: string = api_detalleprocesos.apiUrlDetalleProcesos;
-  private urlInformacion:string = api_informacion.apiUrl;
+  private urlInformacion: string = api_informacion.apiUrl;
 
   constructor(private http: HttpClient) { }
 
@@ -27,16 +27,34 @@ export class ProcesosService {
   }
 
   public updateFirmaEntrega(
-  detalleId: number,
-  payload: Partial<{ txt_firmacontrato: string; txt_fechaentrega: string }>
-): Observable<ListProcesos> {
+    detalleId: number,
+    payload: Partial<{ txt_firmacontrato: string; txt_fechaentrega: string }>
+  ): Observable<ListProcesos> {
+    const headers = this.buildHeaders();
+    return this.http.put<ListProcesos>(
+      `${this.apiUrlDetalleProcesos}${detalleId}/firma-entrega`,
+      payload,
+      { headers }
+    );
+  }
+
+  public getEstadosDetalle(): Observable<{ estado_id: number; estado: string }[]> {
   const headers = this.buildHeaders();
-  return this.http.put<ListProcesos>(
-    `${this.apiUrlDetalleProcesos}${detalleId}/firma-entrega`,
-    payload,
+  return this.http.get<{ estado_id: number; estado: string }[]>(
+    `${this.apiUrlDetalleProcesos.replace(/detalle-procesos\/?$/, '')}estados-detalle/listar`,
     { headers }
   );
 }
+
+public updateEstadoDetalle(detalleId: number, estado_id: number): Observable<ListProcesos> {
+  const headers = this.buildHeaders();
+  return this.http.put<ListProcesos>(
+    `${this.apiUrlDetalleProcesos}${detalleId}/estado`,
+    { estado_id },
+    { headers }
+  );
+}
+
 
 
 }
