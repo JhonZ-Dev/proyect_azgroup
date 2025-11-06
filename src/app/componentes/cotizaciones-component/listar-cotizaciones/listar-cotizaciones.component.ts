@@ -186,22 +186,27 @@ export class ListarCotizacionesComponent {
   }
 
 
-  getSeverity(status: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
-    switch (status) {
-      case 'ACEPTADA':
-        return 'success';
-      case 'CREADA':
-        return 'info';
-      case 'ENVIADA':
-        return 'info';
-      case 'PENDIENTE':
-        return 'warn';       // ← cambió de warning a warn
-      case 'RECHAZADA':
-        return 'danger';
-      default:
-        return 'secondary';  // o 'info', lo que prefieras para estados desconocidos
-    }
+  
+  getOverrideStyle(status: string) {
+  if (status === 'ENVIADA') {
+    return { 'background-color':'#06b6d4', 'color':'#fff', 'border-color':'#06b6d4' };
   }
+  if (status === 'ACEPTADA'){
+    return { 'background-color':'rgba(2, 98, 7, 1)', 'color':'#fff', 'border-color':'#14c05eff' };
+  }
+  if (status === 'CREADA'){
+    return { 'background-color':'rgba(113, 9, 92, 1)', 'color':'#fff', 'border-color':'#c32d82ff' };
+  }
+  if (status === 'PENDIENTE'){
+    return { 'background-color':'rgba(189, 76, 16, 1)', 'color':'#fff', 'border-color':'#f59048ff' };
+  }
+  if (status === 'RECHAZADA'){
+    return { 'background-color':'rgba(160, 11, 11, 1)', 'color':'#fff', 'border-color':'#f90909ff' };
+  }
+  
+  return null; // no toca los demás
+}
+
 
 
   toggle(event: any) {

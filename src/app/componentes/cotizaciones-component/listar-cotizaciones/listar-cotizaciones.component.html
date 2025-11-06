@@ -54,7 +54,7 @@
                     : c.txt_objetivoCompra
                     }}</td>
                 <td (click)="openPopover($event, c)" [ngClass]="{ highlight: isMatch(c.estado_name) }">
-                    <p-tag [value]="c.estado_name" [severity]="getSeverity(c.estado_name)" />
+                    <p-tag [value]="c.estado_name"  [ngStyle]="getOverrideStyle(c.estado_name)"/>
                 </td>
                 <td [ngClass]="{ highlight: isMatch(c.txt_fecha) }">{{ c.txt_fecha }}</td>
                 <td [ngClass]="{ highlight: isMatch(c.tHora_maxina) }">{{ c.tHora_maxina }}</td>
