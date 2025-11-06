@@ -12,7 +12,8 @@ from app.schemasFolder.detalle_proceso import (
     DetalleProcesoUpdate,
 )
 from app.crudFolder.detalle_proceso import get_details, update_detalle_firma_y_entrega
-from app.models import EstadoDetalle
+from app.models import DetalleProceso, EstadoDetalle
+from app.schemasFolder.estado_detalle import EstadoDetalleUpdate
 
 router = APIRouter(
     prefix="/detalle-procesos",
@@ -156,8 +157,6 @@ def totales_por_estado(
     return crud.get_totales_por_estado_by_detalleproceso(db)
 
 
-
-
 @router.put("/{detalle_id}/firma-entrega", response_model=DetalleProcesoRead)
 def actualizar_firma_entrega(
     detalle_id: int,
@@ -172,4 +171,20 @@ def actualizar_firma_entrega(
     )
     if not row:
         raise HTTPException(status_code=404, detail="Detalle no encontrado")
+    return row
+
+
+
+#*====================== ACTUALIZAR ESTADO ======================*#
+@router.put("/{detalle_id}/estado", response_model=DetalleProcesoRead)
+def actualizar_estado_detalle(detalle_id: int, body: EstadoDetalleUpdate, db: Session = Depends(get_db)):
+    row = db.query(DetalleProceso).filter(DetalleProceso.detalle_id == detalle_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Detalle no encontrado")
+
+    estado_anterior = row.estado_id
+    row.estado_id = body.estado_id
+    row.estado_anterior = estado_anterior
+    db.commit()
+    db.refresh(row)
     return row

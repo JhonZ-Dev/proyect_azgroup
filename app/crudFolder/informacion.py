@@ -256,7 +256,7 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
     else:
         seq = 700
     data["txt_numeroProforma"] = f"{seq:06d}"
-    data["estado_id"] = 1
+    data["estado_id"] = 2
 
     try:
         # 🔹 Crear cabecera

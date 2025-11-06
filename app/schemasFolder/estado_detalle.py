@@ -7,3 +7,6 @@ class EstadoRead(BaseModel):
 
     class Config:
         orm_mode = True
+
+class EstadoDetalleUpdate(BaseModel):
+    estado_id: int
