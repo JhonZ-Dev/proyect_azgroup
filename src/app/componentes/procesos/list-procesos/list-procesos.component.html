@@ -109,7 +109,7 @@
                     <ng-template #editEstado>
                         <p-select [options]="estados" optionLabel="label" optionValue="value"
                             [(ngModel)]="proceso.estado_id" (onChange)="onEstadoChange(proceso, $event.value)"
-                            [style]="{ width: '220px' }" [showClear]="true" placeholder="Selecciona estado"></p-select>
+                            [style]="{ width: '220px' }" [showClear]="true" placeholder="Selecciona estado" appendTo="body"></p-select>
                     </ng-template>
                 </td>
             </tr>
