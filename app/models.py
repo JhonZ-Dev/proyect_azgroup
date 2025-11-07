@@ -281,6 +281,7 @@ class DetalleProceso(Base):
     txtUsuarioRegistra =  Column(String(100), nullable=True)
     dFechaRegistro = Column(Date,nullable=False,server_default=func.getdate())
     tTimeHora      = Column(Time,nullable=False,server_default=func.getdate())
+    is_active       = Column(Boolean, default=True)
     estado_id = Column(
         Integer,
         ForeignKey("estado_detalle.estado_id"),  # <--- tabla.columna

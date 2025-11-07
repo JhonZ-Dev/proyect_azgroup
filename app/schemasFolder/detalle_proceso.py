@@ -23,6 +23,7 @@ class DetalleProcesoBase(BaseModel):
     # estado_id requerido para crear (lo dejamos aquí y en Create)
     estado_id: Optional[int] = None
     estado_anterior   : Optional[int] = None
+    is_active: bool
 
 
 # --- Create: lo que necesitas para insertar ---
@@ -46,7 +47,7 @@ class DetalleProcesoUpdate(BaseModel):
     int_diasmora: Optional[int] = None
     txtUsuarioRegistra: Optional[str] = None
     estado_id: Optional[int] = None
-
+    is_active: bool
 
 # --- Read: lo que devuelves al cliente ---
 class DetalleProcesoRead(BaseModel):
@@ -70,6 +71,7 @@ class DetalleProcesoRead(BaseModel):
     estado_name:  Optional[str] = None                 # viene de la @property del modelo
     estado: Optional[EstadoRead] = None  # anidado si quieres enviar el objeto
     estado_anterior   : Optional[int] = None
+    is_active: bool
     class Config:
         orm_mode = True
 

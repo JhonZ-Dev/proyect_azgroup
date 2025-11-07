@@ -55,6 +55,7 @@ def get_details(db: Session) -> list[DetalleProceso]:
     return (
         db.query(DetalleProceso)
           .options(selectinload(DetalleProceso.estado))
+          .filter(DetalleProceso.is_active == True)
           .all()
     )
 

@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from app.models import Estado, InfoCotizaciones, Informacion, Item
+from app.models import DetalleProceso, Estado, InfoCotizaciones, Informacion, Item
 from app.schemasFolder.informacion import InformacionCreate, InformacionCreateWithItems
 from sqlalchemy.orm import Session, selectinload
 import re
@@ -508,6 +508,41 @@ def _get_estado_id_by_name(db: Session, nombre: str) -> int | None:
     )
     return row.id if row else None
 
+# def update_estado_informacion(
+#     db: Session,
+#     proforma_id: int,
+#     estado_id: int
+# ) -> Informacion | None:
+#     info = db.query(Informacion).filter(Informacion.proforma_id == proforma_id).first()
+#     if not info:
+#         return None
+
+#     estado_anterior = info.estado_id
+#     info.estado_id = estado_id
+
+#     try:
+#         # ¿El nuevo estado de Informacion es ACEPTADA?
+#         estado_aceptada_id = _get_estado_id_by_name(db, "ACEPTADA")
+
+#         if estado_aceptada_id is not None and estado_id == estado_aceptada_id:
+#             # Elegimos el estado por defecto en estado_detalle para DetalleProceso
+#             estado_detalle_id = get_estado_detalle_default_id(db)
+
+#             # Si quieres asegurar que info.items esté cargado para valor_contrato, puedes hacer:
+#             # db.refresh(info)  # o usar selectinload en consulta previa
+
+#             upsert_detalle_from_informacion(
+#                 db=db,
+#                 info=info,
+#                 estado_detalle_id=estado_detalle_id,
+#             )
+
+#         db.commit()
+#         db.refresh(info)
+#         return info
+#     except Exception:
+#         db.rollback()
+#         raise
 def update_estado_informacion(
     db: Session,
     proforma_id: int,
@@ -521,21 +556,23 @@ def update_estado_informacion(
     info.estado_id = estado_id
 
     try:
-        # ¿El nuevo estado de Informacion es ACEPTADA?
         estado_aceptada_id = _get_estado_id_by_name(db, "ACEPTADA")
+        detalle = db.query(DetalleProceso).filter(DetalleProceso.txt_proforma == info.txt_numeroProforma).first()
 
-        if estado_aceptada_id is not None and estado_id == estado_aceptada_id:
-            # Elegimos el estado por defecto en estado_detalle para DetalleProceso
+        # Cuando pasa a ACEPTADA → crear o actualizar detalle
+        if estado_id == estado_aceptada_id:
             estado_detalle_id = get_estado_detalle_default_id(db)
-
-            # Si quieres asegurar que info.items esté cargado para valor_contrato, puedes hacer:
-            # db.refresh(info)  # o usar selectinload en consulta previa
-
             upsert_detalle_from_informacion(
                 db=db,
                 info=info,
                 estado_detalle_id=estado_detalle_id,
             )
+            if detalle:
+                detalle.is_active = True
+
+        # Cuando ya no está en ACEPTADA → inhabilitar
+        elif detalle:
+            detalle.is_active = False
 
         db.commit()
         db.refresh(info)
