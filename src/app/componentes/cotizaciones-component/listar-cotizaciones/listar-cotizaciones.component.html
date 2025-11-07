@@ -41,7 +41,7 @@
                         [icon]="dt.isRowExpanded(c) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
                         (click)="toggleRow(c)"></button>
                 </td>
-                <td [ngClass]="{ highlight: isMatch(c.txt_infimaNro) }">{{ c.txt_infimaNro }}</td>
+                <td [ngClass]="{ highlight: isMatch(c.txt_numeroProforma) }">{{ c.txt_numeroProforma }}</td>
                 <td [ngClass]="{ highlight: isMatch(c.txt_necesidad) }">{{ c.txt_necesidad }}</td>
                 <td [ngClass]="{ highlight: isMatch(c.txt_cliente) }">{{
                     c.txt_cliente?.length > 20

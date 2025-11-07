@@ -9,7 +9,7 @@ import { SidebarServiceService } from '../../servicios/sidebar/sidebar-service.s
 import { CommonModule } from '@angular/common';
 import { MenuItem, MenuserviceService } from '../../servicios/menu-service/menuservice.service';
 import { Observable } from 'rxjs';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 @Component({
   selector: 'app-sidebar-component',
   imports: [DrawerModule, ButtonModule, Ripple, AvatarModule, CommonModule, RouterLink],
@@ -20,7 +20,7 @@ import { RouterLink } from '@angular/router';
 export class SidebarComponentComponent {
   visible$: any;
   menus$!: Observable<MenuItem[]>;
-  constructor(public sidebarService: SidebarServiceService, private menuService: MenuserviceService) {
+  constructor(public sidebarService: SidebarServiceService, private menuService: MenuserviceService, private router: Router) {
     this.visible$ = this.sidebarService.visible$;
   }
 
@@ -38,12 +38,21 @@ export class SidebarComponentComponent {
   // closeCallback(e: Event): void {
   //   this.drawerRef.close(e);
   // }
-   closeCallback(event: any) {
+  closeCallback(event: any) {
     this.sidebarService.setVisible(false);
   }
   // Manejador para el two-way binding
   onVisibleChange(v: boolean) {
     this.sidebarService.setVisible(v);
+  }
+
+  irPrincipal() {
+    // Si quieres cerrar el drawer antes:
+    this.sidebarService.setVisible(false);
+
+    // Cualquier opción funciona:
+    this.router.navigate(['/menu-principal']);     // respeta guards, crea una URL a partir de segmentos
+    // this.router.navigateByUrl('/menu-principal'); // navega directo por URL
   }
 
 
