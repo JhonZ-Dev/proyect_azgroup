@@ -1,6 +1,6 @@
 <div class=" p-3 bg-white rounded-lg card flex items-center space-x-4" style="margin-bottom:1rem;">
     <!-- llamar al boton de crear pagos -->
-    <button pButton type="button" label="Crear Pago" icon="pi pi-plus" (click)="abrirDialog()" [disabled]="!puedeCrearPago" pTooltip="Solo puedes crear pagos el día 16 de cada mes"></button>
+    <button pButton type="button" label="Crear Pago" icon="pi pi-plus" (click)="abrirDialog()"  pTooltip="Solo puedes crear pagos el día 16 de cada mes"></button>
     <app-crearpagos [(visible)]="modalVisible" (pagoCreado)="onPagoCreado($event)" ></app-crearpagos>
 </div>
 <!--HTML PARA CREAR EL PAGO-->
