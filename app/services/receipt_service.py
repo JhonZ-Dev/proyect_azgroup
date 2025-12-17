@@ -72,6 +72,7 @@ def generar_comprobante_pdf_weasy(pago: dict, url_validacion: str | None = None,
         now=now,
         qr_png_path=qr_png_path,
         empresa_footer=empresa_footer or "",
+        ruta_evidencia=pago.get("ruta_evidencia"),
     )
 
     pdf_filename = f"{comprobante_id}.pdf"

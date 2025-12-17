@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8">
   <title>Comprobante de pago</title>
   <link rel="stylesheet" href="{{ static('css/receipt.css') }}">
 </head>
+
 <body>
 
   <section class="header">
@@ -61,19 +63,36 @@
     </table>
   </section>
 
-  <section class="verify">
-    <div class="hash">
-      <div>Hash de verificación</div>
-      <div class="hash-code">{{ hash_seg }}</div>
-      <p class="hint">Valida este comprobante comparando el hash con el mostrado en el sistema.</p>
+  <!-- Contenedor flex para evidencia y verificación lado a lado -->
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin: 20px 0; gap: 20px;">
+
+    <!-- Columna izquierda: Evidencia -->
+    <div style="flex: 1;">
+      {% if ruta_evidencia %}
+      <h2 style="margin-top: 0;">Evidencia de Pago</h2>
+      <div>
+        <img src="{{ ruta_evidencia }}" alt="Evidencia de pago"
+          style="max-width: 150px; height: auto; border: 1px solid #ddd; border-radius: 4px; padding: 5px;" />
+      </div>
+      {% endif %}
     </div>
-    {% if qr_png_path %}
-    <div class="qr">
-      <img src="{{ qr_png_path }}" alt="QR" />
-      <div class="qr-caption">Escanea para ver/validar</div>
+
+    <!-- Columna derecha: Verificación (Hash + QR) -->
+    <div style="flex: 1;">
+      <div class="hash">
+        <div>Hash de verificación</div>
+        <div class="hash-code">{{ hash_seg }}</div>
+        <p class="hint">Valida este comprobante comparando el hash con el mostrado en el sistema.</p>
+      </div>
+      {% if qr_png_path %}
+      <div class="qr" style="margin-top: 15px;">
+        <img src="{{ qr_png_path }}" alt="QR" />
+        <div class="qr-caption">Escanea para ver/validar</div>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
-  </section>
+
+  </div>
 
   <footer class="footer">
     <div>Este documento es un comprobante informativo. No reemplaza una factura electrónica.</div>
@@ -81,4 +100,5 @@
   </footer>
 
 </body>
+
 </html>

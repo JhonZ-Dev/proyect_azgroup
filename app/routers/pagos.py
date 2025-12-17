@@ -254,6 +254,7 @@ def descargar_comprobante(
         "txtUsuarioRecibe": pago.txtUsuarioRecibe,
         "txtUsuarioCorreo": pago.txtUsuarioCorreo,
         "txtMongoPagarTexto": pago.txtMongoPagarTexto,
+        "ruta_evidencia": pago.ruta_evidencia,
     }
 
     # URL opcional para validación vía QR
@@ -299,6 +300,7 @@ def descargar_comprobante_publico(
         "txtUsuarioRecibe": pago.txtUsuarioRecibe,
         "txtUsuarioCorreo": pago.txtUsuarioCorreo,
         "txtMongoPagarTexto": pago.txtMongoPagarTexto,
+        "ruta_evidencia": pago.ruta_evidencia,
     }
 
     url_validacion = None  # si quieres, arma otra URL pública
