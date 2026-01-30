@@ -28,7 +28,7 @@ class InfoCotizacionSimple(InfoCotizacionBase):
     cotizacionesid: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # 📤 Para mostrar con relación al ítem
@@ -39,7 +39,7 @@ class ItemSimple(BaseModel):
     txt_especificaciones: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class InfoCotizacionFull(InfoCotizacionSimple):

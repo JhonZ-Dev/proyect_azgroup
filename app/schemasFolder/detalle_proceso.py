@@ -73,7 +73,7 @@ class DetalleProcesoRead(BaseModel):
     estado_anterior   : Optional[int] = None
     is_active: bool
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class DetalleProcesoFirmaEntregaUpdate(BaseModel):

@@ -43,7 +43,7 @@ class InformacionRead(InformacionBase):
     items: List[ItemReadWithCotizaciones] = []   # 👈 ahora con cotizaciones
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 class EstadoUpdate(BaseModel):
     estado_id: int
 

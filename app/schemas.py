@@ -9,7 +9,7 @@ class RoleBase(BaseModel):
 class Role(RoleBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserBase(BaseModel):
     username: str
@@ -24,7 +24,7 @@ class UserRead(UserBase):
     is_active: bool
     roles: List[Role] = []
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Token(BaseModel):
     access_token: str
@@ -39,12 +39,12 @@ class ProductBase(BaseModel):
 class ProductCreate(ProductBase):
     pass
 
-# 3) Schema para lectura (añade el id y habilita orm_mode)
+# 3) Schema para lectura (añade el id y habilita from_attributes)
 class ProductRead(ProductBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class MenuItem(BaseModel):
@@ -56,7 +56,7 @@ class MenuItem(BaseModel):
     children: List["MenuItem"] = []  # recursivo
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 MenuItem.update_forward_refs()
 

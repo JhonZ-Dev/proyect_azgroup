@@ -268,6 +268,13 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
         for it in sorted(items_data, key=lambda x: x.get("int_orden", 0)):
             cotizaciones_data = it.pop("cotizaciones", []) or []
 
+            # ✅ Normalizar txt_evidencia: convertir vacío/whitespace a None
+            txt_evidencia = it.get("txt_evidencia")
+            if txt_evidencia and isinstance(txt_evidencia, str):
+                txt_evidencia = txt_evidencia.strip() or None
+            else:
+                txt_evidencia = None if not txt_evidencia else txt_evidencia
+            
             item_db = Item(
                 proforma_id=db_info.proforma_id,
                 txt_cpc=it["txt_cpc"].strip(),
@@ -278,7 +285,7 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
                 flo_precioTotal=it.get("flo_precioTotal"),
                 flo_total=it.get("flo_total"),
                 int_orden=it["int_orden"],
-                txt_evidencia=it["txt_evidencia"],
+                txt_evidencia=txt_evidencia,
             )
             db.add(item_db)
             db.flush()  # obtiene items_id para cotizaciones
@@ -420,6 +427,13 @@ def update_informacion_con_items(
     for it in sorted(items_data, key=lambda x: x.get("int_orden", 0)):
         cotizaciones_data = it.pop("cotizaciones", []) or []
 
+        # ✅ Normalizar txt_evidencia: convertir vacío/whitespace a None
+        txt_evidencia = it.get("txt_evidencia")
+        if txt_evidencia and isinstance(txt_evidencia, str):
+            txt_evidencia = txt_evidencia.strip() or None
+        else:
+            txt_evidencia = None if not txt_evidencia else txt_evidencia
+        
         item_db = Item(
             proforma_id=db_info.proforma_id,
             txt_cpc=it["txt_cpc"].strip(),
@@ -430,6 +444,7 @@ def update_informacion_con_items(
             flo_precioTotal=it.get("flo_precioTotal"),
             flo_total=it.get("flo_total"),
             int_orden=it["int_orden"],
+            txt_evidencia=txt_evidencia,
         )
         db.add(item_db)
         db.flush()
