@@ -1,4 +1,4 @@
-import { Component, QueryList, ViewChild, ViewChildren } from '@angular/core';
+﻿import { Component, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { ItemsServiceService } from '../../servicios/items/items-service.service';
 import { InformacionServiceService } from '../../servicios/informacion/informacion-service.service';
 import { InformacionRead } from '../../modelos/informacion/informacion';
@@ -52,16 +52,22 @@ export class ListarCotizacionesComponent {
     { id: 5, name: 'PENDIENTE' },
     { id: 4, name: 'RECHAZADA' }
   ];
-  rows2 = 4;        // cuántas filas mostrar
-  first2 = 0;       // índice de la primera fila
+  // Paginacion tabla principal
+  rows = 10;
+  first = 0;
+  totalRecords = 0;
+  allCotizacionesFiltradas: InformacionRead[] = [];
+  // Paginacion items (detalle expandido)
+  rows2 = 4;        // cuÃ¡ntas filas mostrar
+  first2 = 0;       // Ã­ndice de la primera fila
   cotizaciones: InformacionRead[] = [];
   cotizacion: InformacionRead | null = null;
   error = '';
   loading = false;
   errorMessage = '';
   searchTerm: string = '';
-  selectedRow!: InformacionRead;  // aquí guardaremos “c”
-  selectedStatusOptions!: number;  // <-- aquí guardaremos solo el id
+  selectedRow!: InformacionRead;  // aquÃ­ guardaremos â€œcâ€
+  selectedStatusOptions!: number;  // <-- aquÃ­ guardaremos solo el id
 
   ngOnInit() {
     this.loadCotizaciones();
@@ -76,15 +82,18 @@ export class ListarCotizacionesComponent {
         return [...data].sort((a, b) => {
           const ta = new Date(`${a.dFechaRegistro} ${a.tTimeHora}`).getTime();
           const tb = new Date(`${b.dFechaRegistro} ${b.tTimeHora}`).getTime();
-          return tb - ta; // las más recientes primero
+          return tb - ta; // las mÃ¡s recientes primero
         });
       }),
-      // 2) Desactivar el spinner tanto en éxito como en error
+      // 2) Desactivar el spinner tanto en Ã©xito como en error
       finalize(() => this.loading = false)
     ).subscribe({
       next: sorted => {
         this.allCotizaciones = sorted;
-        this.cotizaciones = [...sorted];;
+        this.allCotizacionesFiltradas = [...sorted];
+        this.totalRecords = sorted.length;
+        this.first = 0;
+        this.applyPage();
         console.log('Cotizaciones ordenadas (desc):', this.cotizaciones);
       },
       error: err => {
@@ -93,25 +102,40 @@ export class ListarCotizacionesComponent {
       }
     });
   }
+
+  /** Calcula el slice visible de la pÃ¡gina actual */
+  private applyPage(): void {
+    this.cotizaciones = this.allCotizacionesFiltradas.slice(
+      this.first,
+      this.first + this.rows
+    );
+  }
+
+  /** Evento del p-paginator de la tabla principal */
+  onPageChange(event: { first?: number; rows?: number }) {
+    this.first = event.first ?? 0;
+    this.rows = event.rows ?? this.rows;
+    this.applyPage();
+  }
   public getCotizacionById(proformaId: number): void {
     this.infoSvc.getInformacionById(proformaId).subscribe({
       next: (data: InformacionRead) => {
-        console.log('Recibí esta cotización:', data);
+        console.log('RecibÃ­ esta cotizaciÃ³n:', data);
         this.cotizacion = data;
       },
       error: err => {
-        console.error('Error cargando cotización:', err);
-        this.error = 'No se pudo cargar la cotización';
+        console.error('Error cargando cotizaciÃ³n:', err);
+        this.error = 'No se pudo cargar la cotizaciÃ³n';
       }
     });
   }
   abrirEnlace(url: string | undefined | null): void {
     if (!url || typeof url !== 'string' || url.trim() === '') {
-      alert('⚠️ El enlace no está disponible.');
+      alert('âš ï¸ El enlace no estÃ¡ disponible.');
       return;
     }
 
-    // Si no empieza con http(s), prepéndelo
+    // Si no empieza con http(s), prepÃ©ndelo
     if (!/^https?:\/\//.test(url)) {
       url = 'https://' + url;
     }
@@ -134,13 +158,13 @@ export class ListarCotizacionesComponent {
     // 2) Aplica filtro global a cada tabla de detalle (opcional)
     this.itemTables?.forEach(tbl => tbl.filterGlobal(this.searchTerm, 'contains'));
 
-    // 3) Expande automáticamente todas las filas filtradas
-    //    Si no hay filteredValue (p.ej. aún no filtraste), usa el array completo
+    // 3) Expande automÃ¡ticamente todas las filas filtradas
+    //    Si no hay filteredValue (p.ej. aÃºn no filtraste), usa el array completo
     const rowsToExpand: InformacionRead[] =
       (this.table.filteredValue as InformacionRead[]) || this.cotizaciones;
 
     rowsToExpand.forEach(row => {
-      // si no está ya expandida, la abre
+      // si no estÃ¡ ya expandida, la abre
       if (!this.table.isRowExpanded(row)) {
         this.table.toggleRow(row);
       }
@@ -171,7 +195,7 @@ export class ListarCotizacionesComponent {
         //this.pdfSvc.downloadPdfCotizacion(data);
       },
       error: err => {
-        console.error('No se pudo cargar la cotización para PDF', err);
+        console.error('No se pudo cargar la cotizaciÃ³n para PDF', err);
       }
     });
   }
@@ -186,26 +210,26 @@ export class ListarCotizacionesComponent {
   }
 
 
-  
+
   getOverrideStyle(status: string) {
-  if (status === 'ENVIADA') {
-    return { 'background-color':'#06b6d4', 'color':'#fff', 'border-color':'#06b6d4' };
+    if (status === 'ENVIADA') {
+      return { 'background-color': '#06b6d4', 'color': '#fff', 'border-color': '#06b6d4' };
+    }
+    if (status === 'ACEPTADA') {
+      return { 'background-color': 'rgba(2, 98, 7, 1)', 'color': '#fff', 'border-color': '#14c05eff' };
+    }
+    if (status === 'CREADA') {
+      return { 'background-color': 'rgba(113, 9, 92, 1)', 'color': '#fff', 'border-color': '#c32d82ff' };
+    }
+    if (status === 'PENDIENTE') {
+      return { 'background-color': 'rgba(189, 76, 16, 1)', 'color': '#fff', 'border-color': '#f59048ff' };
+    }
+    if (status === 'RECHAZADA') {
+      return { 'background-color': 'rgba(160, 11, 11, 1)', 'color': '#fff', 'border-color': '#f90909ff' };
+    }
+
+    return null; // no toca los demÃ¡s
   }
-  if (status === 'ACEPTADA'){
-    return { 'background-color':'rgba(2, 98, 7, 1)', 'color':'#fff', 'border-color':'#14c05eff' };
-  }
-  if (status === 'CREADA'){
-    return { 'background-color':'rgba(113, 9, 92, 1)', 'color':'#fff', 'border-color':'#c32d82ff' };
-  }
-  if (status === 'PENDIENTE'){
-    return { 'background-color':'rgba(189, 76, 16, 1)', 'color':'#fff', 'border-color':'#f59048ff' };
-  }
-  if (status === 'RECHAZADA'){
-    return { 'background-color':'rgba(160, 11, 11, 1)', 'color':'#fff', 'border-color':'#f90909ff' };
-  }
-  
-  return null; // no toca los demás
-}
 
 
 
@@ -225,7 +249,7 @@ export class ListarCotizacionesComponent {
     if (!opt) return;
 
     // console.log(
-    //   `PATCH /informaciones/${this.selectedRow.proforma_id}/estado → payload:`,
+    //   `PATCH /informaciones/${this.selectedRow.proforma_id}/estado â†’ payload:`,
     //   { estado_id: this.selectedStatusOptions }
     // );
 
@@ -236,25 +260,28 @@ export class ListarCotizacionesComponent {
           // actualiza solo el nombre en la UI
           this.selectedRow.estado_id = this.selectedStatusOptions;
           this.selectedRow.estado_name = opt.name;
-          // 👇 Notifica a todos los que escuchan que deben refrescar el conteo
+          // ðŸ‘‡ Notifica a todos los que escuchan que deben refrescar el conteo
           this.countCotizacionesService.notifyRefresh();
         },
         error: err => console.error('No se pudo actualizar estado', err)
       });
   }
 
-  /** Método que llama el filtro */
+  /** MÃ©todo que llama el filtro */
   allCotizaciones: InformacionRead[] = [];
-  /** Ahora recibe un número (estado_id) */
+  /** Ahora recibe un nÃºmero (estado_id) */
   onEstadoFilter(estadoId: number | null) {
     if (estadoId != null) {
-      this.cotizaciones = this.allCotizaciones.filter(
+      this.allCotizacionesFiltradas = this.allCotizaciones.filter(
         c => c.estado_id === estadoId
       );
     } else {
-      this.cotizaciones = [...this.allCotizaciones];
+      this.allCotizacionesFiltradas = [...this.allCotizaciones];
     }
-    this.first2 = 0; // reset paginación si usas paginador manual
+    this.totalRecords = this.allCotizacionesFiltradas.length;
+    this.first = 0;   // reset paginaciÃ³n tabla principal
+    this.first2 = 0;  // reset paginaciÃ³n Ã­tems
+    this.applyPage();
   }
   descargarProforma(proformaId: number): void {
     this.wordSvc.descargarProforma(proformaId).subscribe({
@@ -262,11 +289,11 @@ export class ListarCotizacionesComponent {
         const blob = response.body as Blob;
 
         if (!blob) {
-          console.error('No se recibió ningún archivo Word');
+          console.error('No se recibiÃ³ ningÃºn archivo Word');
           return;
         }
 
-        // 🧠 Extraer el nombre desde el header Content-Disposition
+        // ðŸ§  Extraer el nombre desde el header Content-Disposition
         const contentDisposition = response.headers.get('content-disposition');
         let filename = `proforma_${proformaId}.docx`; // Fallback por si no viene
 
@@ -277,20 +304,20 @@ export class ListarCotizacionesComponent {
           }
         }
 
-        // 🧠 Crear la descarga
+        // ðŸ§  Crear la descarga
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
         a.click();
 
-        // 🧹 Limpieza
+        // ðŸ§¹ Limpieza
         setTimeout(() => {
           window.URL.revokeObjectURL(url);
         }, 1000);
       },
       error: (err) => {
-        console.error('❌ Error al descargar el archivo Word:', err);
+        console.error('âŒ Error al descargar el archivo Word:', err);
         alert('No se pudo descargar el archivo Word. Intenta nuevamente.');
       }
     });
@@ -369,7 +396,7 @@ export class ListarCotizacionesComponent {
   }
   imagenError(event: Event) {
     const img = event.target as HTMLImageElement;
-    img.src = 'https://via.placeholder.com/100x100?text=Sin+imagen'; // 👈 imagen por defecto
+    img.src = 'https://via.placeholder.com/100x100?text=Sin+imagen'; // ðŸ‘ˆ imagen por defecto
   }
   getProxyImage(url: string): string {
     return 'https://images.weserv.nl/?url=' + encodeURIComponent(url);
@@ -382,7 +409,7 @@ export class ListarCotizacionesComponent {
 
     if (match) {
       const imagen = match[0]; //  firt match is the image URL
-      const texto = valor.replace(match[0], '').trim(); // todo lo demás como texto
+      const texto = valor.replace(match[0], '').trim(); // todo lo demÃ¡s como texto
       return { imagen, texto };
     } else {
       return { texto: valor.trim() };
