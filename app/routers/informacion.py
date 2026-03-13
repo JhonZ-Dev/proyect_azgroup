@@ -1,11 +1,11 @@
 # app/routers/informaciones.py
 from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status, Request
 from typing import Any, List
 from sqlalchemy.orm import Session
 from typing import List, Dict
 from app import crud
-from app.schemasFolder.informacion import EstadoCount, EstadoUpdate, InformacionCreateWithItems, InformacionRead, InformacionCreate, ProformaReporteOut
+from app.schemasFolder.informacion import EstadoCount, EstadoUpdate, InformacionCreateWithItems, InformacionRead, InformacionCreate, ProformaReporteOut, PaginatedInformacionRead
 from app.auth import get_db, require_permission
 from app.crudFolder.informacion import create_informacion_con_items, get_informacion_by_necesidad, get_informacion_with_items_by_id, get_informaciones_with_items, get_informaciones_with_items_and_cotizaciones, get_reporte_proformas, update_informacion_con_items
 from fastapi.responses import FileResponse
@@ -94,14 +94,37 @@ def list_informaciones(db: Session = Depends(get_db)):
 
 @router.get(
     "/listar-informaciones-full",
-    response_model=List[InformacionRead],
+    response_model=PaginatedInformacionRead,
     dependencies=[Depends(require_permission("list"))]
 )
-def list_informaciones_full(db: Session = Depends(get_db)):
+def list_informaciones_full(
+    request: Request,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, gt=0, le=100),
+    db: Session = Depends(get_db)
+):
     """
-    Retorna todas las informaciones con sus items y cotizaciones anidadas.
+    Retorna todas las informaciones con sus items y cotizaciones anidadas de forma paginada.
     """
-    return get_informaciones_with_items_and_cotizaciones(db)
+    items, total = get_informaciones_with_items_and_cotizaciones(db, skip=skip, limit=limit)
+    
+    base_url = str(request.url).split('?')[0]
+    
+    next_url = None
+    if skip + limit < total:
+        next_url = f"{base_url}?skip={skip + limit}&limit={limit}"
+        
+    prev_url = None
+    if skip > 0:
+        new_skip = max(0, skip - limit)
+        prev_url = f"{base_url}?skip={new_skip}&limit={limit}"
+
+    return {
+        "count": total,
+        "next": next_url,
+        "previous": prev_url,
+        "results": items
+    }
 @router.get(
     "/estadisticas-por-estado",
     response_model=List[EstadoCount],

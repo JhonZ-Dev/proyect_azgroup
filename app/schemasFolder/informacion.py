@@ -67,3 +67,9 @@ class ProformaReporteOut(BaseModel):
 
 class InformacionCreateWithItems(InformacionCreate):
     items: List[ItemCreateInWithCotizaciones]
+
+class PaginatedInformacionRead(BaseModel):
+    count: int
+    next: Optional[str] = None
+    previous: Optional[str] = None
+    results: List[InformacionRead]

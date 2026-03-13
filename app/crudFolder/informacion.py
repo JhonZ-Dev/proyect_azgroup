@@ -475,19 +475,24 @@ def update_informacion_con_items(
     db.refresh(db_info)
     return db_info
 
-def get_informaciones_with_items_and_cotizaciones(db: Session) -> list[Informacion]:
+def get_informaciones_with_items_and_cotizaciones(db: Session, skip: int = 0, limit: int = 10) -> tuple[list[Informacion], int]:
     """
-    Devuelve todas las Informacion, cargando sus items relacionados
-    y las cotizaciones anidadas en cada item.
+    Devuelve las Informacion paginadas, cargando sus items relacionados
+    y las cotizaciones anidadas en cada item. Retorna (lista, total).
     """
-    return (
-        db.query(Informacion)
-          .options(
+    query = db.query(Informacion)
+    total = query.count()
+    results = (
+        query.options(
               selectinload(Informacion.items)
               .selectinload(Item.cotizaciones)   # 👈 anidado
           )
+          .order_by(Informacion.proforma_id.desc())
+          .offset(skip)
+          .limit(limit)
           .all()
     )
+    return results, total
 def get_informacion_with_items_by_id(
     db: Session,
     proforma_id: int
