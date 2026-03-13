@@ -1,10 +1,28 @@
-<p-fieldset legend="Informe de procesos " class="pfieldset">
-  <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-6">
+<div class="dashboard-section mb-8">
+  <div class="section-header flex items-center mb-5 border-b border-gray-200 pb-2">
+    <i class="pi pi-list-check text-xl text-emerald-500 mr-2"></i>
+    <h3 class="text-xl font-bold text-slate-800 m-0">Informe de Procesos</h3>
+  </div>
+
+  <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
     <div *ngFor="let c of countCotizaciones"
-      class="rounded-2xl shadow-md p-5 bg-white flex flex-col items-center group transition-all hover:shadow-lg">
-      <div class="text-3xl font-bold text-indigo-600 mb-1" [ngClass]="getEstadoColor(c.estado)">{{ c.total }}</div>
-      <div class="text-base font-semibold text-gray-700">{{ c.estado }}</div>
-      <!-- Puedes poner un icono dependiendo del estado si quieres -->
+      class="metric-card relative overflow-hidden bg-white rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-gray-100 flex flex-col justify-between h-32"
+      [ngClass]="getCardBorder(c.estado)">
+      
+      <!-- Decoración de fondo (icono difuminado) -->
+      <i class="pi absolute -right-3 -bottom-3 text-7xl opacity-10 transition-opacity group-hover:opacity-20" 
+         [ngClass]="[getIconClass(c.estado), getEstadoColor(c.estado)]"></i>
+
+      <!-- Título de la tarjeta -->
+      <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 z-10 relative">
+        {{ c.estado }}
+      </div>
+
+      <!-- Número principal -->
+      <div class="text-4xl font-black tracking-tight mt-auto z-10 relative" [ngClass]="getEstadoColor(c.estado)">
+        {{ c.total }}
+      </div>
+      
     </div>
   </div>
-</p-fieldset>
+</div>

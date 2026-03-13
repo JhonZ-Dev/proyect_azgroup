@@ -37,12 +37,34 @@ export class CountcotizacionesComponent implements OnInit {
   }
   getEstadoColor(estado: string): string {
     switch (estado) {
-      case 'ACEPTADA': return 'text-green-600';
-      case 'CREADA': return 'text-blue-600';
-      case 'ENVIADA': return 'text-yellow-600';
-      case 'PENDIENTE': return 'text-orange-600';
-      case 'RECHAZADA': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'ACEPTADA': return 'text-emerald-500';
+      case 'CREADA': return 'text-blue-500';
+      case 'ENVIADA': return 'text-indigo-500';
+      case 'PENDIENTE': return 'text-amber-500';
+      case 'RECHAZADA': return 'text-red-500';
+      default: return 'text-slate-500';
+    }
+  }
+
+  getCardBorder(estado: string): string {
+    switch (estado) {
+      case 'ACEPTADA': return 'card-border-green';
+      case 'CREADA': return 'card-border-blue';
+      case 'ENVIADA': return 'card-border-indigo';
+      case 'PENDIENTE': return 'card-border-orange';
+      case 'RECHAZADA': return 'card-border-red';
+      default: return 'card-border-default';
+    }
+  }
+
+  getIconClass(estado: string): string {
+    switch (estado) {
+      case 'ACEPTADA': return 'pi-check-circle';
+      case 'CREADA': return 'pi-file-edit';
+      case 'ENVIADA': return 'pi-send';
+      case 'PENDIENTE': return 'pi-clock';
+      case 'RECHAZADA': return 'pi-times-circle';
+      default: return 'pi-box';
     }
   }
 

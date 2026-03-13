@@ -34,10 +34,28 @@ constructor(private _srvCountCotizaciones: CountCotizacionesService) { }
   }
   getEstadoColor(estado: string): string {
     switch (estado) {
-      case 'PAGADA': return 'text-green-600';
-      case 'POR COBRAR': return 'text-blue-600';
-      case 'EN PROCESO': return 'text-yellow-600';
-      default: return 'text-gray-600';
+      case 'PAGADA': return 'text-emerald-500';
+      case 'POR COBRAR': return 'text-indigo-500';
+      case 'EN PROCESO': return 'text-amber-500';
+      default: return 'text-slate-500';
+    }
+  }
+
+  getCardBorder(estado: string): string {
+    switch (estado) {
+      case 'PAGADA': return 'card-border-green';
+      case 'POR COBRAR': return 'card-border-indigo';
+      case 'EN PROCESO': return 'card-border-orange';
+      default: return 'card-border-default';
+    }
+  }
+
+  getIconClass(estado: string): string {
+    switch (estado) {
+      case 'PAGADA': return 'pi-dollar';
+      case 'POR COBRAR': return 'pi-wallet';
+      case 'EN PROCESO': return 'pi-sync';
+      default: return 'pi-file';
     }
   }
 
