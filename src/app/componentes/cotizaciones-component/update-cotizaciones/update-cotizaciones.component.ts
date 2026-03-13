@@ -19,12 +19,12 @@ import { InformacionRead } from '../../modelos/informacion/informacion';
 
 @Component({
   selector: 'app-update-cotizaciones',
- imports: [FormsModule,CommonModule,InputTextModule, ButtonModule, InputNumberModule, TextareaModule, InputGroupModule, InputGroupAddonModule],
+  imports: [FormsModule, CommonModule, InputTextModule, ButtonModule, InputNumberModule, TextareaModule, InputGroupModule, InputGroupAddonModule],
   templateUrl: './update-cotizaciones.component.html',
   styleUrl: './update-cotizaciones.component.css'
 })
 export class UpdateCotizacionesComponent {
-  
+
   searchCode: string = '';   // 🔹 valor del input
   loading = false;
   cotizacion: InformacionRead | null = null;
@@ -34,7 +34,7 @@ export class UpdateCotizacionesComponent {
 
   buscarPorNecesidad() {
     if (!this.searchCode.trim()) {
-      this.messageService.add({severity: 'warn', summary: 'Atención', detail: 'Ingrese un código de necesidad'});
+      this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Ingrese un código de necesidad' });
       return;
     }
 
@@ -43,12 +43,16 @@ export class UpdateCotizacionesComponent {
     this.infoSvc.getInformacionByNecesidad(this.searchCode.trim()).subscribe({
       next: (resp) => {
         this.loading = false;
-        this.messageService.add({severity: 'success', summary: 'Éxito', detail: 'Información cargada'});
-        this.cotizacionEncontrada.emit(resp);  // 👈 envías al padre
+        if (resp) {
+          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Información cargada' });
+          this.cotizacionEncontrada.emit(resp);  // 👈 envías al padre
+        } else {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se encontró información' });
+        }
       },
       error: (err) => {
         this.loading = false;
-        this.messageService.add({severity: 'error', summary: 'Error', detail: 'No se encontró información'});
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se encontró información' });
         console.error('❌ Error buscando necesidad:', err);
       }
     });

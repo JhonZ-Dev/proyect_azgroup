@@ -407,230 +407,235 @@ export class CotizacionesComponentComponent {
   //     }
   //   });
   // }
-//   submitFull() {
-//   if (this.cotizacionForm.invalid) {
-//     this.messageService.add({
-//       severity: 'warn',
-//       summary: 'Formulario incompleto',
-//       detail: 'Revisa los campos obligatorios.',
-//       life: 3000,
-//     });
-//     return;
-//   }
+  //   submitFull() {
+  //   if (this.cotizacionForm.invalid) {
+  //     this.messageService.add({
+  //       severity: 'warn',
+  //       summary: 'Formulario incompleto',
+  //       detail: 'Revisa los campos obligatorios.',
+  //       life: 3000,
+  //     });
+  //     return;
+  //   }
 
-//   const raw = this.cotizacionForm.getRawValue();
-//   let { items: itemsRaw, ...infoPayload } = raw;
+  //   const raw = this.cotizacionForm.getRawValue();
+  //   let { items: itemsRaw, ...infoPayload } = raw;
 
-//   // 🔹 Filtrar ítems incompletos
-//   itemsRaw = itemsRaw.filter((it: any) => this.isItemComplete(it));
-//   if (itemsRaw.length === 0) {
-//     this.messageService.add({
-//       severity: 'warn',
-//       summary: 'Advertencia',
-//       detail: 'Debe ingresar al menos un ítem válido antes de guardar.',
-//       life: 3000,
-//     });
-//     return;
-//   }
+  //   // 🔹 Filtrar ítems incompletos
+  //   itemsRaw = itemsRaw.filter((it: any) => this.isItemComplete(it));
+  //   if (itemsRaw.length === 0) {
+  //     this.messageService.add({
+  //       severity: 'warn',
+  //       summary: 'Advertencia',
+  //       detail: 'Debe ingresar al menos un ítem válido antes de guardar.',
+  //       life: 3000,
+  //     });
+  //     return;
+  //   }
 
-//   // 🔹 Armar payload de items + cotizaciones
-//   const itemsPayload = itemsRaw.map((it: any, idx: number) => {
-//     const orden = idx + 1;
-//     const cotizacion = this.cotizarValores[idx] || { puCotizar: 0, pt: 0, diferencia: 0, pv: 0 };
+  //   // 🔹 Armar payload de items + cotizaciones
+  //   const itemsPayload = itemsRaw.map((it: any, idx: number) => {
+  //     const orden = idx + 1;
+  //     const cotizacion = this.cotizarValores[idx] || { puCotizar: 0, pt: 0, diferencia: 0, pv: 0 };
 
-//     return {
-//       txt_cpc: it.txt_cpc,
-//       txt_unidad: it.txt_unidad,
-//       txt_especificaciones: it.txt_especificaciones,
-//       int_cantidad: it.int_cantidad,
-//       flo_precioUnitario: it.flo_precioUnitario,
-//       flo_precioTotal: it.flo_precioTotal,
-//       flo_total: it.flo_total,
-//       int_orden: orden,
-//       cotizaciones: [
-//         {
-//           flo_precioUnitarioCotizar: cotizacion.puCotizar,
-//           flo_precioTotalCotizar: cotizacion.pt,
-//           flo_diferencia: cotizacion.diferencia,
-//           flo_precioUnitarioBase: it.flo_precioUnitario,
-//           precio_venta: cotizacion.pv,
-//           int_orden: orden,
-//         }
-//       ]
-//     };
-//   });
+  //     return {
+  //       txt_cpc: it.txt_cpc,
+  //       txt_unidad: it.txt_unidad,
+  //       txt_especificaciones: it.txt_especificaciones,
+  //       int_cantidad: it.int_cantidad,
+  //       flo_precioUnitario: it.flo_precioUnitario,
+  //       flo_precioTotal: it.flo_precioTotal,
+  //       flo_total: it.flo_total,
+  //       int_orden: orden,
+  //       cotizaciones: [
+  //         {
+  //           flo_precioUnitarioCotizar: cotizacion.puCotizar,
+  //           flo_precioTotalCotizar: cotizacion.pt,
+  //           flo_diferencia: cotizacion.diferencia,
+  //           flo_precioUnitarioBase: it.flo_precioUnitario,
+  //           precio_venta: cotizacion.pv,
+  //           int_orden: orden,
+  //         }
+  //       ]
+  //     };
+  //   });
 
-//   // 🔹 Payload final
-//   const payload = {
-//     ...infoPayload,
-//     items: itemsPayload,
-//   };
+  //   // 🔹 Payload final
+  //   const payload = {
+  //     ...infoPayload,
+  //     items: itemsPayload,
+  //   };
 
-//   const prevDisabled = this.cotizacionForm.disabled;
-//   this.saving = true;
-//   this.cotizacionForm.disable();
+  //   const prevDisabled = this.cotizacionForm.disabled;
+  //   this.saving = true;
+  //   this.cotizacionForm.disable();
 
-//   // 🔹 Si estamos editando -> PUT, si no -> POST
-//   const request$ = this.cargandoParaEditar
-//     ? this.infoSvc.updateInformacionFull(this.cotizacionForm.get('txt_necesidad')!.value, payload)
-//     : this.infoSvc.fullCreate(payload);
+  //   // 🔹 Si estamos editando -> PUT, si no -> POST
+  //   const request$ = this.cargandoParaEditar
+  //     ? this.infoSvc.updateInformacionFull(this.cotizacionForm.get('txt_necesidad')!.value, payload)
+  //     : this.infoSvc.fullCreate(payload);
 
-//   request$.pipe(
-//     finalize(() => {
-//       this.saving = false;
-//       if (!prevDisabled) this.cotizacionForm.enable();
-//     })
-//   ).subscribe({
-//     next: () => {
-//       this.messageService.add({
-//         severity: 'success',
-//         summary: 'Éxito',
-//         detail: this.cargandoParaEditar ? 'Cotización actualizada' : 'Cotización creada',
-//         life: 3000
-//       });
+  //   request$.pipe(
+  //     finalize(() => {
+  //       this.saving = false;
+  //       if (!prevDisabled) this.cotizacionForm.enable();
+  //     })
+  //   ).subscribe({
+  //     next: () => {
+  //       this.messageService.add({
+  //         severity: 'success',
+  //         summary: 'Éxito',
+  //         detail: this.cargandoParaEditar ? 'Cotización actualizada' : 'Cotización creada',
+  //         life: 3000
+  //       });
 
-//       if (!this.cargandoParaEditar) {
-//         // Solo limpiar si fue creación
-//         this.cotizacionForm.reset();
-//         this.itemsArray.clear();
-//         this.addItem();
-//       }
+  //       if (!this.cargandoParaEditar) {
+  //         // Solo limpiar si fue creación
+  //         this.cotizacionForm.reset();
+  //         this.itemsArray.clear();
+  //         this.addItem();
+  //       }
 
-//       // reset del estado de edición
-//       this.cargandoParaEditar = false;
-//     },
-//     error: (err) => {
-//       const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
-//       this.messageService.add({
-//         severity: 'error',
-//         summary: 'Error',
-//         detail: backendMsg || 'No se pudo guardar la cotización.',
-//         life: 4000
-//       });
-//     }
-//   });
-// }
-submitFull() {
-  if (this.cotizacionForm.invalid) {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Formulario incompleto',
-      detail: 'Revisa los campos obligatorios.',
-      life: 3000,
-    });
-    return;
-  }
-
-  const raw = this.cotizacionForm.getRawValue();
-  let { items: itemsRaw, ...infoPayload } = raw;
-
-  // 🔹 Filtrar ítems incompletos
-  itemsRaw = itemsRaw.filter((it: any) => this.isItemComplete(it));
-  if (itemsRaw.length === 0) {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Advertencia',
-      detail: 'Debe ingresar al menos un ítem válido antes de guardar.',
-      life: 3000,
-    });
-    return;
-  }
-
-  // 🔹 Armar payload de items + cotizaciones
-  const itemsPayload = itemsRaw.map((it: any, idx: number) => {
-    const orden = idx + 1;
-    const cotizacion = this.cotizarValores[idx] || { puCotizar: 0, pt: 0, diferencia: 0, pv: 0 };
-
-    return {
-      txt_cpc: it.txt_cpc,
-      txt_unidad: it.txt_unidad,
-      txt_especificaciones: it.txt_especificaciones,
-      int_cantidad: it.int_cantidad,
-      flo_precioUnitario: it.flo_precioUnitario,
-      flo_precioTotal: it.flo_precioTotal,
-      flo_total: it.flo_total,
-      int_orden: orden,
-      txt_evidencia: it.txt_evidencia,
-      cotizaciones: [
-        {
-          flo_precioUnitarioCotizar: cotizacion.puCotizar,
-          flo_precioTotalCotizar: cotizacion.pt,
-          flo_diferencia: cotizacion.diferencia,
-          flo_precioUnitarioBase: it.flo_precioUnitario,
-          precio_venta: cotizacion.pv,
-          int_orden: orden,
-        }
-      ]
-    };
-  });
-
-  // 🔹 Payload final
-  const payload = {
-    ...infoPayload,
-    items: itemsPayload,
-  };
-
-  const prevDisabled = this.cotizacionForm.disabled;
-  this.saving = true;
-  this.cotizacionForm.disable();
-
-  const request$ = this.cargandoParaEditar
-    ? this.infoSvc.updateInformacionFull(this.cotizacionForm.get('txt_necesidad')!.value, payload)
-    : this.infoSvc.fullCreate(payload);
-
-  request$.pipe(
-    finalize(() => {
-      this.saving = false;
-      if (!prevDisabled) this.cotizacionForm.enable();
-    })
-  ).subscribe({
-    next: () => {
+  //       // reset del estado de edición
+  //       this.cargandoParaEditar = false;
+  //     },
+  //     error: (err) => {
+  //       const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
+  //       this.messageService.add({
+  //         severity: 'error',
+  //         summary: 'Error',
+  //         detail: backendMsg || 'No se pudo guardar la cotización.',
+  //         life: 4000
+  //       });
+  //     }
+  //   });
+  // }
+  submitFull() {
+    if (this.cotizacionForm.invalid) {
       this.messageService.add({
-        severity: 'success',
-        summary: 'Éxito',
-        detail: this.cargandoParaEditar ? 'Cotización actualizada' : 'Cotización creada',
-        life: 3000
+        severity: 'warn',
+        summary: 'Formulario incompleto',
+        detail: 'Revisa los campos obligatorios.',
+        life: 3000,
       });
-
-      // 🔹 Reiniciar completamente al estado inicial del ngOnInit()
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const todayStr = `${year}-${month}-${day}`;
-
-      const valoresFijos = {
-        txt_fecha: todayStr,
-        txt_telefono: 'SN',
-        txt_plazoEntrega: '10',
-        txt_vigenciaOferta: '60',
-        txt_garantia: '12',
-        txt_formaPago: 'CONTRA ENTREGA TOTAL DE LOS BIENES',
-        txt_metodologiaTrabajo: 'NOS ADHERIMOS A LA METODOLOGIA ESTABLECIDA POR LA ENTIDAD',
-        txtUsuarioRegistra: this.loginSvc.getUsername() ?? ''
-      };
-
-      this.cotizacionForm.reset();
-      this.cotizacionForm.patchValue(valoresFijos);
-      this.itemsArray.clear();
-      this.cotizarValores = [];
-      this.itemCounter = 0;
-      this.addItem();
-
-      // 🔹 volver a modo creación
-      this.cargandoParaEditar = false;
-    },
-    error: (err) => {
-      const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: backendMsg || 'No se pudo guardar la cotización.',
-        life: 4000
-      });
+      return;
     }
-  });
-}
+
+    const raw = this.cotizacionForm.getRawValue();
+    let { items: itemsRaw, ...infoPayload } = raw;
+
+    // 🔹 Filtrar ítems incompletos
+    itemsRaw = itemsRaw.filter((it: any) => this.isItemComplete(it));
+    if (itemsRaw.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'Debe ingresar al menos un ítem válido antes de guardar.',
+        life: 3000,
+      });
+      return;
+    }
+
+    // 🔹 Armar payload de items + cotizaciones
+    const itemsPayload = itemsRaw.map((it: any, idx: number) => {
+      const orden = idx + 1;
+      const cotizacion = this.cotizarValores[idx] || { puCotizar: 0, pt: 0, diferencia: 0, pv: 0 };
+
+      // ✅ Normalizar txt_evidencia: enviar null si está vacío o solo whitespace
+      const txtEvidencia = it.txt_evidencia?.trim() || null;
+
+      return {
+        txt_cpc: it.txt_cpc,
+        txt_unidad: it.txt_unidad,
+        txt_especificaciones: it.txt_especificaciones,
+        int_cantidad: it.int_cantidad,
+        flo_precioUnitario: it.flo_precioUnitario,
+        flo_precioTotal: it.flo_precioTotal,
+        flo_total: it.flo_total,
+        int_orden: orden,
+        txt_evidencia: txtEvidencia,
+        cotizaciones: [
+          {
+            flo_precioUnitarioCotizar: cotizacion.puCotizar,
+            flo_precioTotalCotizar: cotizacion.pt,
+            flo_diferencia: cotizacion.diferencia,
+            flo_precioUnitarioBase: it.flo_precioUnitario,
+            precio_venta: cotizacion.pv,
+            int_orden: orden,
+          }
+        ]
+      };
+    });
+
+    // 🔹 Payload final
+    const payload = {
+      ...infoPayload,
+      items: itemsPayload,
+    };
+
+    const prevDisabled = this.cotizacionForm.disabled;
+    this.saving = true;
+    this.cotizacionForm.disable();
+
+    const request$ = this.cargandoParaEditar
+      ? this.infoSvc.updateInformacionFull(this.cotizacionForm.get('txt_necesidad')!.value, payload)
+      : this.infoSvc.fullCreate(payload);
+
+    request$.pipe(
+      finalize(() => {
+        this.saving = false;
+        if (!prevDisabled) this.cotizacionForm.enable();
+      })
+    ).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: this.cargandoParaEditar ? 'Cotización actualizada' : 'Cotización creada',
+          life: 3000
+        });
+
+        // 🔹 Reiniciar al estado inicial y volver a modo creación
+        this.cargandoParaEditar = false;
+
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
+
+        const valoresFijos = {
+          txt_fecha: todayStr,
+          txt_telefono: 'SN',
+          txt_plazoEntrega: '10',
+          txt_vigenciaOferta: '60',
+          txt_garantia: '12',
+          txt_formaPago: 'CONTRA ENTREGA TOTAL DE LOS BIENES',
+          txt_metodologiaTrabajo: 'NOS ADHERIMOS A LA METODOLOGIA ESTABLECIDA POR LA ENTIDAD',
+          txtUsuarioRegistra: this.loginSvc.getUsername() ?? ''
+        };
+
+        this.cotizacionForm.reset();
+        this.cotizacionForm.patchValue(valoresFijos);
+        this.itemsArray.clear();
+        this.cotizarValores = [];
+        this.itemCounter = 0;
+        this.addItem();
+
+        // 🔹 volver a modo creación
+        this.cargandoParaEditar = false;
+      },
+      error: (err) => {
+        const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: backendMsg || 'No se pudo guardar la cotización.',
+          life: 4000
+        });
+      }
+    });
+  }
 
 
   calcularCotizar(i: number) {
@@ -679,7 +684,7 @@ submitFull() {
     this.itemEnEdicionIndex = index;
     this.especificacionDialogVisible = true;
   }
-    abrirDialogEvidencia(index: number) {
+  abrirDialogEvidencia(index: number) {
     this.evidenciaEnEdicionIndex = index;
     this.evidenciaDialogVisible = true;
   }
@@ -701,6 +706,7 @@ submitFull() {
     }
 
     this.cargandoEnlace = true;
+    this.cargandoParaEditar = false; // 🔹 Al cargar desde enlace, nos aseguramos de estar en modo creación
 
     this.infoSvc.extraerDesdeEnlace(enlace).subscribe({
       next: (datosExtraidos) => {
@@ -774,57 +780,59 @@ submitFull() {
   }
 
   cargarCotizacion(data: InformacionRead) {
-  this.cargandoParaEditar = true; // 👈 esto cambia el botón a "Actualizar"
+    if (!data) return; // 🔹 No hacer nada si los datos son nulos
+    this.cargandoParaEditar = true; // 👈 esto cambia el botón a "Actualizar"
 
-  // 🔹 Rellena los campos de cabecera
-  this.cotizacionForm.patchValue({
-    txt_cliente: data.txt_cliente,
-    txt_ruc: data.txt_ruc,
-    txt_direccion: data.txt_direccion,
-    txt_fecha: data.txt_fecha,
-    txt_telefono: data.txt_telefono,
-    txt_necesidad: data.txt_necesidad,
-    txt_funcionario: data.txt_funcionario,
-    txt_correo: data.txt_correo,
-    tHora_maxina: data.tHora_maxina,
-    txt_objetivoCompra: data.txt_objetivoCompra,
-    txt_plazoEntrega: data.txt_plazoEntrega,
-    txt_vigenciaOferta: data.txt_vigenciaOferta,
-    txt_garantia: data.txt_garantia,
-    txt_formaPago: data.txt_formaPago,
-    txt_metodologiaTrabajo: data.txt_metodologiaTrabajo,
-    txt_enlace: data.txt_enlace,
-  });
-
-  // 🔹 Limpiar items actuales
-  this.itemsArray.clear();
-  this.itemCounter = 0;
-  this.cotizarValores = [];
-
-  // 🔹 Cargar ítems existentes
-  data.items.forEach((item, idx) => {
-    this.itemCounter++;
-    const grupo = this.fb.group({
-      id: [this.itemCounter],
-      txt_cpc: [item.txt_cpc, Validators.required],
-      txt_unidad: [item.txt_unidad, Validators.required],
-      txt_especificaciones: [item.txt_especificaciones, Validators.required],
-      int_cantidad: [item.int_cantidad, Validators.required],
-      flo_precioUnitario: [item.flo_precioUnitario, Validators.required],
-      flo_precioTotal: [item.flo_precioTotal],
-      flo_total: [item.flo_total]
+    // 🔹 Rellena los campos de cabecera
+    this.cotizacionForm.patchValue({
+      txt_cliente: data.txt_cliente,
+      txt_ruc: data.txt_ruc,
+      txt_direccion: data.txt_direccion,
+      txt_fecha: data.txt_fecha,
+      txt_telefono: data.txt_telefono,
+      txt_necesidad: data.txt_necesidad,
+      txt_funcionario: data.txt_funcionario,
+      txt_correo: data.txt_correo,
+      tHora_maxina: data.tHora_maxina,
+      txt_objetivoCompra: data.txt_objetivoCompra,
+      txt_plazoEntrega: data.txt_plazoEntrega,
+      txt_vigenciaOferta: data.txt_vigenciaOferta,
+      txt_garantia: data.txt_garantia,
+      txt_formaPago: data.txt_formaPago,
+      txt_metodologiaTrabajo: data.txt_metodologiaTrabajo,
+      txt_enlace: data.txt_enlace,
     });
-    this.itemsArray.push(grupo);
 
-    // Si ya tiene cotizaciones, cargamos el primero
-    const cot = item.cotizaciones?.[0] || { flo_precioUnitarioCotizar: 0, flo_precioTotalCotizar: 0, precio_venta: 0, flo_diferencia: 0 };
-    this.cotizarValores.push({
-      puCotizar: cot.flo_precioUnitarioCotizar || 0,
-      pt: cot.flo_precioTotalCotizar || 0,
-      pv: cot.precio_venta || 0,
-      diferencia: cot.flo_diferencia || 0
+    // 🔹 Limpiar items actuales
+    this.itemsArray.clear();
+    this.itemCounter = 0;
+    this.cotizarValores = [];
+
+    // 🔹 Cargar ítems existentes
+    data.items.forEach((item, idx) => {
+      this.itemCounter++;
+      const grupo = this.fb.group({
+        id: [this.itemCounter],
+        txt_cpc: [item.txt_cpc, Validators.required],
+        txt_unidad: [item.txt_unidad, Validators.required],
+        txt_especificaciones: [item.txt_especificaciones, Validators.required],
+        int_cantidad: [item.int_cantidad, Validators.required],
+        flo_precioUnitario: [item.flo_precioUnitario, Validators.required],
+        flo_precioTotal: [item.flo_precioTotal],
+        flo_total: [item.flo_total],
+        txt_evidencia: [item.txt_evidencia || ''] // ✅ Agregado para cargar evidencia existente
+      });
+      this.itemsArray.push(grupo);
+
+      // Si ya tiene cotizaciones, cargamos el primero
+      const cot = item.cotizaciones?.[0] || { flo_precioUnitarioCotizar: 0, flo_precioTotalCotizar: 0, precio_venta: 0, flo_diferencia: 0 };
+      this.cotizarValores.push({
+        puCotizar: cot.flo_precioUnitarioCotizar || 0,
+        pt: cot.flo_precioTotalCotizar || 0,
+        pv: cot.precio_venta || 0,
+        diferencia: cot.flo_diferencia || 0
+      });
     });
-  });
-}
+  }
 
 }
