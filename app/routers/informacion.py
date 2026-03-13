@@ -147,7 +147,10 @@ def resumen_proformas(
     dependencies=[Depends(require_permission("list"))]
 )
 def get_by_necesidad(codigo: str, db: Session = Depends(get_db)):
-    return get_informacion_by_necesidad(db, codigo)
+    res = get_informacion_by_necesidad(db, codigo)
+    if not res:
+        raise HTTPException(status_code=404, detail="Proforma no encontrada")
+    return res
 
 
 @router.put(
