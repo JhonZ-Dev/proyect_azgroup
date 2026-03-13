@@ -47,14 +47,14 @@ export class InformacionServiceService {
       { headers }
     );
   }
-  public getAllInformaciones(): Observable<InformacionListResponse> {
+  public getAllInformaciones(skip: number = 0, limit: number = 10): Observable<InformacionListResponse> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`
     });
     return this.http.get<InformacionListResponse>(
-      `${this.urlInformacion}listar-informaciones-full`,
+      `${this.urlInformacion}listar-informaciones-full?skip=${skip}&limit=${limit}`,
       { headers }
     );
   }

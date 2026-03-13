@@ -64,4 +64,9 @@ export interface InformacionRead extends InformacionCreate {
  * Respuesta de GET /informaciones/ 
  * (array completo de cabeceras con sus items anidados)
  */
-export type InformacionListResponse = InformacionRead[];
+export interface InformacionListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: InformacionRead[];
+}

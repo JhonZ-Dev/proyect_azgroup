@@ -1,7 +1,7 @@
-﻿import { Component, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { ItemsServiceService } from '../../servicios/items/items-service.service';
 import { InformacionServiceService } from '../../servicios/informacion/informacion-service.service';
-import { InformacionRead } from '../../modelos/informacion/informacion';
+import { InformacionListResponse, InformacionRead } from '../../modelos/informacion/informacion';
 import { Table, TableModule } from 'primeng/table';
 import { ExcelExportService } from '../../servicios/excel-report/excel-export.service';
 import { MessageService } from 'primeng/api';
@@ -76,25 +76,13 @@ export class ListarCotizacionesComponent {
   private loadCotizaciones(): void {
     this.loading = true;
 
-    this.infoSvc.getAllInformaciones().pipe(
-      // 1) Ordenar por fecha + hora desc
-      map(data => {
-        return [...data].sort((a, b) => {
-          const ta = new Date(`${a.dFechaRegistro} ${a.tTimeHora}`).getTime();
-          const tb = new Date(`${b.dFechaRegistro} ${b.tTimeHora}`).getTime();
-          return tb - ta; // las mÃ¡s recientes primero
-        });
-      }),
-      // 2) Desactivar el spinner tanto en Ã©xito como en error
+    this.infoSvc.getAllInformaciones(this.first, this.rows).pipe(
       finalize(() => this.loading = false)
     ).subscribe({
-      next: sorted => {
-        this.allCotizaciones = sorted;
-        this.allCotizacionesFiltradas = [...sorted];
-        this.totalRecords = sorted.length;
-        this.first = 0;
-        this.applyPage();
-        console.log('Cotizaciones ordenadas (desc):', this.cotizaciones);
+      next: (response: InformacionListResponse) => {
+        this.cotizaciones = response.results;
+        this.totalRecords = response.count;
+        console.log('Cotizaciones cargadas (paginadas):', this.cotizaciones);
       },
       error: err => {
         console.error('Error cargando cotizaciones', err);
@@ -103,19 +91,16 @@ export class ListarCotizacionesComponent {
     });
   }
 
-  /** Calcula el slice visible de la pÃ¡gina actual */
+  /** Calcula el slice visible de la pÃ¡gina actual - Obsolate due to remote pagination */
   private applyPage(): void {
-    this.cotizaciones = this.allCotizacionesFiltradas.slice(
-      this.first,
-      this.first + this.rows
-    );
+    // This is no longer used as pagination is now handled by the backend
   }
 
   /** Evento del p-paginator de la tabla principal */
   onPageChange(event: { first?: number; rows?: number }) {
     this.first = event.first ?? 0;
     this.rows = event.rows ?? this.rows;
-    this.applyPage();
+    this.loadCotizaciones();
   }
   public getCotizacionById(proformaId: number): void {
     this.infoSvc.getInformacionById(proformaId).subscribe({
