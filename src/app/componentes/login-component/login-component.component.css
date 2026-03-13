@@ -1,226 +1,242 @@
-/* ─── Fondo principal ──────────────────────────────────────────────────── */
-.login-wrapper {
+/* ─── Variables y Reset Local ─── */
+.login-wrapper-light {
+  background-color: #f8fafc;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   min-height: 100vh;
   display: flex;
-  background: #07111f;
-  overflow: hidden;
-  position: relative;
-  font-family: 'Inter', 'Segoe UI', sans-serif;
-}
-
-/* ─── Lado izquierdo decorativo ─────────────────────────────────────────── */
-.login-left {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative;
-  overflow: hidden;
-  padding: 3rem;
 }
 
-.login-left::before {
-  content: '';
+/* ─── Patrón sutil de fondo ─── */
+.light-bg-pattern {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse at 20% 50%, rgba(0, 212, 255, 0.18) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(88, 28, 255, 0.14) 0%, transparent 55%),
-    radial-gradient(ellipse at 60% 80%, rgba(0, 180, 140, 0.12) 0%, transparent 50%),
-    linear-gradient(135deg, #07111f 0%, #0d1f3c 100%);
-  z-index: 0;
-}
-
-/* puntos decorativos */
-.dots-grid {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(0, 200, 255, 0.12) 1px, transparent 1px);
+  /* Patrón de puntos geométricos limpios */
+  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
   background-size: 32px 32px;
   z-index: 0;
+  opacity: 0.6;
 }
 
-.brand-block {
+/* Luces suaves desenfocadas en las esquinas para dar sensación "Cloud" */
+.light-bg-pattern::before,
+.light-bg-pattern::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: 0;
+}
+
+.light-bg-pattern::before {
+  width: 600px;
+  height: 600px;
+  background: rgba(56, 189, 248, 0.2);
+  /* Cian suave */
+  top: -200px;
+  left: -200px;
+}
+
+.light-bg-pattern::after {
+  width: 500px;
+  height: 500px;
+  background: rgba(99, 102, 241, 0.15);
+  /* Indigo suave */
+  bottom: -150px;
+  right: -100px;
+}
+
+/* ─── Tarjeta Central de Login ─── */
+.login-card-light {
+  background: #ffffff;
+  /* Sombra suave y corporativa, parecida a productos de Microsoft / Google Cloud */
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.1), 0 0 15px rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   position: relative;
-  z-index: 1;
-  text-align: center;
-  color: #fff;
+  z-index: 10;
+  width: 100%;
+  max-width: 440px;
+  border-radius: 20px;
+  padding: 3.5rem 3rem;
 }
 
-.brand-logo {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 1.5rem;
-  border-radius: 22px;
-  background: linear-gradient(135deg, #00c8ff 0%, #0070f3 100%);
+/* ─── Branding ─── */
+.brand-logo-light {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.5rem auto;
+  /* Icono vibrante para contrastar con el fondo blanco */
+  background: linear-gradient(135deg, #0284c7 0%, #3b82f6 100%);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
-  font-weight: 900;
   color: #fff;
-  box-shadow: 0 8px 32px rgba(0, 200, 255, 0.35);
-  letter-spacing: -2px;
+  font-size: 2.2rem;
+  font-weight: 800;
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.35);
 }
 
-.brand-name {
-  font-size: 2.5rem;
+.brand-title {
+  font-size: 1.8rem;
   font-weight: 800;
-  letter-spacing: 4px;
-  background: linear-gradient(135deg, #00d4ff, #0070f3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #1e293b;
+  letter-spacing: 2px;
+  margin-bottom: 0.2rem;
+}
+
+.brand-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+/* ─── Campos de formulario ─── */
+.form-group-light {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   margin-bottom: 0.5rem;
 }
 
-.brand-tagline {
-  font-size: 1rem;
-  color: rgba(180, 210, 255, 0.65);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  font-weight: 400;
-}
-
-/* Blob flotante */
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.25;
-  z-index: 0;
-  animation: floatBlob 8s ease-in-out infinite alternate;
-}
-
-.blob-1 {
-  width: 380px;
-  height: 380px;
-  background: radial-gradient(circle, #00c8ff, #0070f3);
-  top: -10%;
-  left: -10%;
-  animation-delay: 0s;
-}
-
-.blob-2 {
-  width: 280px;
-  height: 280px;
-  background: radial-gradient(circle, #7c3aed, #4f46e5);
-  bottom: 5%;
-  right: -5%;
-  animation-delay: -3s;
-}
-
-.blob-3 {
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, #00b48c, #00d4ff);
-  top: 60%;
-  left: 40%;
-  animation-delay: -5s;
-}
-
-@keyframes floatBlob {
-  from {
-    transform: translateY(0px) scale(1);
-  }
-
-  to {
-    transform: translateY(-30px) scale(1.08);
-  }
-}
-
-/* ─── Lado derecho: formulario ──────────────────────────────────────────── */
-.login-right {
-  width: 480px;
-  min-height: 100vh;
+.input-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  /* Fondo sólido y elegante (ejemplo: azul marino casi negro con ruido sutil) */
-  background: #0f172a;
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
-  /* Separador sutil */
-  padding: 3rem 2.5rem;
-  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  color: #94a3b8;
+  font-size: 1.1rem;
   z-index: 10;
-  box-shadow: -15px 0 40px -10px rgba(0, 0, 0, 0.5);
-  /* Sombra hacia la izquierda para dar profundidad */
+  transition: color 0.3s ease;
 }
 
-/* ─── Campos ────────────────────────────────────────────────────────────── */
-.form-input {
+.form-input-light {
   width: 100%;
-  padding: 0.85rem 1rem 0.85rem 2.8rem;
-  /* Fondo oscuro un poco más claro que la columna para resaltar */
-  background: #1e293b;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  /* Borde claro sutil */
-  border-radius: 8px;
-  /* Bordes un poco más cuadrados para feeling corporativo */
-  color: #f8fafc;
+  padding: 0.9rem 1rem 0.9rem 2.8rem;
+  /* Fondo gris extremadamente claro */
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  color: #334155;
   font-size: 0.95rem;
-  font-family: inherit;
   outline: none;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
+  transition: all 0.25s ease;
 }
 
-.form-input::placeholder {
-  color: #64748b;
+.form-input-light::placeholder {
+  color: #94a3b8;
 }
 
-.form-input:focus {
-  /* Borde eléctrico al hacer focus */
-  border-color: #38bdf8;
-  background: #0f172a;
-  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
-  /* Haló azul claro */
+/* Cuando el campo tiene foco, el borde se vuelve azul y la sombra interior resalta */
+.form-input-light:focus {
+  background: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-/* ─── Botón ─────────────────────────────────────────────────────────────── */
-.btn-login {
+.form-input-light:focus~.input-icon,
+/* Si pusiéramos el icono después en el HTML. Aquí lo arreglaremos con :focus-within en el wrapper */
+.input-wrapper:focus-within .input-icon {
+  color: #3b82f6;
+}
+
+/* ─── Botón Submit ─── */
+.btn-login-light {
   width: 100%;
-  padding: 0.95rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: #fff;
-  /* Gradiente fresco y corporativo: azul corporativo a azul brillante */
-  background: linear-gradient(to right, #0284c7, #38bdf8);
-  box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
-  transition: all 0.2s ease;
+  padding: 1rem;
   margin-top: 1rem;
+  background: linear-gradient(to right, #2563eb, #0ea5e9);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  transition: all 0.25s ease;
 }
 
-.btn-login:hover:not(:disabled) {
-  opacity: 0.95;
+.btn-login-light:hover:not(:disabled) {
   transform: translateY(-2px);
-  /* Sombra más intensa al hover */
-  box-shadow: 0 8px 25px rgba(56, 189, 248, 0.5);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.45);
 }
 
-.btn-login:disabled {
-  background: #334155;
-  /* Gris azulado oscuro */
+.btn-login-light:disabled {
+  background: #e2e8f0;
   color: #94a3b8;
   cursor: not-allowed;
   box-shadow: none;
-  transform: none;
+  transform: translateY(0);
 }
 
-/* ─── Responsive ────────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .login-left {
+.split-container {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Panel Izquierdo */
+.info-panel {
+  flex: 1.2;
+  /* Ocupa un poco más de espacio */
+  background: linear-gradient(rgba(2, 132, 199, 0.8), rgba(30, 41, 59, 0.9)),
+    url('../../../assets/unnamed.jpg') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: white;
+  text-align: center;
+}
+
+/* Ocultar panel izquierdo en móviles */
+@media (max-width: 992px) {
+  .info-panel {
     display: none;
   }
+}
 
-  .login-right {
-    width: 100%;
-    background: #07111f;
-    border-left: none;
-  }
+.info-content h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.info-content p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* Panel Derecho */
+.form-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  padding: 20px;
+}
+
+/* Ajuste a tu tarjeta para que no tenga sombra pesada en este layout */
+.login-card-light {
+  box-shadow: none;
+  border: none;
+  max-width: 400px;
 }

@@ -1,56 +1,46 @@
-<div class="login-wrapper">
+<div class="login-wrapper-light">
+  <div class="split-container">
 
-  <!-- ─── LADO IZQUIERDO: branding decorativo ─────────────────────────── -->
-  <div class="login-left">
-    <div class="dots-grid"></div>
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-
-    <div class="brand-block">
-      <div class="brand-logo">AZ</div>
-      <div class="brand-name">AZGROUP</div>
-      <div class="brand-tagline">Sistema de Gestión Empresarial</div>
-    </div>
-  </div>
-
-  <!-- ─── LADO DERECHO: formulario ───────────────────────────────────── -->
-  <div class="login-right">
-    <div class="login-card">
-      <div class="login-card-header">
-        <h1>Bienvenido</h1>
-        <p>Inicia sesión para continuar</p>
+    <div class="info-panel">
+      <div class="info-content">
+        <h2>Bienvenido a AZGROUP</h2>
+        <p>Tu socio estratégico en gestión empresarial inteligente.</p>
       </div>
-
-      <form (ngSubmit)="iniciarSesion()" #loginForm="ngForm">
-
-        <!-- Usuario -->
-        <div class="form-group">
-          <label for="username">Usuario</label>
-          <div class="input-wrapper">
-            <span class="input-icon pi pi-user"></span>
-            <input type="text" id="username" name="username" [(ngModel)]="username" placeholder="Tu nombre de usuario"
-              required class="form-input" />
-          </div>
-        </div>
-
-        <!-- Contraseña -->
-        <div class="form-group">
-          <label for="password">Contraseña</label>
-          <div class="input-wrapper">
-            <span class="input-icon pi pi-lock"></span>
-            <input type="password" id="password" name="password" [(ngModel)]="password" placeholder="••••••••" required
-              class="form-input" />
-          </div>
-        </div>
-
-        <!-- Botón -->
-        <button type="submit" [disabled]="loginForm.invalid" class="btn-login">
-          Ingresar
-        </button>
-
-      </form>
     </div>
-  </div>
 
+    <div class="form-panel">
+      <div class="login-card-light">
+        <div class="text-center mb-8">
+          <div class="brand-logo-light">AZ</div>
+          <h1 class="brand-title">AZGROUP</h1>
+          <p class="brand-subtitle">Sistema de Gestión Empresarial</p>
+        </div>
+
+        <form (ngSubmit)="iniciarSesion()" #loginForm="ngForm">
+          <div class="form-group-light">
+            <label for="username" class="form-label">Usuario</label>
+            <div class="input-wrapper">
+              <i class="input-icon pi pi-user"></i>
+              <input type="text" id="username" name="username" [(ngModel)]="username" placeholder="Tu nombre de usuario"
+                required class="form-input-light" />
+            </div>
+          </div>
+
+          <div class="form-group-light mb-6">
+            <label for="password" class="form-label">Contraseña</label>
+            <div class="input-wrapper">
+              <i class="input-icon pi pi-lock"></i>
+              <input type="password" id="password" name="password" [(ngModel)]="password" placeholder="••••••••"
+                required class="form-input-light" />
+            </div>
+          </div>
+
+          <button type="submit" [disabled]="loginForm.invalid" class="btn-login-light">
+            Ingresar
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
 </div>
