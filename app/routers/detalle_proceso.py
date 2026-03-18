@@ -1,9 +1,10 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.auth import get_db, require_permission  # si no usas permisos, quita require_permission
+from app.auth import get_db, require_permission, get_current_user
+from app import models
 from app.crudFolder import detalle_proceso as crud
 from app.schemasFolder.detalle_proceso import (
     DetalleProcesoFirmaEntregaUpdate,
@@ -33,22 +34,26 @@ class TotalesPorEstado(BaseModel):
     dependencies=[Depends(require_permission("list"))]
 )
 def list_detalles(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, gt=0, le=1000),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
-    return crud.get_detalles(db, skip=skip, limit=limit)
+    return crud.get_detalles(db, skip=skip, limit=limit, username=current_user.username)
 
 @router.get(
     "/listar-detallesprocesos",
     response_model=List[DetalleProcesoRead],
     dependencies=[Depends(require_permission("list"))]
 )
-def list_details(db: Session = Depends(get_db)):
+def list_details(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     """
     Retorna todas las informaciones con su lista de items anidados.
     """
-    return get_details(db)
+    return get_details(db, username=current_user.username)
 # ====================== OBTENER POR ID ======================
 @router.get(
     "/{detalle_id}",
@@ -74,14 +79,15 @@ def get_detalle(
 )
 def create_detalle(
     payload: DetalleProcesoCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
     # valida estado_id existente
     estado = db.query(EstadoDetalle).filter(EstadoDetalle.estado_id == payload.estado_id).first()
     if not estado:
         raise HTTPException(status_code=400, detail="estado_id inválido")
 
-    row = crud.create_detalle(db, payload)
+    row = crud.create_detalle(db, payload, username=current_user.username)
     return row
 
 
@@ -152,9 +158,10 @@ def set_estado_detalle(
     dependencies=[Depends(require_permission("list"))]
 )
 def totales_por_estado(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
-    return crud.get_totales_por_estado_by_detalleproceso(db)
+    return crud.get_totales_por_estado_by_detalleproceso(db, username=current_user.username)
 
 
 @router.put("/{detalle_id}/firma-entrega", response_model=DetalleProcesoRead)

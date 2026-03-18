@@ -7,18 +7,18 @@ def get_pago(db: Session, idPagos: int) -> Pago | None:
     return db.query(Pago).filter(Pago.idPagos == idPagos).first()
 
 
-def get_pagos(db: Session, skip: int = 0, limit: int = 100) -> list[Pago]:
-    return (
-        db.query(Pago)
-        .order_by(Pago.idPagos)   # <-- Añade esto
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+def get_pagos(db: Session, skip: int = 0, limit: int = 100, username: str | None = None) -> list[Pago]:
+    query = db.query(Pago).order_by(Pago.idPagos)
+    if username:
+        query = query.filter(Pago.txtUsuarioPaga == username)
+    return query.offset(skip).limit(limit).all()
 
 
-def create_pago(db: Session, pago_in: PagoCreate) -> Pago:
-    db_pago = Pago(**pago_in.dict())
+def create_pago(db: Session, pago_in: PagoCreate, username: str | None = None) -> Pago:
+    data = pago_in.dict()
+    if username:
+        data["txtUsuarioPaga"] = username
+    db_pago = Pago(**data)
     db.add(db_pago)
     db.commit()
     db.refresh(db_pago)

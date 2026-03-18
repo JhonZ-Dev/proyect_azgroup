@@ -26,11 +26,11 @@ def get_informacion(db: Session, proforma_id: int) -> Informacion | None:
              .filter(Informacion.proforma_id == proforma_id)\
              .first()
 
-def get_informaciones(db: Session, skip: int = 0, limit: int = 100) -> list[Informacion]:
-    return db.query(Informacion)\
-             .offset(skip)\
-             .limit(limit)\
-             .all()
+def get_informaciones(db: Session, skip: int = 0, limit: int = 100, username: str | None = None) -> list[Informacion]:
+    query = db.query(Informacion)
+    if username:
+        query = query.filter(Informacion.txtUsuarioRegistra == username)
+    return query.offset(skip).limit(limit).all()
 
 # def create_informacion(db: Session, info_in: InformacionCreate) -> Informacion:
 #     db_info = Informacion(**info_in.dict())
@@ -73,8 +73,10 @@ def get_informaciones(db: Session, skip: int = 0, limit: int = 100) -> list[Info
 #     db.commit()
 #     db.refresh(db_info)
 #     return db_info
-def create_informacion(db: Session, info_in: InformacionCreate) -> Informacion:
+def create_informacion(db: Session, info_in: InformacionCreate, username: str | None = None) -> Informacion:
     data = info_in.dict()
+    if username:
+        data["txtUsuarioRegistra"] = username
 
     # 🔹 Normaliza y valida necesidad
     necesidad_norm = _normalize_necesidad(data.get("txt_necesidad"))
@@ -222,8 +224,10 @@ def create_informacion(db: Session, info_in: InformacionCreate) -> Informacion:
 #           .first()
 #     )
 
-def create_informacion_con_items(db: Session, payload: InformacionCreateWithItems) -> Informacion:
+def create_informacion_con_items(db: Session, payload: InformacionCreateWithItems, username: str | None = None) -> Informacion:
     data = payload.dict(exclude_none=True)
+    if username:
+        data["txtUsuarioRegistra"] = username
     items_data = data.pop("items", []) or []
 
     # 🔹 Normalizar necesidad
@@ -391,15 +395,14 @@ def delete_informacion(db: Session, proforma_id: int) -> Informacion | None:
     return info
 
 
-def get_informaciones_with_items(db: Session) -> list[Informacion]:
+def get_informaciones_with_items(db: Session, username: str | None = None) -> list[Informacion]:
     """
     Devuelve todas las Informacion, cargando sus items relacionados.
     """
-    return (
-        db.query(Informacion)
-          .options(selectinload(Informacion.items))
-          .all()
-    )
+    query = db.query(Informacion).options(selectinload(Informacion.items))
+    if username:
+        query = query.filter(Informacion.txtUsuarioRegistra == username)
+    return query.all()
 def get_informacion_by_necesidad(db: Session, necesidad: str) -> Informacion | None:
     """
     Busca una información por su código txt_necesidad y carga sus items + cotizaciones.
@@ -499,12 +502,15 @@ def update_informacion_con_items(
     db.refresh(db_info)
     return db_info
 
-def get_informaciones_with_items_and_cotizaciones(db: Session, skip: int = 0, limit: int = 10) -> tuple[list[Informacion], int]:
+def get_informaciones_with_items_and_cotizaciones(db: Session, skip: int = 0, limit: int = 10, username: str | None = None) -> tuple[list[Informacion], int]:
     """
     Devuelve las Informacion paginadas, cargando sus items relacionados
     y las cotizaciones anidadas en cada item. Retorna (lista, total).
     """
     query = db.query(Informacion)
+    if username:
+        query = query.filter(Informacion.txtUsuarioRegistra == username)
+    
     total = query.count()
     results = (
         query.options(
@@ -625,14 +631,13 @@ def update_estado_informacion(
         db.rollback()
         raise
 
-def get_totales_por_estado(db: Session):
-    res = (
-        db.query(Estado.name.label("estado"), func.count(Informacion.proforma_id).label("total"))
-        .outerjoin(Informacion, Informacion.estado_id == Estado.id)
-        .group_by(Estado.name)
-        .order_by(Estado.name)
-        .all()
-    )
+def get_totales_por_estado(db: Session, username: str | None = None):
+    query = db.query(Estado.name.label("estado"), func.count(Informacion.proforma_id).label("total"))\
+              .outerjoin(Informacion, Informacion.estado_id == Estado.id)
+    if username:
+        query = query.filter(Informacion.txtUsuarioRegistra == username)
+    
+    res = query.group_by(Estado.name).order_by(Estado.name).all()
     return [{"estado": r.estado, "total": r.total} for r in res]
 
 
@@ -641,7 +646,8 @@ def get_resumen_proformas(
     skip: int = 0,
     limit: int = 100,
     fecha_ini: date | None = None,
-    fecha_fin: date | None = None
+    fecha_fin: date | None = None,
+    username: str | None = None
 ):
     # Subquery: total por proforma_id
     sub = (
@@ -672,6 +678,8 @@ def get_resumen_proformas(
         q = q.filter(Informacion.txt_fecha >= fecha_ini)
     if fecha_fin is not None:
         q = q.filter(Informacion.txt_fecha < fecha_fin)
+    if username:
+        q = q.filter(Informacion.txtUsuarioRegistra == username)
 
     rows = (
         q.order_by(Informacion.txt_infimaNro)
@@ -697,11 +705,10 @@ def get_resumen_proformas(
     ]
 
 
-def get_reporte_proformas(db: Session):
+def get_reporte_proformas(db: Session, username: str | None = None):
     from app.models import Informacion, Item  # Ajusta el import a tu estructura
     
-    res = (
-        db.query(
+    query = db.query(
             Informacion.txtUsuarioRegistra.label('oferente'),
             Informacion.txt_infimaNro.label('proforma'),
             Informacion.txt_fecha.label('fecha_proforma'),
@@ -710,9 +717,12 @@ def get_reporte_proformas(db: Session):
             Informacion.txt_objetivoCompra.label('objeto_compra'),
             func.sum(Item.flo_total).label('valor_contrato'),
             Informacion.txt_plazoEntrega.label('plazo_contractual')
-        )
-        .join(Item, Informacion.proforma_id == Item.proforma_id)
-        .group_by(
+        ).join(Item, Informacion.proforma_id == Item.proforma_id)
+
+    if username:
+        query = query.filter(Informacion.txtUsuarioRegistra == username)
+
+    res = query.group_by(
             Informacion.txtUsuarioRegistra,
             Informacion.txt_infimaNro,
             Informacion.txt_fecha,
@@ -720,9 +730,6 @@ def get_reporte_proformas(db: Session):
             Informacion.txt_cliente,
             Informacion.txt_objetivoCompra,
             Informacion.txt_plazoEntrega
-        )
-        .order_by(Informacion.txt_infimaNro)
-        .all()
-    )
+        ).order_by(Informacion.txt_infimaNro).all()
     # Opcional: convertir a lista de dicts
     return [dict(r._mapping) for r in res]

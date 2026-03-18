@@ -17,7 +17,8 @@ from app.crudFolder.pagos import (
     update_pago,
     delete_pago,
 )
-from app.auth import get_db, require_permission
+from app.auth import get_db, require_permission, get_current_user
+from app import models
 from app.schemasFolder.pagos import PagoCreate, PagoUpdate, PagosRead
 from app.templates.email_templates import pago_realizado_template
 from app.utils.email_utils import enviar_email, render_template
@@ -35,9 +36,10 @@ def list_pagos(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
     request: Request = None
 ):
-    pagos = get_pagos(db, skip, limit)
+    pagos = get_pagos(db, skip, limit, username=current_user.username)
     base_url = str(request.base_url).rstrip("/")
     return [PagosRead.from_orm_with_url(p, base_url) for p in pagos]
 
@@ -188,6 +190,7 @@ def create_pago_email(
     background_tasks: BackgroundTasks = None,
     request: Request = None,
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
 ):
     # Parsear string JSON a dict
     try:
@@ -215,7 +218,7 @@ def create_pago_email(
         pago_schema.ruta_evidencia = ruta_archivo
 
     # Guardar el pago en la base
-    pago = create_pago(db, pago_schema)
+    pago = create_pago(db, pago_schema, username=current_user.username)
 
     # Generar URL pública para comprobante
     base_url = str(request.base_url).rstrip("/")

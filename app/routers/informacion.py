@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 from typing import List, Dict
 from app import crud
 from app.schemasFolder.informacion import EstadoCount, EstadoUpdate, InformacionCreateWithItems, InformacionRead, InformacionCreate, ProformaReporteOut, PaginatedInformacionRead
-from app.auth import get_db, require_permission
+from app.auth import get_db, require_permission, get_current_user
+from app import models
 from app.crudFolder.informacion import create_informacion_con_items, get_informacion_by_necesidad, get_informacion_with_items_by_id, get_informaciones_with_items, get_informaciones_with_items_and_cotizaciones, get_reporte_proformas, update_informacion_con_items
 from fastapi.responses import FileResponse
 from app.utils.docx_utils import generar_doc_proforma
@@ -26,11 +27,12 @@ router = APIRouter(
     dependencies=[Depends(require_permission("list"))]
 )
 def list_informaciones(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, gt=0, le=1000),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
-    return crud.get_informaciones(db, skip, limit)
+    return crud.get_informaciones(db, skip, limit, username=current_user.username)
 
 # @router.post(
 #     "/create-informacion",
@@ -51,10 +53,11 @@ def list_informaciones(
 )
 def create_informacion(
     info_in: InformacionCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
     try:
-        return crud.create_informacion(db, info_in)
+        return crud.create_informacion(db, info_in, username=current_user.username)
     except RuntimeError as e:
         # Duplicada u otra regla de negocio desde el CRUD
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
@@ -71,10 +74,11 @@ def create_informacion(
 )
 def full_create_informacion(
     payload: InformacionCreateWithItems,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
     try:
-        return create_informacion_con_items(db, payload)
+        return create_informacion_con_items(db, payload, username=current_user.username)
     except RuntimeError as e:
         # duplicada u otra regla de negocio
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
@@ -86,11 +90,14 @@ def full_create_informacion(
     response_model=List[InformacionRead],
     dependencies=[Depends(require_permission("list"))]
 )
-def list_informaciones(db: Session = Depends(get_db)):
+def list_informaciones(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     """
     Retorna todas las informaciones con su lista de items anidados.
     """
-    return get_informaciones_with_items(db)
+    return get_informaciones_with_items(db, username=current_user.username)
 
 @router.get(
     "/listar-informaciones-full",
@@ -101,12 +108,13 @@ def list_informaciones_full(
     request: Request,
     skip: int = Query(0, ge=0),
     limit: int = Query(10, gt=0, le=100),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
     """
     Retorna todas las informaciones con sus items y cotizaciones anidadas de forma paginada.
     """
-    items, total = get_informaciones_with_items_and_cotizaciones(db, skip=skip, limit=limit)
+    items, total = get_informaciones_with_items_and_cotizaciones(db, skip=skip, limit=limit, username=current_user.username)
     
     base_url = str(request.url).split('?')[0]
     
@@ -131,8 +139,11 @@ def list_informaciones_full(
     dependencies=[Depends(require_permission("list"))],
     summary="Resumen de totales por estado de las proformas"
 )
-def estadisticas_por_estado(db: Session = Depends(get_db)):
-    return crud.get_totales_por_estado(db)
+def estadisticas_por_estado(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    return crud.get_totales_por_estado(db, username=current_user.username)
 
 @router.get(
     "/resumen",
@@ -146,21 +157,9 @@ def resumen_proformas(
     fecha_ini: date | None = Query(None, description="Filtrar desde esta fecha (txt_fecha)"),
     fecha_fin: date | None = Query(None, description="Filtrar hasta esta fecha (txt_fecha, exclusivo)"),
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
-    """
-    Devuelve:
-      - txtUsuarioRegistra
-      - txt_infimaNro
-      - txt_fecha
-      - txt_necesidad
-      - txt_cliente
-      - txt_objetivoCompra
-      - valor_contrato (SUM de flo_total)
-      - txt_plazoEntrega
-    """
-    # Si agregaste soporte de filtros por fecha en el CRUD, pásalos.
-    # Si no, quita fecha_ini/fecha_fin del llamado.
-    rows = crud.get_resumen_proformas(db=db, skip=skip, limit=limit, fecha_ini=fecha_ini, fecha_fin=fecha_fin)
+    rows = crud.get_resumen_proformas(db=db, skip=skip, limit=limit, fecha_ini=fecha_ini, fecha_fin=fecha_fin, username=current_user.username)
     return rows
 
 
@@ -193,9 +192,10 @@ def update_full_informacion(
     dependencies=[Depends(require_permission("list"))]
 )
 def reporte_proformas(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
-    return get_reporte_proformas(db)
+    return get_reporte_proformas(db, username=current_user.username)
 @router.get(
     "/{proforma_id}",
     response_model=InformacionRead,

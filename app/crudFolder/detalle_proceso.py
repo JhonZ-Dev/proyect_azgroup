@@ -39,29 +39,26 @@ def get_detalle(db: Session, detalle_id: int) -> Optional[DetalleProceso]:
     )
 
 
-def get_detalles(db: Session, skip: int = 0, limit: int = 100) -> List[DetalleProceso]:
-    return (
-        db.query(DetalleProceso)
-        .options(selectinload(DetalleProceso.estado))
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+def get_detalles(db: Session, skip: int = 0, limit: int = 100, username: str | None = None) -> List[DetalleProceso]:
+    query = db.query(DetalleProceso).options(selectinload(DetalleProceso.estado))
+    if username:
+        query = query.filter(DetalleProceso.txtUsuarioRegistra == username)
+    return query.offset(skip).limit(limit).all()
 
-def get_details(db: Session) -> list[DetalleProceso]:
+def get_details(db: Session, username: str | None = None) -> list[DetalleProceso]:
     """
     Devuelve todas los detalles procesos, cargando sus items relacionados.
     """
-    return (
-        db.query(DetalleProceso)
-          .options(selectinload(DetalleProceso.estado))
-          .filter(DetalleProceso.is_active == True)
-          .all()
-    )
+    query = db.query(DetalleProceso).options(selectinload(DetalleProceso.estado)).filter(DetalleProceso.is_active == True)
+    if username:
+        query = query.filter(DetalleProceso.txtUsuarioRegistra == username)
+    return query.all()
 
-def create_detalle(db: Session, detalle_in: DetalleProcesoCreate) -> DetalleProceso:
+def create_detalle(db: Session, detalle_in: DetalleProcesoCreate, username: str | None = None) -> DetalleProceso:
     # Si quieres normalizar a MAYÚSCULAS (solo strings)
     data = detalle_in.dict()
+    if username:
+        data["txtUsuarioRegistra"] = username
     data = _to_uppercase_deep(data)
 
     db_row = DetalleProceso(**data)
@@ -102,16 +99,13 @@ def delete_detalle(db: Session, detalle_id: int) -> Optional[DetalleProceso]:
 # Helpers específicos
 # -----------------------------------------
 def get_detalles_with_estado(
-    db: Session, skip: int = 0, limit: int = 100
+    db: Session, skip: int = 0, limit: int = 100, username: str | None = None
 ) -> List[DetalleProceso]:
     """Lista con eager load del estado."""
-    return (
-        db.query(DetalleProceso)
-        .options(selectinload(DetalleProceso.estado))
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    query = db.query(DetalleProceso).options(selectinload(DetalleProceso.estado))
+    if username:
+        query = query.filter(DetalleProceso.txtUsuarioRegistra == username)
+    return query.offset(skip).limit(limit).all()
 
 
 def get_detalle_with_estado_by_id(db: Session, detalle_id: int) -> Optional[DetalleProceso]:
@@ -209,21 +203,20 @@ def update_estado_detalle(db: Session, detalle_id: int, estado_id: int) -> Optio
     return row
 
 
-def get_totales_por_estado_by_detalleproceso(db: Session) -> List[Dict[str, Any]]:
+def get_totales_por_estado_by_detalleproceso(db: Session, username: str | None = None) -> List[Dict[str, Any]]:
     """
     Conteo de tb_detalleprocesos por estado (nombre).
     Incluye estados sin filas (LEFT JOIN).
     """
-    res = (
-        db.query(
+    query = db.query(
             EstadoDetalle.estado.label("estado"),
             func.count(DetalleProceso.detalle_id).label("total"),
-        )
-        .outerjoin(DetalleProceso, DetalleProceso.estado_id == EstadoDetalle.estado_id)
-        .group_by(EstadoDetalle.estado)
-        .order_by(EstadoDetalle.estado)
-        .all()
-    )
+        ).outerjoin(DetalleProceso, DetalleProceso.estado_id == EstadoDetalle.estado_id)
+    
+    if username:
+        query = query.filter(DetalleProceso.txtUsuarioRegistra == username)
+    
+    res = query.group_by(EstadoDetalle.estado).order_by(EstadoDetalle.estado).all()
     return [{"estado": r.estado, "total": r.total} for r in res]
 
 _FECHA_FMT = "%d-%m-%Y"
