@@ -95,13 +95,21 @@ def create_informacion(db: Session, info_in: InformacionCreate) -> Informacion:
         # Lanzamos una excepción "semántica" para que el router la traduzca a 409
         raise RuntimeError(f"Ya existe una proforma con la necesidad '{necesidad_norm}'.")
 
-    # 🔧 Completa campos con sufijos
-    if data.get("txt_plazoEntrega") is not None:
-        data["txt_plazoEntrega"] = f"{data['txt_plazoEntrega']} DÍAS"
-    if data.get("txt_vigenciaOferta") is not None:
-        data["txt_vigenciaOferta"] = f"{data['txt_vigenciaOferta']} DÍAS"
-    if data.get("txt_garantia") is not None:
-        data["txt_garantia"] = f"{data['txt_garantia']} MESES"
+    # 🔧 Completa campos con sufijos (evitando duplicados)
+    if data.get("txt_plazoEntrega"):
+        val = str(data["txt_plazoEntrega"]).upper()
+        if "DÍAS" not in val and "DIAS" not in val:
+            data["txt_plazoEntrega"] = f"{data['txt_plazoEntrega']} DÍAS"
+
+    if data.get("txt_vigenciaOferta"):
+        val = str(data["txt_vigenciaOferta"]).upper()
+        if "DÍAS" not in val and "DIAS" not in val:
+            data["txt_vigenciaOferta"] = f"{data['txt_vigenciaOferta']} DÍAS"
+
+    if data.get("txt_garantia"):
+        val = str(data["txt_garantia"]).upper()
+        if "MESES" not in val:
+            data["txt_garantia"] = f"{data['txt_garantia']} MESES"
 
     # 🧾 Generar txt_infimaNro
     now = datetime.utcnow()
@@ -233,13 +241,21 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
     if existe:
         raise RuntimeError(f"Ya existe una proforma con la necesidad '{necesidad_norm}'.")
 
-    # 🔹 Sufijos
-    if data.get("txt_plazoEntrega") is not None:
-        data["txt_plazoEntrega"] = f"{data['txt_plazoEntrega']} DÍAS"
-    if data.get("txt_vigenciaOferta") is not None:
-        data["txt_vigenciaOferta"] = f"{data['txt_vigenciaOferta']} DÍAS"
-    if data.get("txt_garantia") is not None:
-        data["txt_garantia"] = f"{data['txt_garantia']} MESES"
+    # 🔹 Sufijos (evitando duplicados)
+    if data.get("txt_plazoEntrega"):
+        val = str(data["txt_plazoEntrega"]).upper()
+        if "DÍAS" not in val and "DIAS" not in val:
+            data["txt_plazoEntrega"] = f"{data['txt_plazoEntrega']} DÍAS"
+
+    if data.get("txt_vigenciaOferta"):
+        val = str(data["txt_vigenciaOferta"]).upper()
+        if "DÍAS" not in val and "DIAS" not in val:
+            data["txt_vigenciaOferta"] = f"{data['txt_vigenciaOferta']} DÍAS"
+
+    if data.get("txt_garantia"):
+        val = str(data["txt_garantia"]).upper()
+        if "MESES" not in val:
+            data["txt_garantia"] = f"{data['txt_garantia']} MESES"
 
     # 🔹 Consecutivos
     now = datetime.utcnow()
@@ -343,14 +359,22 @@ def update_informacion(
     if not info:
         return None
 
-    # 1) Convertir a dict y añadir " DÍAS" a los campos de plazo y vigencia
+    # 1) Convertir a dict y añadir sufijos (evitando duplicados)
     data = info_in.dict()
-    if data.get("txt_plazoEntrega") is not None:
-        data["txt_plazoEntrega"] = f"{data['txt_plazoEntrega']} DÍAS"
-    if data.get("txt_vigenciaOferta") is not None:
-        data["txt_vigenciaOferta"] = f"{data['txt_vigenciaOferta']} DÍAS"
-    if data.get("txt_garantia") is not None:
-        data["txt_garantia"] = f"{data['txt_garantia']} MESES"
+    if data.get("txt_plazoEntrega"):
+        val = str(data["txt_plazoEntrega"]).upper()
+        if "DÍAS" not in val and "DIAS" not in val:
+            data["txt_plazoEntrega"] = f"{data['txt_plazoEntrega']} DÍAS"
+
+    if data.get("txt_vigenciaOferta"):
+        val = str(data["txt_vigenciaOferta"]).upper()
+        if "DÍAS" not in val and "DIAS" not in val:
+            data["txt_vigenciaOferta"] = f"{data['txt_vigenciaOferta']} DÍAS"
+
+    if data.get("txt_garantia"):
+        val = str(data["txt_garantia"]).upper()
+        if "MESES" not in val:
+            data["txt_garantia"] = f"{data['txt_garantia']} MESES"
     # 2) Asignar los nuevos valores
     for field, value in data.items():
         setattr(info, field, value)
