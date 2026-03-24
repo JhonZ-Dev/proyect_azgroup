@@ -47,7 +47,14 @@ def get_user(db: Session, username: str):
 
 def create_user(db: Session, user: schemas.UserCreate):
     hashed = pwd_context.hash(user.password)
-    db_user = models.User(username=user.username, email=user.email, hashed_password=hashed)
+    db_user = models.User(
+        username=user.username, 
+        email=user.email, 
+        hashed_password=hashed,
+        full_name=user.full_name if hasattr(user, 'full_name') else None,
+        job_title=user.job_title if hasattr(user, 'job_title') else None,
+        ruc=user.ruc if hasattr(user, 'ruc') else None
+    )
     if user.roles:
         roles = db.query(models.Role).filter(models.Role.id.in_(user.roles)).all()
         db_user.roles = roles

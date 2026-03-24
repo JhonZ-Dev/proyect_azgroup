@@ -5,7 +5,7 @@ import tempfile
 import os
 
 
-def generar_excel_proforma(data: dict, template_path="app/utils/template.xlsx") -> str:
+def generar_excel_proforma(data: dict, template_path: str = "app/utils/template.xlsx") -> str:
     wb = openpyxl.load_workbook(template_path)
     ws = wb.active
 

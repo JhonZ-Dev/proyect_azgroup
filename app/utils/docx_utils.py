@@ -64,7 +64,7 @@ def add_hyperlink(paragraph, url, text, color="2d3fd6", underline=True, font_nam
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 plantilla_path = os.path.join(BASE_DIR, "plantilla.docx")
 
-def generar_doc_proforma(data, plantilla_path=plantilla_path, archivo_salida="proforma_final.docx"):
+def generar_doc_proforma(data, plantilla_path=plantilla_path, archivo_salida="proforma_final.docx", full_name=None, job_title=None, ruc=None):
     # 1. Cargar plantilla membretada y eliminar tabla dummy
     doc = Document(plantilla_path)
     if doc.tables:
@@ -343,8 +343,16 @@ def generar_doc_proforma(data, plantilla_path=plantilla_path, archivo_salida="pr
     doc.add_paragraph('')
     doc.add_paragraph('')
     p = doc.add_paragraph()
+    
+    # Datos de firma dinámicos o por defecto
+    f_nombre = (full_name or 'DAYANA LISBETH ZAMBRANO MACIAS').upper()
+    f_cargo = (job_title or 'REPRESENTANTE LEGAL').upper()
+    f_ruc = (ruc or '2350621211001').upper()
+    if "RUC" not in f_ruc:
+        f_ruc = f"RUC: {f_ruc}"
+
     # Línea 1: Nombre
-    run1 = p.add_run('DAYANA LISBETH ZAMBRANO MACIAS\n')
+    run1 = p.add_run(f'{f_nombre}\n')
     run1.bold = True
     run1.font.name = 'Times New Roman'
     run1.font.size = Pt(11)
@@ -352,8 +360,9 @@ def generar_doc_proforma(data, plantilla_path=plantilla_path, archivo_salida="pr
     r1 = run1._element
     r1.rPr.rFonts.set(qn('w:eastAsia'), 'Times New Roman')
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    
     # Línea 2: Cargo
-    run2 = p.add_run('REPRESENTANTE LEGAL\n')
+    run2 = p.add_run(f'{f_cargo}\n')
     run2.bold = False
     run2.font.name = 'Times New Roman'
     run2.font.size = Pt(11)
@@ -361,8 +370,9 @@ def generar_doc_proforma(data, plantilla_path=plantilla_path, archivo_salida="pr
     r2 = run2._element
     r2.rPr.rFonts.set(qn('w:eastAsia'), 'Times New Roman')
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    
     # Línea 3: RUC
-    run3 = p.add_run('RUC: 2350621211001')
+    run3 = p.add_run(f'{f_ruc}')
     run3.bold = False
     run3.font.name = 'Times New Roman'
     run3.font.size = Pt(11)

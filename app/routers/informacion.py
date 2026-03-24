@@ -240,7 +240,8 @@ def patch_estado(
 def descargar_proforma(
     proforma_id: int,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
     info = get_informacion_with_items_by_id(db, proforma_id)
     if not info:
@@ -248,7 +249,21 @@ def descargar_proforma(
 
     nombre_limpio = info.txt_necesidad.replace('-', '_')
     nombre_archivo = f"Proforma_{nombre_limpio}.docx"
-    archivo_path = generar_doc_proforma(data={
+    # Plantilla personalizada por usuario
+    # __file__ es .../app/routers/informacion.py
+    # Vamos 3 niveles arriba para llegar a la raíz del proyecto
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    base_template = os.path.join(project_root, "app", "utils", "plantilla.docx")
+    user_template = os.path.join(project_root, "uploads", "templates", current_user.username, "plantilla.docx")
+    
+    print(f"DEBUG: Descargando Word para usuario: {current_user.username}")
+    print(f"DEBUG: Buscando plantilla en: {user_template}")
+    print(f"DEBUG: Existe? {os.path.exists(user_template)}")
+    
+    final_template = user_template if os.path.exists(user_template) else base_template
+
+    archivo_path = generar_doc_proforma(
+        data={
         "txt_cliente": info.txt_cliente,
         "txt_ruc": info.txt_ruc,
         "txt_direccion": info.txt_direccion,
@@ -278,7 +293,13 @@ def descargar_proforma(
             }
             for item in info.items
         ]
-    }, archivo_salida=nombre_archivo)
+    }, 
+    plantilla_path=final_template,
+    archivo_salida=nombre_archivo,
+    full_name=current_user.full_name,
+    job_title=current_user.job_title,
+    ruc=current_user.ruc
+    )
 
     background_tasks.add_task(os.remove, archivo_path)
 
@@ -357,7 +378,8 @@ def descargar_proforma(
 def descargar_pdf(
     proforma_id: int,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)  # O como tengas configurado el acceso a la BD
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
     info = get_informacion_with_items_by_id(db, proforma_id)
     if not info:
@@ -396,9 +418,32 @@ def descargar_pdf(
         ]
     }
     output_filename = f"Proforma{info.txt_necesidad}.pdf"
-    # ¡Coloca la ruta correcta de tu membrete!
-    membrete_path = "app/utils/fondomembretada.jpg"
-    archivo = generar_pdf_proforma(data, membrete_path=membrete_path)
+    
+    # Membrete personalizado por usuario
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    base_membrete = os.path.join(project_root, "app", "utils", "fondomembretada.jpg")
+    
+    # Intentar con .jpg y .jpeg
+    user_membrete_jpg = os.path.join(project_root, "uploads", "templates", current_user.username, "fondomembretada.jpg")
+    user_membrete_jpeg = os.path.join(project_root, "uploads", "templates", current_user.username, "fondomembretada.jpeg")
+    
+    final_membrete = base_membrete
+    if os.path.exists(user_membrete_jpg):
+        final_membrete = user_membrete_jpg
+    elif os.path.exists(user_membrete_jpeg):
+        final_membrete = user_membrete_jpeg
+
+    print(f"DEBUG: Descargando PDF para usuario: {current_user.username}")
+    print(f"DEBUG: Final membrete: {final_membrete}")
+    print(f"DEBUG: ¿Es personalizado? {final_membrete != base_membrete}")
+    
+    archivo = generar_pdf_proforma(
+        data, 
+        membrete_path=final_membrete,
+        full_name=current_user.full_name,
+        job_title=current_user.job_title,
+        ruc=current_user.ruc
+    )
     background_tasks.add_task(os.remove, archivo)
     return FileResponse(
         archivo,
@@ -415,7 +460,8 @@ def descargar_pdf(
 def descargar_excel(
     proforma_id: int,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
     info = get_informacion_with_items_by_id(db, proforma_id)
     if not info:
@@ -453,7 +499,13 @@ def descargar_excel(
             for item in info.items
         ]
     }
-    archivo = generar_excel_proforma(data)
+    # Plantilla Excel personalizada
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    base_excel = os.path.join(project_root, "app", "utils", "template.xlsx")
+    user_excel = os.path.join(project_root, "uploads", "templates", current_user.username, "template.xlsx")
+    final_excel = user_excel if os.path.exists(user_excel) else base_excel
+
+    archivo = generar_excel_proforma(data, template_path=final_excel)
     nombre = f"Proforma_{info.txt_necesidad}.xlsx"
     # Eliminar archivo después de enviar
     background_tasks.add_task(os.remove, archivo)

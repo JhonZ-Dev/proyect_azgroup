@@ -38,7 +38,10 @@ def format_decimal(num, decimales=3):
 def generar_pdf_proforma(
     data: dict,
     archivo_salida: str = None,
-    membrete_path: str = None
+    membrete_path: str = None,
+    full_name: str = None,
+    job_title: str = None,
+    ruc: str = None
 ) -> str:
     """
     Genera un PDF de proforma por secciones (cada una con sus proporciones de columnas),
@@ -330,21 +333,29 @@ def generar_pdf_proforma(
 
     # === Firma (dejamos un espacio solo aquí) ===
     elements.append(Spacer(1, 2.2 * cm))
+    
+    # Datos de firma dinámicos o por defecto
+    f_nombre = (full_name or 'DAYANA LISBETH ZAMBRANO MACIAS').upper()
+    f_cargo = (job_title or 'REPRESENTANTE LEGAL').upper()
+    f_ruc = (ruc or '2350621211001').upper()
+    if "RUC" not in f_ruc:
+        f_ruc = f"RUC: {f_ruc}"
+
     elements.append(
         Paragraph(
-            '<font color="#003366"><b>DAYANA LISBETH ZAMBRANO MACIAS</b></font>',
+            f'<font color="#003366"><b>{f_nombre}</b></font>',
             ParagraphStyle('firma_nombre', parent=styles['Normal'], alignment=1, fontSize=11, fontName='Helvetica-Bold')
         )
     )
     elements.append(
         Paragraph(
-            '<font color="#003366">REPRESENTE LEGAL</font>',
+            f'<font color="#003366">{f_cargo}</font>',
             ParagraphStyle('firma_cargo', parent=styles['Normal'], alignment=1, fontSize=10)
         )
     )
     elements.append(
         Paragraph(
-            '<font color="#003366">RUC: 2350621211001</font>',
+            f'<font color="#003366">{f_ruc}</font>',
             ParagraphStyle('firma_ruc', parent=styles['Normal'], alignment=1, fontSize=10)
         )
     )

@@ -1,5 +1,5 @@
 # schemas.py
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import List, Optional
 
 class RoleBase(BaseModel):
@@ -13,7 +13,10 @@ class Role(RoleBase):
 
 class UserBase(BaseModel):
     username: str
-    email: EmailStr
+    email: str
+    full_name: Optional[str] = None
+    job_title: Optional[str] = None
+    ruc: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
