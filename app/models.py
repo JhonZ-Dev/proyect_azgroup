@@ -42,6 +42,7 @@ class User(Base):
     full_name       = Column(String(100), nullable=True)
     job_title       = Column(String(100), nullable=True)
     ruc             = Column(String(20), nullable=True)
+    int_siguiente_proforma = Column(Integer, default=1)
     created_at      = Column(DateTime, default=datetime.utcnow)
 
     # Roles asignados

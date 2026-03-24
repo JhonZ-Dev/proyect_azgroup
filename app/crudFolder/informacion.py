@@ -2,7 +2,8 @@
 from datetime import date, datetime
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from app.models import DetalleProceso, Estado, InfoCotizaciones, Informacion, Item
+from app import models
+from app.models import DetalleProceso, Estado, InfoCotizaciones, Informacion, Item, User
 from app.schemasFolder.informacion import InformacionCreate, InformacionCreateWithItems
 from sqlalchemy.orm import Session, selectinload
 import re
@@ -73,6 +74,34 @@ def get_informaciones(db: Session, skip: int = 0, limit: int = 100, username: st
 #     db.commit()
 #     db.refresh(db_info)
 #     return db_info
+def _get_next_proforma_number(db: Session, username: str | None) -> str:
+    """
+    Obtiene el siguiente número de proforma para un usuario específico.
+    Si el usuario no tiene proformas previas, usa su configuración int_siguiente_proforma.
+    """
+    if not username:
+        # Fallback global si no hay usuario (caso raro con seguridades activas)
+        ultimo = db.query(func.max(Informacion.txt_numeroProforma)).scalar()
+        if ultimo and ultimo.isdigit():
+            return f"{int(ultimo) + 1:06d}"
+        return "000700"
+
+    # Buscar el máximo del usuario
+    ultimo_usuario = (
+        db.query(func.max(Informacion.txt_numeroProforma))
+        .filter(Informacion.txtUsuarioRegistra == username)
+        .scalar()
+    )
+
+    if ultimo_usuario and ultimo_usuario.isdigit():
+        seq = int(ultimo_usuario) + 1
+    else:
+        # Si no tiene previas, consultar su perfil
+        user_config = db.query(User).filter(User.username == username).first()
+        seq = user_config.int_siguiente_proforma if user_config else 1
+    
+    return f"{seq:06d}"
+
 def create_informacion(db: Session, info_in: InformacionCreate, username: str | None = None) -> Informacion:
     data = info_in.dict()
     if username:
@@ -120,15 +149,7 @@ def create_informacion(db: Session, info_in: InformacionCreate, username: str | 
     data["txt_infimaNro"] = f"{now.day:02d}-{now.month:02d}-{seq:010d}"
 
     # 🧾 Generar txt_numeroProforma
-    ultimo = db.query(func.max(Informacion.txt_numeroProforma)).scalar()
-    if ultimo:
-        try:
-            seq = int(ultimo) + 1
-        except Exception:
-            seq = 700
-    else:
-        seq = 700
-    data["txt_numeroProforma"] = f"{seq:06d}"
+    data["txt_numeroProforma"] = _get_next_proforma_number(db, username)
 
     # Estado por defecto
     data["estado_id"] = 1
@@ -267,15 +288,7 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
     seq = total + 1
     data["txt_infimaNro"] = f"{now.day:02d}-{now.month:02d}-{seq:010d}"
 
-    ultimo = db.query(func.max(Informacion.txt_numeroProforma)).scalar()
-    if ultimo:
-        try:
-            seq = int(ultimo) + 1
-        except Exception:
-            seq = 700
-    else:
-        seq = 700
-    data["txt_numeroProforma"] = f"{seq:06d}"
+    data["txt_numeroProforma"] = _get_next_proforma_number(db, username)
     data["estado_id"] = 2
 
     try:

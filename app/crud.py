@@ -53,7 +53,8 @@ def create_user(db: Session, user: schemas.UserCreate):
         hashed_password=hashed,
         full_name=user.full_name if hasattr(user, 'full_name') else None,
         job_title=user.job_title if hasattr(user, 'job_title') else None,
-        ruc=user.ruc if hasattr(user, 'ruc') else None
+        ruc=user.ruc if hasattr(user, 'ruc') else None,
+        int_siguiente_proforma=user.int_siguiente_proforma if hasattr(user, 'int_siguiente_proforma') and user.int_siguiente_proforma is not None else 1
     )
     if user.roles:
         roles = db.query(models.Role).filter(models.Role.id.in_(user.roles)).all()

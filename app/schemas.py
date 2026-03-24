@@ -17,6 +17,7 @@ class UserBase(BaseModel):
     full_name: Optional[str] = None
     job_title: Optional[str] = None
     ruc: Optional[str] = None
+    int_siguiente_proforma: Optional[int] = 1
 
 class UserCreate(UserBase):
     password: str
