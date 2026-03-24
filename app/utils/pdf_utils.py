@@ -12,7 +12,8 @@ def limpiar_texto(texto):
     """Elimina caracteres no imprimibles y reemplaza saltos de línea por espacio."""
     if not isinstance(texto, str):
         texto = str(texto)
-    texto = re.sub(r'[^\x20-\x7E\n]', '', texto)
+    # Solo eliminamos caracteres de control, pero permitimos tildes y ñ (rango \u00C0-\u017F)
+    texto = re.sub(r'[^\x20-\x7E\s\u00C0-\u017F]', '', texto)
     texto = texto.replace('\n', ' ').replace('\r', '')
     return texto
 def format_decimal(num, decimales=3):
