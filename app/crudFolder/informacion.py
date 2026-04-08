@@ -14,14 +14,37 @@ from app.crudFolder.detalle_proceso import get_estado_detalle_default_id, upsert
 # —— CRUD para tb_informacion ——————————————————————————————
 def _normalize_necesidad(value: str | None) -> str:
     """
-    Normaliza txt_necesidad: quita espacios, pasa a mayúsculas.
-    (Evita duplicados por diferencias mínimas)
+    Normaliza txt_necesidad: quita todos los espacios, pasa a mayúsculas.
     """
     if not value:
         return ""
-    # quita espacios en blanco (también saltos de línea/tab)
     v = re.sub(r"\s+", "", value)
     return v.upper()
+
+def _check_duplicate_necesidad(db: Session, necesidad: str, username: str | None, exclude_id: int | None = None) -> None:
+    """
+    Verifica si ya existe un NIC- (txt_necesidad) para el usuario indicado.
+    Compara ignorando espacios y mayúsculas.
+    """
+    if not username:
+        return # Sin usuario no validamos unicidad por usuario
+
+    necesidad_norm = _normalize_necesidad(necesidad)
+    if not necesidad_norm:
+        raise ValueError("El campo txt_necesidad es obligatorio.")
+
+    # Buscamos en la DB aplicando la misma normalización (quitar espacios y upper)
+    query = db.query(Informacion).filter(
+        func.upper(func.replace(Informacion.txt_necesidad, ' ', '')) == necesidad_norm,
+        Informacion.txtUsuarioRegistra == username
+    )
+
+    if exclude_id:
+        query = query.filter(Informacion.proforma_id != exclude_id)
+
+    existe = query.first()
+    if existe:
+        raise RuntimeError(f"Ya tienes una proforma registrada con la necesidad '{necesidad}'.")
 def get_informacion(db: Session, proforma_id: int) -> Informacion | None:
     return db.query(Informacion)\
              .filter(Informacion.proforma_id == proforma_id)\
@@ -109,22 +132,10 @@ def create_informacion(db: Session, info_in: InformacionCreate, username: str | 
 
     # 🔹 Normaliza y valida necesidad
     necesidad_norm = _normalize_necesidad(data.get("txt_necesidad"))
-    if not necesidad_norm:
-        # si prefieres, lanza excepción y que el router la convierta a 400
-        raise ValueError("El campo txt_necesidad es obligatorio.")
     data["txt_necesidad"] = necesidad_norm  # guarda ya normalizado
 
-    # 🔎 Chequeo de existencia (case-insensitive)
-    # En SQL Server usualmente la collation ya es case-insensitive,
-    # pero igual lo hacemos explícito:
-    existe = (
-        db.query(Informacion)
-          .filter(func.upper(Informacion.txt_necesidad) == necesidad_norm)
-          .first()
-    )
-    if existe:
-        # Lanzamos una excepción "semántica" para que el router la traduzca a 409
-        raise RuntimeError(f"Ya existe una proforma con la necesidad '{necesidad_norm}'.")
+    # 🔎 Chequeo de existencia POR USUARIO
+    _check_duplicate_necesidad(db, data.get("txt_necesidad"), username)
 
     # 🔧 Completa campos con sufijos (evitando duplicados)
     if data.get("txt_plazoEntrega"):
@@ -253,18 +264,10 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
 
     # 🔹 Normalizar necesidad
     necesidad_norm = _normalize_necesidad(data.get("txt_necesidad"))
-    if not necesidad_norm:
-        raise ValueError("El campo txt_necesidad es obligatorio.")
     data["txt_necesidad"] = necesidad_norm
 
-    # 🔹 Validar duplicidad
-    existe = (
-        db.query(Informacion)
-          .filter(func.upper(Informacion.txt_necesidad) == necesidad_norm)
-          .first()
-    )
-    if existe:
-        raise RuntimeError(f"Ya existe una proforma con la necesidad '{necesidad_norm}'.")
+    # 🔹 Validar duplicidad POR USUARIO
+    _check_duplicate_necesidad(db, data.get("txt_necesidad"), username)
 
     # 🔹 Sufijos (evitando duplicados)
     if data.get("txt_plazoEntrega"):
@@ -416,24 +419,28 @@ def get_informaciones_with_items(db: Session, username: str | None = None) -> li
     if username:
         query = query.filter(Informacion.txtUsuarioRegistra == username)
     return query.all()
-def get_informacion_by_necesidad(db: Session, necesidad: str) -> Informacion | None:
+def get_informacion_by_necesidad(db: Session, necesidad: str, username: str | None = None) -> Informacion | None:
     """
     Busca una información por su código txt_necesidad y carga sus items + cotizaciones.
+    Filtra por usuario si se proporciona.
     """
     necesidad_norm = _normalize_necesidad(necesidad)
-    return (
+    query = (
         db.query(Informacion)
           .options(
               selectinload(Informacion.items)
               .selectinload(Item.cotizaciones)
           )
-          .filter(func.upper(Informacion.txt_necesidad) == necesidad_norm)
-          .first()
+          .filter(func.upper(func.replace(Informacion.txt_necesidad, ' ', '')) == necesidad_norm)
     )
+    if username:
+        query = query.filter(Informacion.txtUsuarioRegistra == username)
+    return query.first()
 def update_informacion_con_items(
     db: Session,
     necesidad: str,
-    payload: InformacionCreateWithItems
+    payload: InformacionCreateWithItems,
+    username: str | None = None
 ) -> Informacion:
     """
     Actualiza una información existente (cabecera, items y cotizaciones)
@@ -441,16 +448,25 @@ def update_informacion_con_items(
     """
     necesidad_norm = _normalize_necesidad(necesidad)
 
-    db_info = (
+    query = (
         db.query(Informacion)
           .options(selectinload(Informacion.items).selectinload(Item.cotizaciones))
-          .filter(func.upper(Informacion.txt_necesidad) == necesidad_norm)
-          .first()
+          .filter(func.upper(func.replace(Informacion.txt_necesidad, ' ', '')) == necesidad_norm)
     )
+    if username:
+        query = query.filter(Informacion.txtUsuarioRegistra == username)
+
+    db_info = query.first()
     if not db_info:
         raise RuntimeError(f"No existe la proforma con necesidad {necesidad_norm}")
 
     data = payload.dict(exclude_none=True)
+    
+    # 🔹 Si se intenta cambiar el NIC, validar que el nuevo no esté duplicado para este usuario
+    if data.get("txt_necesidad"):
+        # Usamos el username del token o el que ya tenía el registro
+        user_to_check = username or db_info.txtUsuarioRegistra
+        _check_duplicate_necesidad(db, data["txt_necesidad"], user_to_check, exclude_id=db_info.proforma_id)
     items_data = data.pop("items", []) or []
 
     # 🔹 Actualizar cabecera

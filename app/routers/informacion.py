@@ -168,8 +168,12 @@ def resumen_proformas(
     response_model=InformacionRead,
     dependencies=[Depends(require_permission("list"))]
 )
-def get_by_necesidad(codigo: str, db: Session = Depends(get_db)):
-    res = get_informacion_by_necesidad(db, codigo)
+def get_by_necesidad(
+    codigo: str, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    res = get_informacion_by_necesidad(db, codigo, username=current_user.username)
     if not res:
         raise HTTPException(status_code=404, detail="Proforma no encontrada")
     return res
@@ -183,9 +187,15 @@ def get_by_necesidad(codigo: str, db: Session = Depends(get_db)):
 def update_full_informacion(
     codigo: str,
     payload: InformacionCreateWithItems,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
-    return update_informacion_con_items(db, codigo, payload)
+    try:
+        return update_informacion_con_items(db, codigo, payload, username=current_user.username)
+    except RuntimeError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 @router.get(
     "/reporte/proformas",
     response_model=List[ProformaReporteOut],
