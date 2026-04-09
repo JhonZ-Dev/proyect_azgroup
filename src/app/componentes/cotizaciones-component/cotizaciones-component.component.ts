@@ -627,6 +627,18 @@ export class CotizacionesComponentComponent {
       },
       error: (err) => {
         const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
+
+        // 🔹 Manejo específico para duplicados (Conflict 409)
+        if (err?.status === 409) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Registro Duplicado',
+            detail: backendMsg || 'La necesidad ya existe. No se puede crear otra proforma con el mismo código.',
+            life: 5000
+          });
+          return;
+        }
+
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -763,12 +775,23 @@ export class CotizacionesComponentComponent {
       },
       error: (err) => {
         console.error('Error al extraer datos:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'No se pudo extraer la información del enlace',
-          life: 3000
-        });
+        const backendMsg = err?.error?.detail || err?.error?.message || err?.message;
+
+        if (err?.status === 409) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Registro Duplicado',
+            detail: backendMsg || 'Ya tienes una proforma registrada para este NIC.',
+            life: 5000
+          });
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: backendMsg || 'No se pudo extraer la información del enlace',
+            life: 3000
+          });
+        }
         this.cargandoEnlace = false;
       }
     });

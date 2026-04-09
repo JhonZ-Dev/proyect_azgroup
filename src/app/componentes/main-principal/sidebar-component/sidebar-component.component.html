@@ -3,84 +3,93 @@
   [visible]="(visible$ | async) ?? false"
   (visibleChange)="sidebarService.setVisible($event)"
   position="left"
-  styleClass="w-64 shadow-lg headerclasssid"
+  styleClass="w-64 sidebar-drawer"
   class="sidebarclass"
 >
   <ng-template #headless>
-    <!-- Logo y Header -->
-    <div class="flex items-center justify-center p-4 border-b border-gray-200">
-      <img src="../../../../assets/logo_az.png" alt="Logo" class="h-10 cursor-pointer"(click)="irPrincipal()">
-    </div>
+    <!-- WRAPPER con fondo completo — evita que PrimeNG tape el background -->
+    <div class="sidebar-wrapper">
 
-    <div class="overflow-y-auto h-full sidebarclass">
-      <!-- Menú dinámico -->
-      <ng-container *ngIf="menus$ | async as menus">
-        <ng-template #renderItems let-items>
-          <ul class="list-none p-0 m-0">
-            <li *ngFor="let item of items" class="group">
-              <a
-                pRipple
-                class="flex items-center p-4 rounded-lg text-gray-700 
-                       hover:bg-gray-100 hover:shadow-md
-                       duration-150 transition-all"
-                [routerLink]="item.path"
-                *ngIf="!item.children?.length; else hasChildren"
-              >
-                <i class="{{ item.icon }} mr-3 text-lg"></i>
-                <span class="font-medium text-sm group-hover:font-semibold">
-                  {{ item.name }}
-                </span>
-              </a>
+      <!-- ══ HEADER / LOGO ══ -->
+      <div class="sidebar-header">
+        <div class="logo-glow-ring">
+          <img
+            src="../../../../assets/logo_az.png"
+            alt="Logo"
+            class="sidebar-logo"
+            (click)="irPrincipal()"
+          />
+        </div>
+        <div class="sidebar-brand-line"></div>
+      </div>
 
-              <!-- Si tiene hijos, mostramos acordeón -->
-              <ng-template #hasChildren>
-                <div
+      <!-- ══ MENÚ ══ -->
+      <div class="sidebar-scroll-area">
+        <ng-container *ngIf="menus$ | async as menus">
+          <ng-template #renderItems let-items>
+            <ul class="menu-list">
+              <li *ngFor="let item of items" class="menu-item-wrapper">
+
+                <!-- Ítem sin hijos -->
+                <a
                   pRipple
-                  class="flex items-center justify-between p-4 rounded-lg
-                         text-gray-700 hover:bg-gray-100 hover:shadow-md
-                         duration-150 transition-all cursor-pointer"
-                  (click)="item.expanded = !item.expanded"
+                  class="menu-link"
+                  [routerLink]="item.path"
+                  *ngIf="!item.children?.length; else hasChildren"
                 >
-                  <span class="flex items-center">
-                    <i class="{{ item.icon }} mr-3 text-lg"></i>
-                    <span class="font-medium text-sm">
-                      {{ item.name }}
-                    </span>
+                  <span class="menu-icon-wrap">
+                    <i class="{{ item.icon }} menu-icon"></i>
                   </span>
-                  <i
-                    class="pi text-sm"
-                    [ngClass]="{
-                      'pi-chevron-down': !item.expanded,
-                      'pi-chevron-up': item.expanded
-                    }"
-                  ></i>
-                </div>
-                <div
-                  *ngIf="item.expanded"
-                  class="pl-6 overflow-hidden border-l border-gray-200
-                         transition-all duration-300"
-                >
-                  <!-- Llamada recursiva -->
-                  <ng-container
-                    *ngTemplateOutlet="renderItems; context:{ $implicit: item.children }"
-                  ></ng-container>
-                </div>
-              </ng-template>
-            </li>
-          </ul>
-        </ng-template>
+                  <span class="menu-label">{{ item.name }}</span>
+                  <span class="menu-active-dot"></span>
+                </a>
 
-        <!-- Primera llamada -->
-        <ng-container *ngTemplateOutlet="renderItems; context:{ $implicit: menus }">
+                <!-- Acordeón con hijos -->
+                <ng-template #hasChildren>
+                  <div
+                    pRipple
+                    class="menu-link menu-link--accordion"
+                    (click)="item.expanded = !item.expanded"
+                  >
+                    <span class="menu-icon-wrap">
+                      <i class="{{ item.icon }} menu-icon"></i>
+                    </span>
+                    <span class="menu-label">{{ item.name }}</span>
+                    <i
+                      class="pi menu-chevron"
+                      [ngClass]="{
+                        'pi-chevron-down': !item.expanded,
+                        'pi-chevron-up': item.expanded,
+                        'menu-chevron--open': item.expanded
+                      }"
+                    ></i>
+                  </div>
+
+                  <!-- Sub-menú -->
+                  <div *ngIf="item.expanded" class="submenu-container">
+                    <ng-container
+                      *ngTemplateOutlet="renderItems; context:{ $implicit: item.children }"
+                    ></ng-container>
+                  </div>
+                </ng-template>
+
+              </li>
+            </ul>
+          </ng-template>
+
+          <!-- Primera llamada -->
+          <ng-container *ngTemplateOutlet="renderItems; context:{ $implicit: menus }">
+          </ng-container>
         </ng-container>
-      </ng-container>
-    </div>
+      </div>
 
-    <!-- Pie de página -->
-    <div class="p-4 border-t border-gray-200 text-center sidebarclass">
-      <p class="text-xs text-gray-500">
-        © 2025 AZGROUP. Todos los derechos reservados.
-      </p>
-    </div>
+      <!-- ══ FOOTER ══ -->
+      <div class="sidebar-footer">
+        <div class="footer-divider"></div>
+        <p class="footer-text">© 2025 AZGROUP</p>
+        <p class="footer-sub">Todos los derechos reservados</p>
+      </div>
+
+    </div><!-- /sidebar-wrapper -->
   </ng-template>
 </p-drawer>
