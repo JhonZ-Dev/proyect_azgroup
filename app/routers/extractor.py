@@ -1,4 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
+from app.auth import get_db, get_current_user
+from app import models
+from app.crudFolder.informacion import get_informacion_by_necesidad
 from app.services.nco_parser import parse_nc_html
 
 from app.schemasFolder.extractor import ExtractRequest, ExtractedNCData
@@ -12,7 +16,11 @@ DEFAULT_HEADERS = {
 }
 
 @router.post("/extract", response_model=ExtractedNCData)
-def extract_from_url(body: ExtractRequest):
+def extract_from_url(
+    body: ExtractRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     try:
         resp = requests.get(body.url, headers=DEFAULT_HEADERS, timeout=20)
     except requests.RequestException as exc:
@@ -26,6 +34,16 @@ def extract_from_url(body: ExtractRequest):
         data = parse_nc_html(html, str(body.url))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error parseando HTML: {exc}")
+
+    # 🔹 Validar si el NIC extraído ya existe para el usuario
+    if data.codigo_necesidad:
+        # get_informacion_by_necesidad ya maneja la normalización y el filtro de usuario
+        existe = get_informacion_by_necesidad(db, data.codigo_necesidad, username=current_user.username)
+        if existe:
+            raise HTTPException(
+                status_code=409, 
+                detail=f"Ya tienes una proforma registrada con la necesidad '{data.codigo_necesidad}'."
+            )
 
     # sanity check mínimo
     if not (data.codigo_necesidad or data.nombre_entidad or data.objeto_compra):
