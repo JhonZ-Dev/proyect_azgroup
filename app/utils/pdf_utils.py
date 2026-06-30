@@ -239,26 +239,71 @@ def generar_pdf_proforma(
     ]
     tbl_items_body = _table(item_rows, props_items, body_style, font_size=9) if item_rows else _table([], props_items, body_style, font_size=9)
 
-    # Total
-    total = sum(float(item.get("flo_precioTotal", 0) or 0) for item in items)
-    total_row = [[
-        Paragraph('<b>TOTAL</b>', style_bold_centrado), '', '', '', '', '',
-        #Paragraph(f'<b>${total:.2f}</b>', styleN)
-        #Paragraph(f'<b>${format_decimal(total)}</b>', styleN)
-        Paragraph(f'<b>${format_decimal(total, 2)}</b>', style_bold_centrado)
+    # Total y Leyenda
+    items = data.get("items", []) or []
+    
+    is_jhon = False
+    usuario_registra = str(data.get("txtUsuarioRegistra", "")).lower()
+    if "jhon" in usuario_registra:
+        is_jhon = True
 
-    ]]
-    total_style = [
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#DAE9F7')),
-        ('SPAN', (0,0), (5,0)),  # "TOTAL" ocupa columnas 0-5
-        ('LINEABOVE', (0,0), (-1,0), 0, colors.black),
-        ('LINEBELOW', (0,-1), (-1,-1), 0.4, colors.black),
-    ]
+    if is_jhon:
+        subtotal_0 = 0.0
+        subtotal_15 = 0.0
+        iva_15 = 0.0
+        
+        for it in items:
+            porcentaje = float(it.get('flo_iva_porcentaje') or 0.0)
+            subtotal = float(it.get('flo_precioTotal', 0) or 0)
+            
+            if porcentaje == 15.0 or porcentaje == 15:
+                subtotal_15 += subtotal
+                iva_15 += float(it.get('flo_iva_valor') or (subtotal * 0.15))
+            else:
+                subtotal_0 += subtotal
+                
+        total_final = subtotal_0 + subtotal_15 + iva_15
+        
+        total_row = [
+            [Paragraph('<b>SUBTOTAL 0%</b>', style_bold_centrado), '', '', '', '', '', Paragraph(f'<b>${format_decimal(subtotal_0, 2)}</b>', style_bold_centrado)],
+            [Paragraph('<b>SUBTOTAL 15%</b>', style_bold_centrado), '', '', '', '', '', Paragraph(f'<b>${format_decimal(subtotal_15, 2)}</b>', style_bold_centrado)],
+            [Paragraph('<b>IVA 15%</b>', style_bold_centrado), '', '', '', '', '', Paragraph(f'<b>${format_decimal(iva_15, 2)}</b>', style_bold_centrado)],
+            [Paragraph('<b>TOTAL</b>', style_bold_centrado), '', '', '', '', '', Paragraph(f'<b>${format_decimal(total_final, 2)}</b>', style_bold_centrado)]
+        ]
+        
+        total_style = [
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#DAE9F7')),
+            ('SPAN', (0,0), (5,0)),
+            ('SPAN', (0,1), (5,1)),
+            ('SPAN', (0,2), (5,2)),
+            ('SPAN', (0,3), (5,3)),
+            ('LINEABOVE', (0,0), (-1,0), 0, colors.black),
+            ('LINEBELOW', (0,-1), (-1,-1), 0.4, colors.black),
+            # Lineas intermedias sutiles para los subtotales
+            ('LINEBELOW', (0,0), (-1,0), 0.2, colors.gray),
+            ('LINEBELOW', (0,1), (-1,1), 0.2, colors.gray),
+            ('LINEBELOW', (0,2), (-1,2), 0.2, colors.gray),
+        ]
+        leyenda_text = 'SOMOS REGIMEN RIMPE - EMPRENDEDOR'
+    else:
+        total = sum(float(item.get("flo_precioTotal", 0) or 0) for item in items)
+        total_row = [[
+            Paragraph('<b>TOTAL</b>', style_bold_centrado), '', '', '', '', '',
+            Paragraph(f'<b>${format_decimal(total, 2)}</b>', style_bold_centrado)
+        ]]
+        total_style = [
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#DAE9F7')),
+            ('SPAN', (0,0), (5,0)),  # "TOTAL" ocupa columnas 0-5
+            ('LINEABOVE', (0,0), (-1,0), 0, colors.black),
+            ('LINEBELOW', (0,-1), (-1,-1), 0.4, colors.black),
+        ]
+        leyenda_text = 'NO GRAVAMOS IVA - SOMOS REGIMEN RIMPE - NEGOCIO POPULAR'
+
     tbl_items_total = _table(total_row, props_items, total_style, font_size=10)
 
     # ===== SECCIÓN 5: LEYENDA RIMPE =====
     leyenda_rows = [[
-        Paragraph('NO GRAVAMOS IVA - SOMOS REGIMEN RIMPE - NEGOCIO POPULAR', style_rojo_centrado)
+        Paragraph(leyenda_text, style_rojo_centrado)
     ]]
     leyenda_style = [
         ('BACKGROUND', (0,0), (-1,0), colors.white),
