@@ -186,6 +186,7 @@
             <th class="px-2 py-2 text-center min-w-[280px]">Especificaciones</th>
             <th class="px-2 py-2 text-center w-24">Cantidad</th>
             <th class="px-2 py-2 text-center w-24">Precio Unitario</th>
+            <th *ngIf="esUsuarioJhon()" class="px-2 py-2 text-center w-16">IVA</th>
             <th class="px-2 py-2 text-center w-28">Total</th>
             
             <!--SEGUNDA TABLA PARA NO PERDERSE-->
@@ -223,6 +224,15 @@
             <td class="px-2 py-2">
               <input pInputText type="number" formControlName="flo_precioUnitario" step="0.01" (input)="updateTotals(i)"
                 placeholder="Precio Unitario" class="w-full text-sm" styleClass="w-full" />
+            </td>
+            <td class="px-2 py-2" *ngIf="esUsuarioJhon()">
+              <p-select formControlName="flo_iva_porcentaje" 
+                        [options]="ivaOptions" 
+                        optionLabel="label" 
+                        optionValue="value" 
+                        (onChange)="updateTotals(i)" 
+                        styleClass="w-full text-sm">
+              </p-select>
             </td>
             <td class="px-2 py-2">
               <input pInputText formControlName="flo_precioTotal" readonly placeholder="0.00"
@@ -262,43 +272,103 @@
         </tbody>
 
         <tfoot>
-          <tr class="bg-gray-50 font-semibold border-t">
-            <!-- Cols 1..6 -->
-            <td colspan="6" class="px-2 py-3 text-right">Total General:</td>
+          <ng-container *ngIf="esUsuarioJhon()">
+            <!-- SUBTOTAL 0% -->
+            <tr class="border-t bg-slate-50 border-slate-100">
+              <td colspan="7" class="px-4 py-2 text-right">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Subtotal 0%</span>
+              </td>
+              <td class="px-3 py-2 text-center font-semibold text-slate-700 tabular-nums">
+                $ {{ totalSubtotal0 | number:'1.2-2' }}
+              </td>
+              <td colspan="7"></td>
+            </tr>
+            <!-- SUBTOTAL 15% -->
+            <tr class="border-t bg-slate-50 border-slate-100">
+              <td colspan="7" class="px-4 py-2 text-right">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Subtotal 15%</span>
+              </td>
+              <td class="px-3 py-2 text-center font-semibold text-slate-700 tabular-nums">
+                $ {{ totalSubtotal15 | number:'1.2-2' }}
+              </td>
+              <td colspan="7"></td>
+            </tr>
+            <!-- IVA 15% -->
+            <tr class="border-t bg-slate-50 border-slate-100">
+              <td colspan="7" class="px-4 py-2 text-right">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">IVA 15%</span>
+              </td>
+              <td class="px-3 py-2 text-center font-semibold text-slate-700 tabular-nums">
+                $ {{ totalIva15 | number:'1.2-2' }}
+              </td>
+              <td colspan="7"></td>
+            </tr>
+            <!-- TOTAL GENERAL -->
+            <tr class="border-t-2 border-b-2 border-slate-200 bg-slate-100/80 shadow-inner">
+              <td colspan="7" class="px-4 py-4 text-right">
+                <span class="text-sm font-bold text-slate-800 uppercase tracking-widest">Total General</span>
+              </td>
+              <td class="px-3 py-4 text-center">
+                <span class="inline-block bg-white px-3 py-1.5 rounded-md shadow-sm text-lg font-bold text-emerald-600 tabular-nums border border-slate-200/60">
+                  $ {{ totalGeneral | number:'1.2-2' }}
+                </span>
+              </td>
+              <!-- Celdas para la tabla derecha -->
+              <td></td>
+              <td class="px-3 py-4 text-center">
+                <span class="inline-block bg-white px-3 py-1.5 rounded-md shadow-sm text-lg font-bold text-green-500 tabular-nums border border-slate-200/60">
+                  $ {{ totalPT | number:'1.2-2' }}
+                </span>
+              </td>
+              <td class="px-3 py-4 text-center">
+                <span class="inline-block bg-white px-3 py-1.5 rounded-md shadow-sm text-lg font-bold tabular-nums border border-slate-200/60"
+                      [ngClass]="{'text-red-600': totalDiferencia < 0, 'text-green-600': totalDiferencia > 0, 'text-slate-600': totalDiferencia === 0}">
+                  $ {{ totalDiferencia | number:'1.2-2' }}
+                </span>
+              </td>
+              <td></td>
+              <td class="px-3 py-4 text-center">
+                <span class="inline-block bg-white px-3 py-1.5 rounded-md shadow-sm text-lg font-bold text-blue-600 tabular-nums border border-slate-200/60">
+                  $ {{ totalPV | number:'1.2-2' }}
+                </span>
+              </td>
+              <td colspan="2"></td>
+            </tr>
+          </ng-container>
 
-            <!-- Col 7: Total -->
-            <td class="px-2 py-3 text-center text-emerald-600">
-              {{ totalGeneral | number:'1.2-2' }}
-            </td>
-
-            <!-- Col 8: P.U (Cotizar) -> vacío -->
-            <td></td>
-
-            <!-- Col 9: P.T -->
-            <td class="px-2 py-3 text-center text-green-400">
-              {{ totalPT | number:'1.2-2' }}
-            </td>
-
-            <!-- Col 10: DIFERENCIA -->
-            <td class="px-2 py-3 text-center" [ngClass]="{
-                'text-red-600': totalDiferencia < 0,
-                'text-green-600': totalDiferencia > 0,
-                'text-gray-600': totalDiferencia === 0
-              }">
-              {{ totalDiferencia | number:'1.2-2' }}
-            </td>
-
-            <!-- Col 11: P.U (Base) -> vacío -->
-            <td></td>
-
-            <!-- Col 12: P.V -->
-            <td class="px-2 py-3 text-center">
-              {{ totalPV | number:'1.2-2' }}
-            </td>
-
-            <!-- Col 13: Acciones -> vacío -->
-            <td></td>
-          </tr>
+          <ng-container *ngIf="!esUsuarioJhon()">
+            <!-- SOLO TOTAL -->
+            <tr class="border-t-2 border-b-2 border-slate-200 bg-slate-100/80 shadow-inner">
+              <td colspan="6" class="px-4 py-4 text-right">
+                <span class="text-sm font-bold text-slate-800 uppercase tracking-widest">Total General</span>
+              </td>
+              <td class="px-3 py-4 text-center">
+                <span class="inline-block bg-white px-3 py-1.5 rounded-md shadow-sm text-lg font-bold text-emerald-600 tabular-nums border border-slate-200/60">
+                  $ {{ totalGeneral | number:'1.2-2' }}
+                </span>
+              </td>
+              <!-- Celdas para que cuadre con la tabla derecha -->
+              <td></td>
+              <td class="px-3 py-4 text-center">
+                <span class="inline-block bg-white px-3 py-1.5 rounded-md shadow-sm text-lg font-bold text-green-500 tabular-nums border border-slate-200/60">
+                  $ {{ totalPT | number:'1.2-2' }}
+                </span>
+              </td>
+              <td class="px-3 py-4 text-center">
+                <span class="inline-block bg-white px-3 py-1.5 rounded-md shadow-sm text-lg font-bold tabular-nums border border-slate-200/60"
+                      [ngClass]="{'text-red-600': totalDiferencia < 0, 'text-green-600': totalDiferencia > 0, 'text-slate-600': totalDiferencia === 0}">
+                  $ {{ totalDiferencia | number:'1.2-2' }}
+                </span>
+              </td>
+              <td></td>
+              <td class="px-3 py-4 text-center">
+                <span class="inline-block bg-white px-3 py-1.5 rounded-md shadow-sm text-lg font-bold text-blue-600 tabular-nums border border-slate-200/60">
+                  $ {{ totalPV | number:'1.2-2' }}
+                </span>
+              </td>
+              <td colspan="2"></td>
+            </tr>
+          </ng-container>
         </tfoot>
 
       </table>

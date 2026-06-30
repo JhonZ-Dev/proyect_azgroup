@@ -273,24 +273,74 @@ export class PdfService {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.setDrawColor(0, 0, 0);
-    doc.setFillColor(255, 239, 203); // Amarillo claro
 
-    // Celdas combinadas para "TOTAL"
-    doc.rect(colX, y, totalLabelWidth, rowHeight, 'FD');
-    doc.text('TOTAL', colX + totalLabelWidth / 2, y + rowHeight / 2 + 4, {
-      align: 'center', baseline: 'middle'
-    });
-    colX += totalLabelWidth;
+    const isJhon = cotizacion.txtUsuarioRegistra && cotizacion.txtUsuarioRegistra.toLowerCase().includes('jhon');
 
-    // Celda de suma final
-    const totalFormatted = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2 });
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(25, 120, 25); // Verde oscuro
-    doc.rect(colX, y, totalValueWidth, rowHeight, 'FD');
-    doc.text(totalFormatted, colX + totalValueWidth / 2, y + rowHeight / 2 + 4, {
-      align: 'center', baseline: 'middle'
-    });
+    if (isJhon) {
+      let subtotal0 = 0;
+      let subtotal15 = 0;
+      let iva15 = 0;
+      if (Array.isArray(cotizacion.items)) {
+        cotizacion.items.forEach((item: any) => {
+          const p = Number(item.flo_iva_porcentaje) || 0;
+          const vTotal = Number(item.flo_precioTotal) || 0;
+          const vIva = Number(item.flo_iva_valor) || 0;
+          if (p === 0) subtotal0 += vTotal;
+          if (p === 15) {
+            subtotal15 += vTotal;
+            iva15 += vIva;
+          }
+        });
+      }
+
+      const rowsData = [
+        { label: 'SUBTOTAL 0%', value: subtotal0 },
+        { label: 'SUBTOTAL 15%', value: subtotal15 },
+        { label: 'IVA 15%', value: iva15 },
+        { label: 'TOTAL GENERAL', value: total + iva15, isTotal: true }
+      ];
+
+      rowsData.forEach(row => {
+        y = this.ensureSpace(doc, y, rowHeight, marginTop, pageHeight, marginBottom);
+        colX = marginLeft;
+        
+        doc.setFillColor(row.isTotal ? 255 : 249, row.isTotal ? 239 : 250, row.isTotal ? 203 : 251); // Color para total y subtotales
+        doc.rect(colX, y, totalLabelWidth, rowHeight, 'FD');
+        
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(row.isTotal ? 10 : 9);
+        doc.setTextColor(0, 0, 0);
+        doc.text(row.label, colX + totalLabelWidth - 5, y + rowHeight / 2 + (row.isTotal ? 4 : 3), { align: 'right', baseline: 'middle' });
+        
+        colX += totalLabelWidth;
+        const valFormatted = '$' + row.value.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        doc.setFontSize(row.isTotal ? 11 : 9);
+        doc.setTextColor(row.isTotal ? 25 : 50, row.isTotal ? 120 : 50, row.isTotal ? 25 : 50);
+        doc.rect(colX, y, totalValueWidth, rowHeight, 'FD');
+        doc.text(valFormatted, colX + totalValueWidth / 2, y + rowHeight / 2 + (row.isTotal ? 4 : 3), { align: 'center', baseline: 'middle' });
+        
+        y += rowHeight;
+      });
+      
+    } else {
+      doc.setFillColor(255, 239, 203); // Amarillo claro
+      doc.rect(colX, y, totalLabelWidth, rowHeight, 'FD');
+      doc.text('TOTAL', colX + totalLabelWidth / 2, y + rowHeight / 2 + 4, {
+        align: 'center', baseline: 'middle'
+      });
+      colX += totalLabelWidth;
+
+      const totalFormatted = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2 });
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(25, 120, 25); // Verde oscuro
+      doc.rect(colX, y, totalValueWidth, rowHeight, 'FD');
+      doc.text(totalFormatted, colX + totalValueWidth / 2, y + rowHeight / 2 + 4, {
+        align: 'center', baseline: 'middle'
+      });
+      y += rowHeight;
+    }
+    
     doc.setTextColor(0, 0, 0); // Regresa a negro
     //NUEVA FILA
     y += rowHeight;

@@ -22,6 +22,8 @@ export interface ItemRead {
   flo_precioUnitario: number;
   flo_precioTotal: number;
   flo_total: number;
+  flo_iva_porcentaje?: number | null;
+  flo_iva_valor?: number | null;
   proforma_id: number;
   txt_evidencia?: string | null;  // ✅ Agregado campo evidencia
   cotizaciones?: InfoCotizacionRead[];
@@ -57,7 +59,7 @@ export interface InformacionRead extends InformacionCreate {
   estado_name: string;      // <-- y esto
   items: ItemRead[];
   txt_enlace?: string;
-
+  txtUsuarioRegistra?: string;
 }
 
 /**

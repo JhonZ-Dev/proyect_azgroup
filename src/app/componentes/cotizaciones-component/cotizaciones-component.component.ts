@@ -17,12 +17,13 @@ import { LoginServiceService } from '../servicios/login/login-service.service';
 import { UppercaseDirective } from '../../shared/directives/uppercase.directive';
 import { FloatLabel } from 'primeng/floatlabel';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SelectModule } from 'primeng/select';
 import { UpdateCotizacionesComponent } from "./update-cotizaciones/update-cotizaciones.component";
 import { InformacionRead } from '../modelos/informacion/informacion';
 
 @Component({
   selector: 'app-cotizaciones-component',
-  imports: [FormsModule, CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, InputNumberModule, TextareaModule, InputGroupModule, InputGroupAddonModule, Toast, DialogModule, UppercaseDirective, FloatLabel, ProgressSpinnerModule, UpdateCotizacionesComponent],
+  imports: [FormsModule, CommonModule, ReactiveFormsModule, InputTextModule, ButtonModule, InputNumberModule, TextareaModule, InputGroupModule, InputGroupAddonModule, Toast, DialogModule, UppercaseDirective, FloatLabel, ProgressSpinnerModule, SelectModule, UpdateCotizacionesComponent],
   templateUrl: './cotizaciones-component.component.html',
   styleUrl: './cotizaciones-component.component.css',
   standalone: true,
@@ -37,6 +38,11 @@ export class CotizacionesComponentComponent {
   // Arreglo auxiliar para valores de cotizar
   cotizarValores: { puCotizar: number, pt: number, pv: number, diferencia: number }[] = [];
   cargandoEnlace = false;
+
+  ivaOptions = [
+    { label: '0', value: 0 },
+    { label: '15', value: 15 }
+  ];
 
   private itemCounter = 0;
   // Estado del modal
@@ -130,7 +136,9 @@ export class CotizacionesComponentComponent {
       txt_evidencia: [''],
       flo_precioUnitario: [null, Validators.required],
       flo_precioTotal: [{ value: 0, disabled: true }],
-      flo_total: [{ value: 0, disabled: true }]
+      flo_total: [{ value: 0, disabled: true }],
+      flo_iva_porcentaje: [15],
+      flo_iva_valor: [{ value: 0, disabled: true }]
     });
   }
 
@@ -167,9 +175,13 @@ export class CotizacionesComponentComponent {
     const pu = Number(grp.get('flo_precioUnitario')!.value) || 0;
     const total = qty * pu;
 
+    const pct = Number(grp.get('flo_iva_porcentaje')?.value) || 0;
+    const iva = total * (pct / 100);
+
     grp.patchValue({
       flo_precioTotal: total,   // <— actualizamos este
-      flo_total: total          // <— y también este
+      flo_total: total,          // <— y también este
+      flo_iva_valor: iva
     }, { emitEvent: false });
     // 🔹 recalcular valores de cotizar también
     this.calcularCotizar(i);
@@ -552,6 +564,8 @@ export class CotizacionesComponentComponent {
         flo_precioUnitario: it.flo_precioUnitario,
         flo_precioTotal: it.flo_precioTotal,
         flo_total: it.flo_total,
+        flo_iva_porcentaje: it.flo_iva_porcentaje || 0,
+        flo_iva_valor: it.flo_iva_valor || 0,
         int_orden: orden,
         txt_evidencia: txtEvidencia,
         cotizaciones: [
@@ -669,8 +683,38 @@ export class CotizacionesComponentComponent {
       .reduce((acc, ctrl) => {
         const grp = ctrl as FormGroup;
         const val = grp.get('flo_total')?.value;
-        return acc + (Number(val) || 0);
+        const iva = grp.get('flo_iva_valor')?.value;
+        return acc + (Number(val) || 0) + (Number(iva) || 0);
       }, 0);
+  }
+
+  get totalSubtotal0(): number {
+    return (this.cotizacionForm.get('items') as FormArray).controls.reduce((acc, ctrl) => {
+      const p = Number(ctrl.get('flo_iva_porcentaje')?.value) || 0;
+      const val = Number(ctrl.get('flo_total')?.value) || 0;
+      return p === 0 ? acc + val : acc;
+    }, 0);
+  }
+
+  get totalSubtotal15(): number {
+    return (this.cotizacionForm.get('items') as FormArray).controls.reduce((acc, ctrl) => {
+      const p = Number(ctrl.get('flo_iva_porcentaje')?.value) || 0;
+      const val = Number(ctrl.get('flo_total')?.value) || 0;
+      return p === 15 ? acc + val : acc;
+    }, 0);
+  }
+
+  get totalIva15(): number {
+    return (this.cotizacionForm.get('items') as FormArray).controls.reduce((acc, ctrl) => {
+      const p = Number(ctrl.get('flo_iva_porcentaje')?.value) || 0;
+      const val = Number(ctrl.get('flo_iva_valor')?.value) || 0;
+      return p === 15 ? acc + val : acc;
+    }, 0);
+  }
+
+  esUsuarioJhon(): boolean {
+    const user = this.loginSvc.getUsername() || '';
+    return user.toLowerCase().includes('jhon');
   }
 
   private extraerRucDeNecesidad(necesidad: string): string {
@@ -756,6 +800,8 @@ export class CotizacionesComponentComponent {
               flo_precioUnitario: [null, Validators.required],
               flo_precioTotal: [{ value: 0, disabled: true }],
               flo_total: [{ value: 0, disabled: true }],
+              flo_iva_porcentaje: [15],
+              flo_iva_valor: [{ value: 0, disabled: true }],
               txt_evidencia: ['']
             });
 
@@ -843,6 +889,8 @@ export class CotizacionesComponentComponent {
         flo_precioUnitario: [item.flo_precioUnitario, Validators.required],
         flo_precioTotal: [item.flo_precioTotal],
         flo_total: [item.flo_total],
+        flo_iva_porcentaje: [item.flo_iva_porcentaje || 0],
+        flo_iva_valor: [item.flo_iva_valor || 0],
         txt_evidencia: [item.txt_evidencia || ''] // ✅ Agregado para cargar evidencia existente
       });
       this.itemsArray.push(grupo);
