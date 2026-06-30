@@ -512,8 +512,15 @@ def descargar_excel(
     # Plantilla Excel personalizada
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     base_excel = os.path.join(project_root, "app", "utils", "template.xlsx")
+    user_excel_v2 = os.path.join(project_root, "uploads", "templates", current_user.username, "template_v2_iva.xlsx")
     user_excel = os.path.join(project_root, "uploads", "templates", current_user.username, "template.xlsx")
-    final_excel = user_excel if os.path.exists(user_excel) else base_excel
+    
+    if os.path.exists(user_excel_v2):
+        final_excel = user_excel_v2
+    elif os.path.exists(user_excel):
+        final_excel = user_excel
+    else:
+        final_excel = base_excel
 
     archivo = generar_excel_proforma(data, template_path=final_excel)
     nombre = f"Proforma_{info.txt_necesidad}.xlsx"
