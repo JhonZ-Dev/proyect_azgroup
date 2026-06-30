@@ -292,6 +292,7 @@ def descargar_proforma(
         "txt_enlace": info.txt_enlace,
         "txt_infimaNro": info.txt_infimaNro,
         "txt_numeroProforma":info.txt_numeroProforma,
+        "txtUsuarioRegistra": info.txtUsuarioRegistra,
         "items": [
             {
                 "txt_cpc": item.txt_cpc,
@@ -300,6 +301,8 @@ def descargar_proforma(
                 "int_cantidad": item.int_cantidad,
                 "flo_precioUnitario": item.flo_precioUnitario,
                 "flo_precioTotal": item.flo_precioTotal,
+                "flo_iva_porcentaje": getattr(item, 'flo_iva_porcentaje', 0.0),
+                "flo_iva_valor": getattr(item, 'flo_iva_valor', 0.0),
             }
             for item in info.items
         ]

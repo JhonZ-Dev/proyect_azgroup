@@ -220,34 +220,86 @@ def generar_doc_proforma(data, plantilla_path=plantilla_path, archivo_salida="pr
         row[6].text = f"{item.get('flo_precioTotal', 0):.2f}"
         total += item.get('flo_precioTotal', 0)
 
-    # 6. TOTAL
-    # --- FILA TOTAL ---
-    row = tabla.add_row().cells
-    row[0].merge(row[5])
+    # 6. TOTAL Y LEYENDA
+    is_jhon = False
+    usuario_registra = str(data.get("txtUsuarioRegistra", "")).lower()
+    if "jhon" in usuario_registra:
+        is_jhon = True
 
-    # Celda "TOTAL": centrado, negrita, Arial 10, fondo amarillo claro
-    p = row[0].paragraphs[0]
-    p.clear()
-    run = p.add_run("TOTAL")
-    run.bold = True
-    run.font.size = Pt(10)
-    run.font.name = 'Arial'
-    r = run._element
-    r.rPr.rFonts.set(qn('w:eastAsia'), 'Arial')
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    set_cell_bg(row[0], 'dae9f7')  # fondo amarillo claro
+    if is_jhon:
+        subtotal_0 = 0.0
+        subtotal_15 = 0.0
+        iva_15 = 0.0
+        for it in items:
+            porcentaje = float(it.get('flo_iva_porcentaje') or 0.0)
+            subtotal = float(it.get('flo_precioTotal', 0) or 0)
+            if porcentaje == 15.0 or porcentaje == 15:
+                subtotal_15 += subtotal
+                iva_15 += float(it.get('flo_iva_valor') or (subtotal * 0.15))
+            else:
+                subtotal_0 += subtotal
+        total_final = subtotal_0 + subtotal_15 + iva_15
+        
+        totales = [
+            ("SUBTOTAL 0%", subtotal_0),
+            ("SUBTOTAL 15%", subtotal_15),
+            ("IVA 15%", iva_15),
+            ("TOTAL", total_final)
+        ]
+        
+        for label, val in totales:
+            row = tabla.add_row().cells
+            row[0].merge(row[5])
 
-    # Celda con el valor: Arial 10, negrita, SIN fondo
-    p2 = row[6].paragraphs[0]
-    p2.clear()
-    run2 = p2.add_run(f"${total:.2f}")
-    run2.bold = True
-    run2.font.size = Pt(10)
-    run2.font.name = 'Arial'
-    r2 = run2._element
-    r2.rPr.rFonts.set(qn('w:eastAsia'), 'Arial')
-    p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    # (No se pone fondo aquí)
+            p = row[0].paragraphs[0]
+            p.clear()
+            run = p.add_run(label)
+            run.bold = True
+            run.font.size = Pt(10)
+            run.font.name = 'Arial'
+            r = run._element
+            r.rPr.rFonts.set(qn('w:eastAsia'), 'Arial')
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            set_cell_bg(row[0], 'dae9f7')
+
+            p2 = row[6].paragraphs[0]
+            p2.clear()
+            run2 = p2.add_run(f"${val:.2f}")
+            run2.bold = True
+            run2.font.size = Pt(10)
+            run2.font.name = 'Arial'
+            r2 = run2._element
+            r2.rPr.rFonts.set(qn('w:eastAsia'), 'Arial')
+            p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            
+    else:
+        # --- FILA TOTAL ORIGINAL ---
+        row = tabla.add_row().cells
+        row[0].merge(row[5])
+
+        # Celda "TOTAL": centrado, negrita, Arial 10, fondo amarillo claro
+        p = row[0].paragraphs[0]
+        p.clear()
+        run = p.add_run("TOTAL")
+        run.bold = True
+        run.font.size = Pt(10)
+        run.font.name = 'Arial'
+        r = run._element
+        r.rPr.rFonts.set(qn('w:eastAsia'), 'Arial')
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        set_cell_bg(row[0], 'dae9f7')  # fondo amarillo claro
+
+        # Celda con el valor: Arial 10, negrita, SIN fondo
+        p2 = row[6].paragraphs[0]
+        p2.clear()
+        run2 = p2.add_run(f"${total:.2f}")
+        run2.bold = True
+        run2.font.size = Pt(10)
+        run2.font.name = 'Arial'
+        r2 = run2._element
+        r2.rPr.rFonts.set(qn('w:eastAsia'), 'Arial')
+        p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        # (No se pone fondo aquí)
 
     # 7. NO GRAVAMOS IVA
     # --- NO GRAVAMOS IVA ---
@@ -256,7 +308,8 @@ def generar_doc_proforma(data, plantilla_path=plantilla_path, archivo_salida="pr
 
     p = row[0].paragraphs[0]
     p.clear()
-    run = p.add_run("NO GRAVAMOS IVA - SOMOS REGIMEN RIMPE - NEGOCIO POPULAR")
+    texto_leyenda = "SOMOS REGIMEN RIMPE - EMPRENDEDOR" if is_jhon else "NO GRAVAMOS IVA - SOMOS REGIMEN RIMPE - NEGOCIO POPULAR"
+    run = p.add_run(texto_leyenda)
     run.bold = True
     run.font.size = Pt(10)
     run.font.name = 'Arial'
