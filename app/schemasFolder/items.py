@@ -12,6 +12,8 @@ class ItemBase(BaseModel):
     flo_precioUnitario:   Optional[float] = None
     flo_precioTotal:      Optional[float] = None
     flo_total:            Optional[float] = None
+    flo_iva_porcentaje:   Optional[float] = 0.00
+    flo_iva_valor:        Optional[float] = 0.00
     int_orden:            Optional[int] = None
     txt_evidencia:        Optional[str] = None
 
@@ -26,6 +28,8 @@ class ItemCreateIn(BaseModel):
     flo_precioUnitario: Optional[float] = None
     flo_precioTotal: Optional[float] = None
     flo_total: Optional[float] = None
+    flo_iva_porcentaje: Optional[float] = 0.00
+    flo_iva_valor: Optional[float] = 0.00
     int_orden: int
     txt_evidencia: Optional[str] = None
     class Config:

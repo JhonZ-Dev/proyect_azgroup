@@ -311,6 +311,13 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
             else:
                 txt_evidencia = None if not txt_evidencia else txt_evidencia
             
+            # Forzar IVA 0 si no es jhon
+            iva_pct = it.get("flo_iva_porcentaje", 0.00)
+            iva_val = it.get("flo_iva_valor", 0.00)
+            if username and "jhon" not in username.lower():
+                iva_pct = 0.00
+                iva_val = 0.00
+
             item_db = Item(
                 proforma_id=db_info.proforma_id,
                 txt_cpc=it["txt_cpc"].strip(),
@@ -320,6 +327,8 @@ def create_informacion_con_items(db: Session, payload: InformacionCreateWithItem
                 flo_precioUnitario=it.get("flo_precioUnitario"),
                 flo_precioTotal=it.get("flo_precioTotal"),
                 flo_total=it.get("flo_total"),
+                flo_iva_porcentaje=iva_pct,
+                flo_iva_valor=iva_val,
                 int_orden=it["int_orden"],
                 txt_evidencia=txt_evidencia,
             )
@@ -490,6 +499,13 @@ def update_informacion_con_items(
         else:
             txt_evidencia = None if not txt_evidencia else txt_evidencia
         
+        # Forzar IVA 0 si no es jhon
+        iva_pct = it.get("flo_iva_porcentaje", 0.00)
+        iva_val = it.get("flo_iva_valor", 0.00)
+        if username and "jhon" not in username.lower():
+            iva_pct = 0.00
+            iva_val = 0.00
+
         item_db = Item(
             proforma_id=db_info.proforma_id,
             txt_cpc=it["txt_cpc"].strip(),
@@ -499,6 +515,8 @@ def update_informacion_con_items(
             flo_precioUnitario=it.get("flo_precioUnitario"),
             flo_precioTotal=it.get("flo_precioTotal"),
             flo_total=it.get("flo_total"),
+            flo_iva_porcentaje=iva_pct,
+            flo_iva_valor=iva_val,
             int_orden=it["int_orden"],
             txt_evidencia=txt_evidencia,
         )

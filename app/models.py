@@ -216,6 +216,8 @@ class Item(Base):
     flo_precioUnitario = Column(Float, nullable=True)
     flo_precioTotal = Column(Float, nullable=True)
     flo_total = Column(Float, nullable=True) 
+    flo_iva_porcentaje = Column(Float, nullable=True, default=0.00)
+    flo_iva_valor = Column(Float, nullable=True, default=0.00)
     int_orden = Column(Integer, nullable=True)
     txt_evidencia = Column(Text, nullable=True)
     proforma_id     = Column(Integer, ForeignKey('tb_informacion.proforma_id'))
