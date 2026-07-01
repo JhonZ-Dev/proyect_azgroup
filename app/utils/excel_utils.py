@@ -134,7 +134,8 @@ def generar_excel_proforma(data: dict, template_path: str = "app/utils/template.
         ws2[f'G{row}'] = item.get('flo_precioTotal', 0)
 
     # TOTAL / SUBTOTALES
-    is_jhon_template = "jhon" in template_path.lower() or "template_v2_iva" in template_path.lower()
+    usuario_registra = str(data.get("txtUsuarioRegistra", "")).lower()
+    is_jhon_template = "jhon" in usuario_registra or "template_v2_iva" in os.path.basename(template_path).lower()
 
     if is_jhon_template:
         subtotal_0 = 0.0
@@ -214,6 +215,14 @@ def generar_excel_proforma(data: dict, template_path: str = "app/utils/template.
         start_final_row = new_total_row + 5
 
     else:
+        # Descombinar para evitar error de MergedCell
+        for rng in list(ws2.merged_cells.ranges):
+            if rng.min_row <= new_total_row <= rng.max_row:
+                try:
+                    ws2.unmerge_cells(str(rng))
+                except:
+                    pass
+
         # TOTAL original para el resto
         ws2.merge_cells(start_row=new_total_row, start_column=1, end_row=new_total_row, end_column=6)
         ws2[f'A{new_total_row}'] = "TOTAL"
@@ -238,6 +247,13 @@ def generar_excel_proforma(data: dict, template_path: str = "app/utils/template.
         start_final_row = new_total_row + 2
 
     # Fila "NO GRAVAMOS IVA…"
+    for rng in list(ws2.merged_cells.ranges):
+        if rng.min_row <= fila_no_gravamos <= rng.max_row:
+            try:
+                ws2.unmerge_cells(str(rng))
+            except:
+                pass
+                
     ws2.merge_cells(start_row=fila_no_gravamos, start_column=1, end_row=fila_no_gravamos, end_column=7)
     cell_no_iva = ws2[f"A{fila_no_gravamos}"]
     if is_jhon_template:
