@@ -251,7 +251,8 @@ def descargar_proforma(
     proforma_id: int,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
+    current_user: models.User = Depends(get_current_user),
+    formato: str = "antiguo"
 ):
     info = get_informacion_with_items_by_id(db, proforma_id)
     if not info:
@@ -293,6 +294,7 @@ def descargar_proforma(
         "txt_infimaNro": info.txt_infimaNro,
         "txt_numeroProforma":info.txt_numeroProforma,
         "txtUsuarioRegistra": info.txtUsuarioRegistra,
+        "txtFormato": formato,
         "items": [
             {
                 "txt_cpc": item.txt_cpc,
@@ -392,7 +394,8 @@ def descargar_pdf(
     proforma_id: int,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
+    current_user: models.User = Depends(get_current_user),
+    formato: str = "antiguo"
 ):
     info = get_informacion_with_items_by_id(db, proforma_id)
     if not info:
@@ -419,6 +422,7 @@ def descargar_pdf(
         "txt_infimaNro": info.txt_infimaNro,
         "txt_numeroProforma":info.txt_numeroProforma,
         "txtUsuarioRegistra": info.txtUsuarioRegistra,
+        "txtFormato": formato,
         "items": [
             {
                 "txt_cpc": item.txt_cpc,
@@ -477,7 +481,8 @@ def descargar_excel(
     proforma_id: int,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
+    current_user: models.User = Depends(get_current_user),
+    formato: str = "antiguo"
 ):
     info = get_informacion_with_items_by_id(db, proforma_id)
     if not info:
@@ -504,6 +509,7 @@ def descargar_excel(
         "txt_infimaNro": info.txt_infimaNro,
         "txt_numeroProforma":info.txt_numeroProforma,
         "txtUsuarioRegistra": info.txtUsuarioRegistra,
+        "txtFormato": formato,
         "items": [
             {
                 "txt_cpc": item.txt_cpc,
@@ -524,7 +530,7 @@ def descargar_excel(
     user_excel_v2 = os.path.join(project_root, "uploads", "templates", current_user.username, "template_v2_iva.xlsx")
     user_excel = os.path.join(project_root, "uploads", "templates", current_user.username, "template.xlsx")
     
-    if os.path.exists(user_excel_v2):
+    if formato == "nuevo" and os.path.exists(user_excel_v2):
         final_excel = user_excel_v2
     elif os.path.exists(user_excel):
         final_excel = user_excel

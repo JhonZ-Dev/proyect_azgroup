@@ -135,7 +135,8 @@ def generar_excel_proforma(data: dict, template_path: str = "app/utils/template.
 
     # TOTAL / SUBTOTALES
     usuario_registra = str(data.get("txtUsuarioRegistra", "")).lower()
-    is_jhon_template = "jhon" in usuario_registra or "template_v2_iva" in os.path.basename(template_path).lower()
+    formato = str(data.get("txtFormato", "antiguo")).lower()
+    is_jhon_template = ("jhon" in usuario_registra) and (formato == "nuevo")
 
     if is_jhon_template:
         subtotal_0 = 0.0

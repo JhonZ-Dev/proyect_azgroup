@@ -223,7 +223,8 @@ def generar_doc_proforma(data, plantilla_path=plantilla_path, archivo_salida="pr
     # 6. TOTAL Y LEYENDA
     is_jhon = False
     usuario_registra = str(data.get("txtUsuarioRegistra", "")).lower()
-    if "jhon" in usuario_registra:
+    formato = str(data.get("txtFormato", "antiguo")).lower()
+    if "jhon" in usuario_registra and formato == "nuevo":
         is_jhon = True
 
     if is_jhon:
