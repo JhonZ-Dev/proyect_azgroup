@@ -19,7 +19,8 @@ export class WordService {
 
 
 descargarProforma(proformaId: number): Observable<HttpResponse<Blob>> {
-    return this.http.get(`${this.apiWord}descargar-proforma/${proformaId}`, {
+    const formato = localStorage.getItem('jhon_formato') || 'antiguo';
+    return this.http.get(`${this.apiWord}descargar-proforma/${proformaId}?formato=${formato}`, {
       responseType: 'blob',
       observe: 'response'
     });

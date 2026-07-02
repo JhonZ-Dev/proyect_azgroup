@@ -2,7 +2,7 @@
 <div class="text-right">
   <app-update-cotizaciones (cotizacionEncontrada)="cargarCotizacion($event)"></app-update-cotizaciones>
 </div>
-<div class="p-3 mt-2 bg-[#0898d1] rounded-lg card flex items-center justify-center space-x-4"
+<div class="p-3 mt-2 bg-[#0898d1] rounded-lg card flex items-center justify-center space-x-4 relative"
   style="margin-bottom:1rem;">
   <h3 class="font-bold text-white font-[Montserrat] text-center">INFORMACIÓN DE CONTACTO</h3>
 </div>
@@ -186,7 +186,7 @@
             <th class="px-2 py-2 text-center min-w-[280px]">Especificaciones</th>
             <th class="px-2 py-2 text-center w-24">Cantidad</th>
             <th class="px-2 py-2 text-center w-24">Precio Unitario</th>
-            <th *ngIf="esUsuarioJhon()" class="px-2 py-2 text-center w-16">IVA</th>
+            <th *ngIf="usarFormatoNuevo()" class="px-2 py-2 min-w-[70px] text-center">IVA %</th>
             <th class="px-2 py-2 text-center w-28">Total</th>
             
             <!--SEGUNDA TABLA PARA NO PERDERSE-->
@@ -225,14 +225,10 @@
               <input pInputText type="number" formControlName="flo_precioUnitario" step="0.01" (input)="updateTotals(i)"
                 placeholder="Precio Unitario" class="w-full text-sm" styleClass="w-full" />
             </td>
-            <td class="px-2 py-2" *ngIf="esUsuarioJhon()">
-              <p-select formControlName="flo_iva_porcentaje" 
-                        [options]="ivaOptions" 
-                        optionLabel="label" 
-                        optionValue="value" 
-                        (onChange)="updateTotals(i)" 
-                        styleClass="w-full text-sm">
-              </p-select>
+            <td class="px-2 py-2" *ngIf="usarFormatoNuevo()">
+              <p-select [options]="ivaOptions" formControlName="flo_iva_porcentaje" optionLabel="label"
+                optionValue="value" class="w-full" styleClass="w-full text-center"
+                (onChange)="updateTotals(i)"></p-select>
             </td>
             <td class="px-2 py-2">
               <input pInputText formControlName="flo_precioTotal" readonly placeholder="0.00"
@@ -272,7 +268,7 @@
         </tbody>
 
         <tfoot>
-          <ng-container *ngIf="esUsuarioJhon()">
+          <ng-container *ngIf="usarFormatoNuevo()">
             <!-- SUBTOTAL 0% -->
             <tr class="border-t bg-slate-50 border-slate-100">
               <td colspan="7" class="px-4 py-2 text-right">
@@ -336,7 +332,7 @@
             </tr>
           </ng-container>
 
-          <ng-container *ngIf="!esUsuarioJhon()">
+          <ng-container *ngIf="!usarFormatoNuevo()">
             <!-- SOLO TOTAL -->
             <tr class="border-t-2 border-b-2 border-slate-200 bg-slate-100/80 shadow-inner">
               <td colspan="6" class="px-4 py-4 text-right">

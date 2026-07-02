@@ -12,7 +12,8 @@ export class ExcelExportService {
   private apiExcelUrl: string = api_informacion.apiUrl;
 
   exportToExcel(proformaId: number) {
-    return this.http.get(`${this.apiExcelUrl}descargar-excel/${proformaId}`, {
+    const formato = localStorage.getItem('jhon_formato') || 'antiguo';
+    return this.http.get(`${this.apiExcelUrl}descargar-excel/${proformaId}?formato=${formato}`, {
       responseType: 'blob',
       observe: 'response'
     });

@@ -20,6 +20,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SelectModule } from 'primeng/select';
 import { UpdateCotizacionesComponent } from "./update-cotizaciones/update-cotizaciones.component";
 import { InformacionRead } from '../modelos/informacion/informacion';
+import { FormatService } from '../servicios/format.service';
 
 @Component({
   selector: 'app-cotizaciones-component',
@@ -54,7 +55,14 @@ export class CotizacionesComponentComponent {
   evidenciaEnEdicionIndex: number | null = null;
   cargandoParaEditar = false;
 
-  constructor(private itemSvc: ItemsServiceService, private infoSvc: InformacionServiceService, private fb: FormBuilder, private messageService: MessageService, private loginSvc: LoginServiceService) { }
+  constructor(
+    private itemSvc: ItemsServiceService, 
+    private infoSvc: InformacionServiceService, 
+    private fb: FormBuilder, 
+    private messageService: MessageService, 
+    private loginSvc: LoginServiceService,
+    public formatService: FormatService
+  ) { }
 
   ngOnInit() {
     const today = new Date();
@@ -715,6 +723,10 @@ export class CotizacionesComponentComponent {
   esUsuarioJhon(): boolean {
     const user = this.loginSvc.getUsername() || '';
     return user.toLowerCase().includes('jhon');
+  }
+
+  usarFormatoNuevo(): boolean {
+    return this.esUsuarioJhon() && this.formatService.formatoSeleccionado === 'nuevo';
   }
 
   private extraerRucDeNecesidad(necesidad: string): string {

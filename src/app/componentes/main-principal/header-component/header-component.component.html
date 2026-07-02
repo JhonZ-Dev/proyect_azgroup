@@ -8,8 +8,16 @@
             AZGROUP
         </div>
         <!-- Ícono de avatar -->
-        <div class="flex items-center">
-            <p-avatar icon="pi pi-user" [label]="userInitial" class="mr-2 cursor-pointer" shape="circle"
+        <div class="flex items-center gap-4">
+            <div *ngIf="esUsuarioJhon()" class="flex items-center gap-1.5 bg-white/10 p-1 rounded border border-white/20">
+                <span class="text-white text-[10px] font-semibold uppercase tracking-wider pl-1">Formato:</span>
+                <p-select [options]="opcionesFormato" [(ngModel)]="formatService.formatoSeleccionado" 
+                          optionLabel="label" optionValue="value" 
+                          styleClass="w-36 p-button-sm !text-xs !py-0.5"
+                          class="w-36 text-xs shadow-sm">
+                </p-select>
+            </div>
+            <p-avatar icon="pi pi-user" [label]="userInitial" class="cursor-pointer" shape="circle"
                 (click)="toggle($event)" />
         </div>
     </div>
