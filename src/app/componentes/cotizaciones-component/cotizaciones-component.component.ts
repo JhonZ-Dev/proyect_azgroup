@@ -572,8 +572,8 @@ export class CotizacionesComponentComponent {
         flo_precioUnitario: it.flo_precioUnitario,
         flo_precioTotal: it.flo_precioTotal,
         flo_total: it.flo_total,
-        flo_iva_porcentaje: it.flo_iva_porcentaje || 0,
-        flo_iva_valor: it.flo_iva_valor || 0,
+        flo_iva_porcentaje: this.usarFormatoNuevo() ? (it.flo_iva_porcentaje || 0) : 0,
+        flo_iva_valor: this.usarFormatoNuevo() ? (it.flo_iva_valor || 0) : 0,
         int_orden: orden,
         txt_evidencia: txtEvidencia,
         cotizaciones: [
@@ -684,15 +684,14 @@ export class CotizacionesComponentComponent {
   }
 
 
-  /** Suma todos los flo_total de cada fila */
   get totalGeneral(): number {
     return (this.cotizacionForm.get('items') as FormArray)
       .controls
       .reduce((acc, ctrl) => {
         const grp = ctrl as FormGroup;
         const val = grp.get('flo_total')?.value;
-        const iva = grp.get('flo_iva_valor')?.value;
-        return acc + (Number(val) || 0) + (Number(iva) || 0);
+        const iva = this.usarFormatoNuevo() ? (grp.get('flo_iva_valor')?.value || 0) : 0;
+        return acc + (Number(val) || 0) + Number(iva);
       }, 0);
   }
 
