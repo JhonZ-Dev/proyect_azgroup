@@ -272,9 +272,9 @@ def generar_excel_proforma(data: dict, template_path: str = "app/utils/template.
     campos_finales = {
         "txt_plazoEntrega":       f"D{start_final_row}",
         "txt_vigenciaOferta":     f"D{start_final_row + 1}",
-        "txt_garantia":           f"D{start_final_row + 2}",
-        "txt_formaPago":          f"D{start_final_row + 3}",
-        "txt_metodologiaTrabajo": f"D{start_final_row + 4}",
+        "txt_formaPago":          f"D{start_final_row + 2}",
+        "txt_metodologiaTrabajo": f"D{start_final_row + 3}",
+        "txt_garantia":           f"D{start_final_row + 4}",
         "txt_enlace":             f"D{start_final_row + 5}",
     }
 
